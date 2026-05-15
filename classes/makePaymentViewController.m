@@ -633,6 +633,7 @@
             [SharedServiceController transferToCzedrId:czedrRecipientIdSave
                                              amountCents:cents
                                                     memo:_makePayment.text ?: @"Payment"
+                                                     pin:pinstring
                                                  success:^(NSDictionary *data) {
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
                 NSString *str = NSLocalizedString(@"Payment is successful", Nil);

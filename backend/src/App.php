@@ -234,6 +234,7 @@ final class App
         }));
 
         $this->router->post('/v1/transfers', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $this->auth->requirePinForPayment($uid, (string) ($r->body['user_pin'] ?? $r->body['pin'] ?? ''));
             $recipient = self::bodyCzedrId($r, 'to_czedr_id', 'to_payooze_id');
             $txn = $this->ledger->transfer(
                 $uid,
@@ -252,6 +253,7 @@ final class App
         }));
 
         $this->router->post('/v1/invoices', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $this->auth->requirePinForPayment($uid, (string) ($r->body['user_pin'] ?? $r->body['pin'] ?? ''));
             $recipient = self::bodyCzedrId($r, 'to_czedr_id', 'rec_czedr_id', 'rec_payooze_id');
             $amount = (float) ($r->body['amount'] ?? 0);
             $out = $this->invoices->create(

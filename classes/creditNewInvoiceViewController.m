@@ -554,6 +554,7 @@
         [SharedServiceController createInvoiceToCzedrId:czedrRecipientIdSave
             amount:someString
             description:_makePayment.text
+                pin:pinstring
             success:^(NSDictionary *data) {
                 _pin1.text = @"";
                 _pin2.text = @"";

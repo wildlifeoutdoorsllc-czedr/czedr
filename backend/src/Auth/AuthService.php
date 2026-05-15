@@ -148,6 +148,15 @@ final class AuthService
         }
     }
 
+    /** Payments and invoices require a configured PIN (matches product security model). */
+    public function requirePinForPayment(string $userId, string $pin): void
+    {
+        if (!$this->hasPinSet($userId)) {
+            throw new \InvalidArgumentException('You must set a 4-digit PIN before sending money');
+        }
+        $this->verifyPin($userId, $pin);
+    }
+
     public function setPin(string $userId, string $pin): void
     {
         $pin = $this->normalizePin($pin);

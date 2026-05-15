@@ -83,6 +83,7 @@ typedef void (^CzedrAPIFailureBlock)(NSString *message);
 + (void)transferToCzedrId:(NSString *)czedrId
               amountCents:(NSInteger)amountCents
                      memo:(NSString *)memo
+                      pin:(NSString *)pin
                   success:(CzedrAPISuccessBlock)success
                   failure:(CzedrAPIFailureBlock)failure;
 
@@ -116,6 +117,7 @@ typedef void (^CzedrAPIFailureBlock)(NSString *message);
 + (void)createInvoiceToCzedrId:(NSString *)czedrId
                         amount:(NSString *)amountDollars
                    description:(NSString *)description
+                           pin:(NSString *)pin
                        success:(CzedrAPISuccessBlock)success
                        failure:(CzedrAPIFailureBlock)failure;
 

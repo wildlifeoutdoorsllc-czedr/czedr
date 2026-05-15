@@ -63,10 +63,16 @@ api('POST', '/v1/ledger/load', [
 $bal = api('GET', '/v1/ledger/balance', null, $tokenA);
 echo "  Alice balance: " . ($bal['balance_cents'] / 100) . " USD\n";
 
+$pin = '1234';
+echo "Set PIN on Alice and Bob (demo)...\n";
+api('POST', '/userpin', ['user_pin' => $pin], $tokenA);
+api('POST', '/userpin', ['user_pin' => $pin], $tokenB);
+
 echo "Alice pays Bob \$25.50...\n";
 $txn = api('POST', '/v1/transfers', [
     'to_czedr_id' => $czedrB,
     'amount_cents' => 2550,
+    'user_pin' => $pin,
     'idempotency_key' => 'demo-txn-' . bin2hex(random_bytes(4)),
     'memo' => 'Demo payment',
 ], $tokenA);

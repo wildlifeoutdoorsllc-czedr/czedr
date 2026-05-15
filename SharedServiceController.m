@@ -355,6 +355,7 @@
 + (void)transferToCzedrId:(NSString *)czedrId
               amountCents:(NSInteger)amountCents
                      memo:(NSString *)memo
+                      pin:(NSString *)pin
                   success:(CzedrAPISuccessBlock)success
                   failure:(CzedrAPIFailureBlock)failure
 {
@@ -365,7 +366,8 @@
                      @"to_czedr_id": czedrId ?: @"",
                      @"amount_cents": @(amountCents),
                      @"idempotency_key": key,
-                     @"memo": memo ?: @"Payment"
+                     @"memo": memo ?: @"Payment",
+                     @"user_pin": pin ?: @""
                  }
               authenticated:YES
                     success:success
@@ -466,6 +468,7 @@
 + (void)createInvoiceToCzedrId:(NSString *)czedrId
                         amount:(NSString *)amountDollars
                    description:(NSString *)description
+                           pin:(NSString *)pin
                        success:(CzedrAPISuccessBlock)success
                        failure:(CzedrAPIFailureBlock)failure
 {
@@ -474,7 +477,8 @@
                      @"to_czedr_id": czedrId ?: @"",
                      @"rec_czedr_id": czedrId ?: @"",
                      @"amount": amountDollars ?: @"0",
-                     @"desc": description ?: @""
+                     @"desc": description ?: @"",
+                     @"user_pin": pin ?: @""
                  }
               authenticated:YES success:success failure:failure];
 }

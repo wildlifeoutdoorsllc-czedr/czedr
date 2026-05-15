@@ -95,6 +95,7 @@ final class LegacyCompat
         }));
 
         $router->post('/invoice', fn (Request $r) => ($this->withAuth)($r, function (string $uid) use ($r) {
+            $this->auth->requirePinForPayment($uid, (string) ($r->body['user_pin'] ?? ''));
             $recipient = (string) ($r->body['rec_czedr_id'] ?? $r->body['rec_payooze_id'] ?? $r->body['czedr_id'] ?? '');
             $amount = (float) ($r->body['amount'] ?? 0);
             $out = $this->invoices->create(
@@ -150,6 +151,7 @@ final class LegacyCompat
         }));
 
         $router->post('/transactiondetail', fn (Request $r) => ($this->withAuth)($r, function (string $uid) use ($r) {
+            $this->auth->requirePinForPayment($uid, (string) ($r->body['user_pin'] ?? ''));
             $recipient = (string) ($r->body['rec_czedr_id'] ?? $r->body['rec_payooze_id'] ?? $r->body['czedr_id'] ?? '');
             $amount = (float) ($r->body['amount'] ?? 0);
             $cents = (int) round($amount * 100);
