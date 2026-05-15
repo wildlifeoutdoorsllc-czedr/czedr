@@ -2,6 +2,8 @@
 DB details for Czedr.txt
 *.pptx
 docs/deck-slides/*.png
+# Local Apple / API notes (may contain identifiers; never commit raw .p8)
+API for CZEDR.txt
 ~$*
 storage/ach_exports/*
 !storage/ach_exports/.gitkeep
