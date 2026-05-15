@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "CzedrTheme.h"
 #import "MMDrawerController.h"
 #import "MMDrawerVisualState.h"
 #import <QuartzCore/QuartzCore.h>
@@ -29,6 +30,8 @@
 {
     
   [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    [CzedrTheme applyGlobalAppearance];
+    self.window.backgroundColor = [CzedrTheme darkBackground];
 
     // Override point  for customization after application launch.
 

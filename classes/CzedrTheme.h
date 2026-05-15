@@ -1,0 +1,51 @@
+//
+//  CzedrTheme.h
+//  Czedr — visual style from S3cur3 product deck (orange fields, red actions, charcoal secondary).
+//
+
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface CzedrTheme : NSObject
+
+/** Orange form fields and nav bars (#F58220). */
++ (UIColor *)orangeField;
+/** Red primary actions — LOGIN, SIGN UP, VALIDATE, PIN boxes (#E31E24). */
++ (UIColor *)redPrimary;
+/** Dark grey secondary button — SIGN UP NOW! (#58595B). */
++ (UIColor *)charcoalButton;
+/** Home grid tiles — dark red-orange (#C94A1F). */
++ (UIColor *)gridTile;
+/** Tagline / accent red. */
++ (UIColor *)taglineRed;
+/** Body / label grey. */
++ (UIColor *)mutedText;
+/** Splash / auth screen background (#2A2A2C). */
++ (UIColor *)darkBackground;
+/** Elevated panel on dark UI (#353538). */
++ (UIColor *)darkSurface;
+/** Secondary text on dark backgrounds. */
++ (UIColor *)lightText;
+
++ (UIFont *)avenir:(CGFloat)size weight:(NSString *)weight;
+
++ (void)applyGlobalAppearance;
+
+/** Walk view hierarchy and replace legacy green/blue Payooze colors with deck palette. */
++ (void)applyDeckLookToView:(UIView *)view;
+
++ (void)styleOrangeField:(UITextField *)field;
++ (void)styleOrangeTextView:(UITextView *)textView;
++ (void)styleRedPrimaryButton:(UIButton *)button;
++ (void)styleCharcoalButton:(UIButton *)button;
++ (void)stylePinField:(UITextField *)field;
++ (void)styleNavigationHeader:(UIView *)headerView;
++ (void)styleGridTile:(UIView *)tileView;
+
+/** Dark auth screens: charcoal background, clear card, light labels. */
++ (void)applyAuthDarkScreen:(UIView *)rootView detailPanel:(nullable UIView *)detailPanel logoView:(nullable UIImageView *)logoView;
+
+@end
+
+NS_ASSUME_NONNULL_END

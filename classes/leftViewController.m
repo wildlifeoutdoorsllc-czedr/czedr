@@ -7,6 +7,7 @@
 //
 
 #import "leftViewController.h"
+#import "CzedrTheme.h"
 #import "loginViewController.h"
 #import "creditNewInvoiceViewController.h"
 #import "makePaymentViewController.h"
@@ -66,6 +67,7 @@
     {
         _imageView.image=[UIImage imageNamed:@"pro_icon.png"];
     }
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 - (void)didReceiveMemoryWarning
 {

@@ -7,6 +7,7 @@
 //
 
 #import "loginViewController.h"
+#import "CzedrTheme.h"
 #import "ViewController.h"
 #import "leftSwipeViewController.h"
 #import "SharedServiceController.h"
@@ -21,7 +22,7 @@
 {
     [super viewDidLoad];
     
-    NSString *strNewUser = NSLocalizedString(@"New User?", Nil);
+    NSString *strNewUser = NSLocalizedString(@"Register new account", Nil);
     _lblNewUser.text = strNewUser;
     
     NSString *strFillOut = NSLocalizedString(@"Fill", Nil);
@@ -42,11 +43,11 @@
     NSString *strMblNumbr = NSLocalizedString(@"mobile number", Nil);
     _mobileNumber.placeholder = strMblNumbr;
     
-    NSString *strSignUp = NSLocalizedString(@"SIGN UP", Nil);
-    [_signUp setTitle: strSignUp forState: UIControlStateNormal];
+    NSString *strSignUp = NSLocalizedString(@"CREATE ACCOUNT", Nil);
+    [_signUp setTitle:strSignUp forState:UIControlStateNormal];
     
-    NSString *strCnclBtn = NSLocalizedString(@"Cancel", Nil);
-    [_cancelButton setTitle: strCnclBtn forState: UIControlStateNormal];
+    NSString *strCnclBtn = NSLocalizedString(@"Back to sign in", Nil);
+    [_cancelButton setTitle:strCnclBtn forState:UIControlStateNormal];
     _cancelButton.titleLabel.adjustsFontSizeToFitWidth = YES;
 }
 
@@ -75,6 +76,9 @@
     [_name setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [_mobileNumber setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [_confirmPassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    [CzedrTheme applyDeckLookToView:self.view];
+    _scrollView.backgroundColor = [UIColor clearColor];
+    [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:nil];
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField

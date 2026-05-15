@@ -5,6 +5,7 @@
 //  Created by Renu on 12/02/15.
 //  Copyright (c) 2015 mindroots. All rights reserved.
 #import "creditNewInvoiceViewController.h"
+#import "CzedrTheme.h"
 #import "SharedServiceController.h"
 @interface creditNewInvoiceViewController ()
 @end
@@ -92,6 +93,7 @@
     _sendInvoice.clipsToBounds = YES;
     [_czedrId setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [_amount setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    [CzedrTheme applyDeckLookToView:self.view];
   }
 
 -(BOOL)textFieldShouldBeginEditing:(UITextField *)textField
@@ -373,7 +375,7 @@
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:simpleTableIdentifier];
     }
-    cell.backgroundColor = [UIColor colorWithRed: 67.0/255 green: 84.0/255 blue: 154.0/255 alpha: 1.0];
+    cell.backgroundColor = [CzedrTheme gridTile];
     cell.textColor=[UIColor whiteColor];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.textLabel.text = [array objectAtIndex:indexPath.row];

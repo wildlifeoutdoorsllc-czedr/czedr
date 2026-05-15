@@ -7,6 +7,7 @@
 //
 
 #import "forgotViewController.h"
+#import "CzedrTheme.h"
 #import "ViewController.h"
 #import "SharedServiceController.h"
 @interface forgotViewController ()
@@ -66,6 +67,8 @@
     _ResetPassword.clipsToBounds = YES;
     [_emailAddress setValue:[UIColor whiteColor]
                     forKeyPath:@"_placeholderLabel.textColor"];
+    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_Viewdetail1 logoView:nil];
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField

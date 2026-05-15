@@ -7,6 +7,7 @@
 //
 
 #import "leftSwipeViewController.h"
+#import "CzedrTheme.h"
 #import "pendingInvoicesViewController.h"
 #import "historyViewController.h"
 #import "profileViewController.h"
@@ -65,9 +66,7 @@
     [[NSUserDefaults standardUserDefaults] setValue:@"store_databse" forKey:@"update_value"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
-    NSString *strYourId = NSLocalizedString(@"Your ID", Nil);
-//    czedrIdLabel.text=[NSString stringWithFormat:@"Your ID - %@",czedrIdLabel.text];
-    
+    NSString *strYourId = NSLocalizedString(@"Czedr ID", Nil);
      czedrIdLabel.text=[NSString stringWithFormat:@"%@ - %@",strYourId,czedrIdLabel.text];
     
     if (autcode.length==0)
@@ -95,6 +94,8 @@
 {
     payNowBool = false;
     self.navigationController.navigationBar.hidden=YES;
+    czedrIdLabel.textColor = [CzedrTheme mutedText];
+    [CzedrTheme applyDeckLookToView:self.view];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     

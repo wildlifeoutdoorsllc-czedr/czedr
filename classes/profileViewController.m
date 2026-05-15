@@ -7,6 +7,7 @@
 //
 
 #import "profileViewController.h"
+#import "CzedrTheme.h"
 #import "AsyncImageView.h"
 #import "leftSwipeViewController.h"
 #import "LinkedViewController.h"
@@ -63,6 +64,7 @@
     {
         [backbtn setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];
     }
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 -(void)setRoundedView:(UIImageView *)roundedView toDiameter:(float)newSize;

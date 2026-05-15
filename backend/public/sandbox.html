@@ -6,22 +6,30 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Czedr Sandbox</title>
   <style>
-    :root { --bg:#0f1419; --card:#1a2332; --accent:#3d8bfd; --ok:#3dd68c; --err:#f87171; --text:#e7ecf3; --muted:#8b9cb3; }
+    :root {
+      --orange:#f58220; --red:#e31e24; --charcoal:#58595b; --tile:#c94a1f;
+      --bg:#2a2a2c; --card:#353538; --accent:var(--red); --ok:#3dd68c; --err:#f87171;
+      --text:#e7ecf3; --muted:#a0a2a5;
+    }
     * { box-sizing: border-box; }
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text);
+    body { margin:0; font-family:"Avenir Next",-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text);
       padding:max(16px,env(safe-area-inset-top)) 16px 32px; line-height:1.45; }
     h1 { font-size:1.35rem; margin:0 0 4px; }
     .sub { color:var(--muted); font-size:0.85rem; margin-bottom:16px; }
-    .card { background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; border:1px solid #2a3548; }
+    .card { background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; border:1px solid #e0e0e0; box-shadow:0 2px 8px rgba(0,0,0,.06); }
     label { display:block; font-size:0.75rem; color:var(--muted); margin-bottom:4px; }
-    input,button { width:100%; font-size:16px; padding:10px 12px; border-radius:8px; border:1px solid #2a3548;
-      background:#0f1419; color:var(--text); margin-bottom:10px; }
-    button { background:var(--accent); border:none; font-weight:600; }
-    button.secondary { background:#2a3548; }
+    input { width:100%; font-size:16px; padding:10px 12px; border-radius:6px; border:none;
+      background:var(--orange); color:#fff; margin-bottom:10px; }
+    input::placeholder { color:rgba(255,255,255,.85); }
+    button { width:100%; font-size:16px; padding:10px 12px; border-radius:6px; border:none;
+      background:var(--red); color:#fff; margin-bottom:10px; font-weight:600; }
+    button.secondary { background:var(--charcoal); }
+    button.linkish { background:transparent; color:var(--muted); font-weight:500; font-size:0.9rem; margin-bottom:6px; }
+    button.linkish.secondary { box-shadow:none; }
     .row { display:flex; gap:8px; } .row button { flex:1; }
     #log { font-family:ui-monospace,monospace; font-size:0.72rem; max-height:180px; overflow:auto;
       white-space:pre-wrap; color:var(--muted); }
-    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:0.75rem; background:#243044; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:0.75rem; background:#454548; color:var(--muted); }
     .pill.ok { background:#1a3d2e; color:var(--ok); } .pill.bad { background:#3d1a1a; color:var(--err); }
     .balance { font-size:1.8rem; font-weight:700; color:var(--ok); }
     a { color:var(--accent); }
@@ -29,10 +37,20 @@
     .tabs button { flex:1; margin:0; min-width:70px; }
     .tabs button.active { outline:2px solid var(--accent); }
     section.panel { display:none; } section.panel.active { display:block; }
+    .brand { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+    .brand img { width:52px; height:auto; }
+    .brand h1 { margin:0; font-size:1.5rem; letter-spacing:.12em; color:var(--text); }
+    .brand .tag { color:var(--red); font-size:.8rem; margin:2px 0 0; }
   </style>
 </head>
 <body>
-  <h1>Czedr Sandbox</h1>
+  <div class="brand">
+    <img src="/czedr-mark.png" width="52" height="52" alt="Czedr">
+    <div>
+      <h1>CZEDR</h1>
+      <p class="tag">we make payments easy</p>
+    </div>
+  </div>
   <p class="sub">Test Czedr on your iPhone in Safari — same Wi‑Fi as your Windows PC. No Mac required for API testing.</p>
 
   <div class="card">
@@ -52,24 +70,27 @@
   </div>
 
   <section id="panel-auth" class="panel active">
-    <div class="card">
-      <h2 style="margin:0 0 10px;font-size:1rem">Register</h2>
-      <input id="regEmail" type="email" placeholder="email@example.com" autocomplete="email">
+    <div class="card" id="authSignInCard">
+      <h2 style="margin:0 0 10px;font-size:1rem">Sign in</h2>
+      <input id="loginEmail" type="email" placeholder="Email address" autocomplete="username">
+      <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+      <button type="button" id="loginBtn">Sign in</button>
+      <button type="button" class="linkish secondary" id="forgotOpenBtn">Forgot password?</button>
+      <button type="button" class="secondary" id="showRegisterBtn">Register new account</button>
+      <button type="button" class="secondary" id="logoutBtn" style="display:none">Sign out</button>
+    </div>
+    <div class="card" id="authRegisterCard" style="display:none">
+      <h2 style="margin:0 0 10px;font-size:1rem">Register new account</h2>
+      <input id="regEmail" type="email" placeholder="Email address" autocomplete="email">
       <input id="regPass" type="password" placeholder="Password (10+ chars)" autocomplete="new-password">
       <button type="button" id="registerBtn">Create account</button>
-    </div>
-    <div class="card">
-      <h2 style="margin:0 0 10px;font-size:1rem">Login</h2>
-      <input id="loginEmail" type="email" placeholder="email" autocomplete="username">
-      <input id="loginPass" type="password" placeholder="password" autocomplete="current-password">
-      <button type="button" id="loginBtn">Sign in</button>
-      <button type="button" class="secondary" id="logoutBtn">Sign out</button>
+      <button type="button" class="linkish secondary" id="showSignInBtn">Already have an account? Sign in</button>
     </div>
     <div id="sessionCard" class="card" style="display:none">
       <span class="pill ok">Signed in</span>
       <div id="sessionInfo" style="font-size:0.85rem;margin-top:8px"></div>
     </div>
-    <div class="card">
+    <div class="card" id="authForgotCard" style="display:none">
       <h2 style="margin:0 0 10px;font-size:1rem">Forgot password</h2>
       <input id="forgotEmail" type="email" placeholder="account email">
       <button type="button" class="secondary" id="forgotBtn">Send reset code</button>
@@ -148,6 +169,7 @@
 
   function showSession(d) {
     $('sessionCard').style.display = 'block';
+    $('logoutBtn').style.display = 'block';
     $('sessionInfo').innerHTML = '<strong>' + (d.czedr_id || d.user?.czedr_id || '—') + '</strong><br>' +
       (d.email || d.user?.email || '') + '<br>PIN: ' + (d.user_pin === '1' ? 'set' : 'not set');
   }
@@ -174,12 +196,25 @@
     }
   };
 
+  function showAuthMode(mode) {
+    $('authSignInCard').style.display = mode === 'signin' ? 'block' : 'none';
+    $('authRegisterCard').style.display = mode === 'register' ? 'block' : 'none';
+    $('authForgotCard').style.display = mode === 'forgot' ? 'block' : 'none';
+  }
+  $('showRegisterBtn').onclick = () => showAuthMode('register');
+  $('showSignInBtn').onclick = () => showAuthMode('signin');
+  $('forgotOpenBtn').onclick = () => {
+    $('forgotEmail').value = $('loginEmail').value.trim();
+    showAuthMode('forgot');
+  };
+
   $('registerBtn').onclick = async () => {
     try {
       saveBase();
       const d = await api('POST', '/v1/auth/register', { email: $('regEmail').value.trim(), password: $('regPass').value });
       localStorage.setItem(TOKEN_KEY, d.auth_token);
       showSession({ czedr_id: d.user.czedr_id, email: d.user.email, user_pin: '0' });
+      showAuthMode('signin');
       log('Registered ' + d.user.czedr_id);
     } catch (e) { log('Register: ' + e.message); }
   };
@@ -205,6 +240,7 @@
         password: $('resetPass').value
       });
       log('Password reset — sign in with new password');
+      showAuthMode('signin');
     } catch (e) { log('Reset: ' + e.message); }
   };
 
@@ -222,6 +258,8 @@
     try { await api('POST', '/v1/auth/logout', null, true); } catch (_) {}
     localStorage.removeItem(TOKEN_KEY);
     $('sessionCard').style.display = 'none';
+    $('logoutBtn').style.display = 'none';
+    showAuthMode('signin');
     log('Signed out');
   };
 

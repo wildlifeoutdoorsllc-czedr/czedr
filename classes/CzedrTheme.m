@@ -1,0 +1,271 @@
+//
+//  CzedrTheme.m
+//
+
+#import "CzedrTheme.h"
+
+@implementation CzedrTheme
+
++ (UIColor *)orangeField {
+    return [UIColor colorWithRed:245.0/255.0 green:130.0/255.0 blue:32.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)redPrimary {
+    return [UIColor colorWithRed:227.0/255.0 green:30.0/255.0 blue:36.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)charcoalButton {
+    return [UIColor colorWithRed:88.0/255.0 green:89.0/255.0 blue:91.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)gridTile {
+    return [UIColor colorWithRed:201.0/255.0 green:74.0/255.0 blue:31.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)taglineRed {
+    return [self redPrimary];
+}
+
++ (UIColor *)mutedText {
+    return [UIColor colorWithRed:98.0/255.0 green:100.0/255.0 blue:104.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)darkBackground {
+    return [UIColor colorWithRed:42.0/255.0 green:42.0/255.0 blue:44.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)darkSurface {
+    return [UIColor colorWithRed:53.0/255.0 green:53.0/255.0 blue:56.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)lightText {
+    return [UIColor colorWithRed:231.0/255.0 green:236.0/255.0 blue:243.0/255.0 alpha:1.0];
+}
+
++ (UIFont *)avenir:(CGFloat)size weight:(NSString *)weight {
+    NSString *name = [weight isEqualToString:@"heavy"] ? @"Avenir-Heavy" : @"Avenir-Roman";
+    UIFont *font = [UIFont fontWithName:name size:size];
+    return font ?: [UIFont systemFontOfSize:size];
+}
+
++ (void)applyGlobalAppearance {
+    [[UINavigationBar appearance] setBarTintColor:[self orangeField]];
+    [[UINavigationBar appearance] setTintColor:[UIColor whiteColor]];
+    [[UINavigationBar appearance] setTitleTextAttributes:@{
+        NSForegroundColorAttributeName: [UIColor whiteColor],
+        NSFontAttributeName: [self avenir:16.0 weight:@"heavy"],
+    }];
+}
+
++ (BOOL)_isLegacyGreen:(UIColor *)color {
+    if (!color || CGColorGetNumberOfComponents(color.CGColor) < 3) {
+        return NO;
+    }
+    const CGFloat *c = CGColorGetComponents(color.CGColor);
+    return c[0] > 0.45 && c[0] < 0.65 && c[1] > 0.72 && c[1] < 0.85 && c[2] > 0.32 && c[2] < 0.48;
+}
+
++ (BOOL)_isLegacyBlue:(UIColor *)color {
+    if (!color || CGColorGetNumberOfComponents(color.CGColor) < 3) {
+        return NO;
+    }
+    const CGFloat *c = CGColorGetComponents(color.CGColor);
+    return c[0] < 0.08 && c[1] > 0.18 && c[1] < 0.30 && c[2] > 0.40 && c[2] < 0.55;
+}
+
++ (BOOL)_isLegacyGreyButton:(UIColor *)color {
+    if (!color || CGColorGetNumberOfComponents(color.CGColor) < 3) {
+        return NO;
+    }
+    const CGFloat *c = CGColorGetComponents(color.CGColor);
+    return c[0] > 0.35 && c[0] < 0.42 && c[1] > 0.35 && c[1] < 0.42 && c[2] > 0.38 && c[2] < 0.44;
+}
+
++ (void)styleOrangeField:(UITextField *)field {
+    field.backgroundColor = [self orangeField];
+    field.textColor = [UIColor whiteColor];
+    field.layer.cornerRadius = 6.0;
+    field.clipsToBounds = YES;
+    field.font = [self avenir:14.0 weight:@"roman"];
+    if ([field respondsToSelector:@selector(setAttributedPlaceholder:)]) {
+        NSString *ph = field.placeholder ?: @"";
+        field.attributedPlaceholder = [[NSAttributedString alloc]
+            initWithString:ph
+                attributes:@{
+                    NSForegroundColorAttributeName: [[UIColor whiteColor] colorWithAlphaComponent:0.85],
+                    NSFontAttributeName: [self avenir:14.0 weight:@"roman"],
+                }];
+    }
+}
+
++ (void)styleOrangeTextView:(UITextView *)textView {
+    textView.backgroundColor = [self orangeField];
+    textView.textColor = [UIColor whiteColor];
+    textView.layer.cornerRadius = 6.0;
+    textView.clipsToBounds = YES;
+    textView.font = [self avenir:14.0 weight:@"roman"];
+}
+
++ (void)styleRedPrimaryButton:(UIButton *)button {
+    button.backgroundColor = [self redPrimary];
+    [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    button.titleLabel.font = [self avenir:14.0 weight:@"heavy"];
+    button.layer.cornerRadius = 6.0;
+    button.clipsToBounds = YES;
+}
+
++ (void)styleCharcoalButton:(UIButton *)button {
+    button.backgroundColor = [self charcoalButton];
+    [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    button.titleLabel.font = [self avenir:14.0 weight:@"heavy"];
+    button.layer.cornerRadius = 6.0;
+    button.clipsToBounds = YES;
+}
+
++ (void)stylePinField:(UITextField *)field {
+    field.backgroundColor = [self redPrimary];
+    field.textColor = [UIColor whiteColor];
+    field.textAlignment = NSTextAlignmentCenter;
+    field.layer.cornerRadius = 4.0;
+    field.clipsToBounds = YES;
+    field.font = [self avenir:18.0 weight:@"heavy"];
+    field.secureTextEntry = YES;
+    field.keyboardType = UIKeyboardTypeNumberPad;
+}
+
++ (void)styleNavigationHeader:(UIView *)headerView {
+    headerView.backgroundColor = [self orangeField];
+}
+
++ (void)styleGridTile:(UIView *)tileView {
+    tileView.backgroundColor = [self gridTile];
+}
+
++ (UIImageView *)_logoImageViewInView:(UIView *)view {
+    for (UIView *sub in view.subviews) {
+        if ([sub isKindOfClass:[UIImageView class]]) {
+            return (UIImageView *)sub;
+        }
+    }
+    return nil;
+}
+
++ (void)_styleLabelsForDarkInView:(UIView *)view {
+    if ([view isKindOfClass:[UILabel class]]) {
+        UILabel *label = (UILabel *)view;
+        UIColor *color = label.textColor;
+        if (!color) {
+            return;
+        }
+        CGFloat r = 0, g = 0, b = 0, a = 0;
+        if ([color getRed:&r green:&g blue:&b alpha:&a]) {
+            if (r < 0.55 && g < 0.55 && b < 0.55) {
+                label.textColor = [self lightText];
+            }
+        }
+    } else if ([view isKindOfClass:[UIButton class]]) {
+        UIButton *button = (UIButton *)view;
+        UIColor *titleColor = [button titleColorForState:UIControlStateNormal];
+        CGFloat r = 0, g = 0, b = 0, a = 0;
+        if (titleColor && [titleColor getRed:&r green:&g blue:&b alpha:&a] && r < 0.55 && g < 0.55 && b < 0.55) {
+            [button setTitleColor:[[self lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
+        }
+    }
+    for (UIView *sub in view.subviews) {
+        [self _styleLabelsForDarkInView:sub];
+    }
+}
+
++ (void)applyAuthDarkScreen:(UIView *)rootView detailPanel:(UIView *)detailPanel logoView:(UIImageView *)logoView {
+    rootView.backgroundColor = [self darkBackground];
+    for (UIView *sub in rootView.subviews) {
+        if (sub == detailPanel || sub == logoView) {
+            continue;
+        }
+        if ([sub isKindOfClass:[UIImageView class]]) {
+            sub.hidden = YES;
+        }
+    }
+    if (detailPanel) {
+        detailPanel.backgroundColor = [UIColor clearColor];
+        if (!logoView) {
+            logoView = [self _logoImageViewInView:detailPanel];
+        }
+        [self _styleLabelsForDarkInView:detailPanel];
+    }
+    UIImage *mark = [UIImage imageNamed:@"Czedr-mark@3x.png"];
+    if (!mark) {
+        mark = [UIImage imageNamed:@"Czedr-mark@2x.png"];
+    }
+    if (logoView && mark) {
+        logoView.image = mark;
+        logoView.contentMode = UIViewContentModeScaleAspectFit;
+    }
+    [self _styleLabelsForDarkInView:rootView];
+}
+
++ (void)applyDeckLookToView:(UIView *)view {
+    if (!view) {
+        return;
+    }
+
+    if ([view isKindOfClass:[UITextField class]]) {
+        UITextField *tf = (UITextField *)view;
+        if (tf.secureTextEntry && tf.keyboardType == UIKeyboardTypeNumberPad) {
+            [self stylePinField:tf];
+        } else if ([self _isLegacyGreen:tf.backgroundColor] || [self _isLegacyBlue:tf.backgroundColor]) {
+            [self styleOrangeField:tf];
+        } else if (tf.secureTextEntry && ([self _isLegacyGreen:tf.backgroundColor] || tf.backgroundColor == nil)) {
+            [self styleOrangeField:tf];
+        }
+    } else if ([view isKindOfClass:[UITextView class]]) {
+        UITextView *tv = (UITextView *)view;
+        if ([self _isLegacyGreen:tv.backgroundColor]) {
+            [self styleOrangeTextView:tv];
+        }
+    } else if ([view isKindOfClass:[UIButton class]]) {
+        UIButton *btn = (UIButton *)view;
+        UIColor *bg = btn.backgroundColor;
+        NSString *title = [btn titleForState:UIControlStateNormal] ?: @"";
+        if ([self _isLegacyGreyButton:bg]) {
+            [self styleCharcoalButton:btn];
+        } else if ([self _isLegacyBlue:bg] || [self _isLegacyGreen:bg]) {
+            if (([[title uppercaseString] containsString:@"SIGN UP"] && [[title uppercaseString] containsString:@"NOW"])
+                || [[title uppercaseString] containsString:@"REGISTER"]) {
+                [self styleCharcoalButton:btn];
+            } else {
+                [self styleRedPrimaryButton:btn];
+            }
+        }
+    } else {
+        UIColor *bg = view.backgroundColor;
+        if ([self _isLegacyGreen:bg]) {
+            if (view.frame.size.height > 0 && view.frame.size.height <= 90 && view.frame.size.width > 200) {
+                [self styleNavigationHeader:view];
+            } else if (view.subviews.count >= 2) {
+                BOOL hasButton = NO;
+                for (UIView *sub in view.subviews) {
+                    if ([sub isKindOfClass:[UIButton class]] || [sub isKindOfClass:[UIImageView class]]) {
+                        hasButton = YES;
+                        break;
+                    }
+                }
+                if (hasButton && view.frame.size.height > 100 && view.frame.size.width > 100) {
+                    [self styleGridTile:view];
+                } else {
+                    view.backgroundColor = [UIColor whiteColor];
+                }
+            } else {
+                view.backgroundColor = [UIColor whiteColor];
+            }
+        } else if ([self _isLegacyBlue:bg]) {
+            [self styleGridTile:view];
+        }
+    }
+
+    for (UIView *sub in view.subviews) {
+        [self applyDeckLookToView:sub];
+    }
+}
+
+@end

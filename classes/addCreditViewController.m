@@ -7,6 +7,7 @@
 //
 
 #import "addCreditViewController.h"
+#import "CzedrTheme.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "AESCrypt.h"
@@ -228,6 +229,7 @@ replacementString:(NSString *)string
     [_name setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [_cvvNumber setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [_cardNumber setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 - (IBAction)backButton:(id)sender

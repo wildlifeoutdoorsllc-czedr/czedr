@@ -7,6 +7,7 @@
 //
 
 #import "GeneratePinViewController.h"
+#import "CzedrTheme.h"
 #import "SharedServiceController.h"
 #import "leftSwipeViewController.h"
 @interface GeneratePinViewController ()
@@ -81,6 +82,7 @@
     _pin7.clipsToBounds = YES;
     _pin8.layer.cornerRadius=3;
     _pin8.clipsToBounds = YES;
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 -(IBAction)save_click:(id)sender

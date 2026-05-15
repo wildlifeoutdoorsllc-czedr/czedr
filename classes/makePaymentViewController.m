@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 mindroots. All rights reserved.
 
 #import "makePaymentViewController.h"
+#import "CzedrTheme.h"
 #import "UIViewController+MMDrawerController.h"
 #import "MMDrawerVisualState.h"
 #import "MMDrawerBarButtonItem.h"
@@ -224,6 +225,8 @@
     _sendInvoice.clipsToBounds = YES;
     _selectpayment.layer.cornerRadius=3;
     _selectpayment.clipsToBounds = YES;
+    _enterPin.textColor = [CzedrTheme taglineRed];
+    [CzedrTheme applyDeckLookToView:self.view];
     
     payNowBool = false;
     
@@ -309,7 +312,7 @@
         _valueLabel.text=[_valueLabel.text stringByAppendingString:[[array objectAtIndex:indexPath.row] valueForKey:@"cardnumber"]];
         values = [[array objectAtIndex:indexPath.row] valueForKey:@"id"];
     }
-    cell.backgroundColor = [UIColor colorWithRed:3/255.0 green:190/255.0 blue:156/255.0 alpha:1];
+    cell.backgroundColor = [CzedrTheme gridTile];
     
    
     cell.selectionStyle = UITableViewCellSelectionStyleNone;

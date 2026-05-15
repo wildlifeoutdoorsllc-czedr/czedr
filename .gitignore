@@ -1,6 +1,7 @@
 .env
 DB details for Czedr.txt
 *.pptx
+docs/deck-slides/*.png
 ~$*
 storage/ach_exports/*
 !storage/ach_exports/.gitkeep

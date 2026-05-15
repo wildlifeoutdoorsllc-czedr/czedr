@@ -7,6 +7,7 @@
 //
 
 #import "ChangePinViewController.h"
+#import "CzedrTheme.h"
 #import "SharedServiceController.h"
 @interface ChangePinViewController ()
 
@@ -59,7 +60,7 @@
     _pin11.clipsToBounds = YES;
     _pin12.layer.cornerRadius=3;
     _pin12.clipsToBounds = YES;
-    
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 - (void)didReceiveMemoryWarning

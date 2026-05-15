@@ -38,6 +38,20 @@ function registerOrLogin(string $email, string $password): array
     if (($login['json']['Status'] ?? '') === 'true') {
         return ['action' => 'existing', 'data' => $login['json']['Data']];
     }
+    // Known test emails: password may have been changed by forgot-password tests.
+    $known = ['alice@test.czedr', 'bob@test.czedr'];
+    if (in_array(strtolower($email), $known, true)) {
+        $resetScript = dirname(__DIR__) . '/scripts/reset-test-passwords.php';
+        if (is_file($resetScript)) {
+            passthru(PHP_BINARY . ' ' . escapeshellarg($resetScript), $code);
+            if ($code === 0) {
+                $retry = api('POST', '/v1/auth/login', ['user_email' => $email, 'user_pwd' => $password]);
+                if (($retry['json']['Status'] ?? '') === 'true') {
+                    return ['action' => 'password_reset', 'data' => $retry['json']['Data']];
+                }
+            }
+        }
+    }
     throw new RuntimeException("Could not register or login {$email}: " . $login['raw']);
 }
 

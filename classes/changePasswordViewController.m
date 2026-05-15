@@ -7,6 +7,7 @@
 //
 
 #import "changePasswordViewController.h"
+#import "CzedrTheme.h"
 #include "SharedServiceController.h"
 @interface changePasswordViewController ()
 
@@ -40,6 +41,7 @@
     [oldpassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [newpassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
     [confirmpassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 - (void)didReceiveMemoryWarning

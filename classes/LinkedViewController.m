@@ -7,6 +7,7 @@
 //
 
 #import "LinkedViewController.h"
+#import "CzedrTheme.h"
 #import "addCreditViewController.h"
 #import <CoreData/CoreData.h>
 #import "SharedServiceController.h"
@@ -43,9 +44,10 @@
         [SharedServiceController syncBankAccountsToCoreData:^{
             [self reloadCardsTable];
         }];
-        return;
+    } else {
+        [self reloadCardsTable];
     }
-    [self reloadCardsTable];
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 -(void)reloadCardsTable

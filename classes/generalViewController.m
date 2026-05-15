@@ -7,6 +7,7 @@
 //
 
 #import "generalViewController.h"
+#import "CzedrTheme.h"
 #import "SharedServiceController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "changePasswordViewController.h"
@@ -25,7 +26,7 @@
     _name.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"name"];
      _emailAddress.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"email "];
      _contactNumber.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"mobile_no"];
-  
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 - (void)viewDidLoad {
     [super viewDidLoad];

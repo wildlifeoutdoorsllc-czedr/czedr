@@ -15,6 +15,7 @@
 #import "generalViewController.h"
 
 #import "SharedServiceController.h"
+#import "CzedrTheme.h"
 
 @interface historyViewController ()
 
@@ -47,6 +48,7 @@
     {
         [back setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];
     }
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 - (void)didReceiveMemoryWarning

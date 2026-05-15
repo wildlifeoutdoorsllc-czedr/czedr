@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "CzedrTheme.h"
 #import "forgotViewController.h"
 #import "loginViewController.h"
 #import "leftSwipeViewController.h"
@@ -14,7 +15,7 @@
 #import "SharedServiceController.h"
 #import "GeneratePinViewController.h"
 
-@interface ViewController ()
+@interface ViewController () <UITextFieldDelegate>
 
 @end
 
@@ -23,6 +24,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     user_infodata=[[NSMutableArray alloc]init];
+    _email.delegate = self;
+    _password.delegate = self;
     
     NSString *strEmail = NSLocalizedString(@"email address", Nil);
     _email.placeholder = strEmail;
@@ -30,14 +33,28 @@
     NSString *strPwd = NSLocalizedString(@"password", Nil);
     _password.placeholder = strPwd;
     
-    NSString *strLogin = NSLocalizedString(@"LOGIN", Nil);
-    [loginbutton setTitle: strLogin forState: UIControlStateNormal];
+    NSString *strLogin = NSLocalizedString(@"Sign in", Nil);
+    [loginbutton setTitle:strLogin forState:UIControlStateNormal];
 
     NSString *strForgotPwd = NSLocalizedString(@"forgot password?", Nil);
     [forgetbutton setTitle: strForgotPwd forState: UIControlStateNormal];
 
-    NSString *strSignUpNw = NSLocalizedString(@"SIGN UP NOW!", Nil);
-    [signupbutton setTitle: strSignUpNw forState: UIControlStateNormal];
+    NSString *strRegister = NSLocalizedString(@"Register new account", Nil);
+    [signupbutton setTitle:strRegister forState:UIControlStateNormal];
+    signupbutton.titleLabel.numberOfLines = 2;
+    signupbutton.titleLabel.textAlignment = NSTextAlignmentCenter;
+    signupbutton.titleLabel.adjustsFontSizeToFitWidth = YES;
+
+    UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
+    if (!signInTitle) {
+        signInTitle = [[UILabel alloc] initWithFrame:CGRectMake(20, 198, 230, 22)];
+        signInTitle.tag = 8801;
+        signInTitle.textAlignment = NSTextAlignmentCenter;
+        signInTitle.font = [CzedrTheme avenir:15.0 weight:@"heavy"];
+        signInTitle.textColor = [CzedrTheme lightText];
+        [_viewDetail addSubview:signInTitle];
+    }
+    signInTitle.text = NSLocalizedString(@"Sign in", Nil);
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -62,6 +79,11 @@
     [_password setValue:[UIFont fontWithName: @"AVENIR" size:14.0] forKeyPath:@"_placeholderLabel.font"];
     _email.font=[UIFont fontWithName:@"AVENIR" size:14.0];
     _password.font=[UIFont fontWithName:@"AVENIR" size:14.0];
+    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:nil];
+    [CzedrTheme styleRedPrimaryButton:loginbutton];
+    [CzedrTheme styleCharcoalButton:signupbutton];
+    [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField

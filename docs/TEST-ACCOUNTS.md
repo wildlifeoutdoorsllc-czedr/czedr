@@ -100,7 +100,7 @@ Creates random Alice/Bob emails and prints IDs for API testing.
 | Problem | Fix |
 |---------|-----|
 | iPhone can’t open sandbox URL | Same Wi‑Fi; allow Windows Firewall port **8080**; use IP from `start-iphone-sandbox.ps1` |
-| Sign-in failed | API not running; run `create-test-accounts.ps1` again |
+| Sign-in failed / Invalid credentials | API not running; or password changed by `test-forgot-password.php` — run `php scripts/reset-test-passwords.php` or `create-test-accounts.ps1` again |
 | Invalid Czedr ID | Copy ID from latest `create-test-accounts.ps1` output |
 | $0 balance | Check `.env` has `APP_ENV=local`; register a **new** email |
 

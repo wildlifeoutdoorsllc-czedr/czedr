@@ -7,6 +7,7 @@
 //
 
 #import "pendingInvoicesViewController.h"
+#import "CzedrTheme.h"
 #import "creditNewInvoiceViewController.h"
 #import "UIViewController+MMDrawerController.h"
 #import "MMDrawerVisualState.h"
@@ -51,6 +52,7 @@ static int sent_totalcount;
     {
         [self recevied_service];
     }
+    [CzedrTheme applyDeckLookToView:self.view];
 }
 
 - (void)viewDidLoad
