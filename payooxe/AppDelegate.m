@@ -7,39 +7,279 @@
 //
 
 #import "AppDelegate.h"
+#import "MMDrawerController.h"
+#import "MMDrawerVisualState.h"
+#import <QuartzCore/QuartzCore.h>
+#import "leftSwipeViewController.h"
+#import "leftViewController.h"
+#import <CoreData/CoreData.h>
 
 @interface AppDelegate ()
 
 @end
 
 @implementation AppDelegate
+@synthesize managedObjectContext = _managedObjectContext;
+@synthesize managedObjectModel = _managedObjectModel;
+@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+@synthesize writerManagedObjectContext = _writerManagedObjectContext;
+//app id 7XWEXhCjOtiQzRCN4txZuASMpIfm3Y6EhgbZnK9A
+//cliet id XaqgeDkV3eBSDhbvvYAvNpc86sjqZc8hFUfqwtBT
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    
+  [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 
+    // Override point  for customization after application launch.
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    //    [Parse setApplicationId:@"7XWEXhCjOtiQzRCN4txZuASMpIfm3Y6EhgbZnK9A"
+    //                  clientKey:@"XaqgeDkV3eBSDhbvvYAvNpc86sjqZc8hFUfqwtBT"];
+    
+    //Old Key
+    //2ec66c2c-45ef-4aef-a088-5647b19333c2
+    
+    //New Key
+    //a2df22b2-0a54-4912-834d-def832ffd348
+    
+    self.oneSignal = [[OneSignal alloc]
+                      initWithLaunchOptions:launchOptions
+                      appId:@"a2df22b2-0a54-4912-834d-def832ffd348"
+                      handleNotification:^(NSString *message, NSDictionary* additionalData, BOOL isActive)
+    {
+       if (additionalData)
+       {
+          NSString *customKey = additionalData[@"customKey"];
+          if (customKey)
+          NSLog(@"customKey: %@", customKey);
+        }
+       }];
+    [self.oneSignal enableInAppAlertNotification:true];
+
+    [self.oneSignal IdsAvailable:^(NSString *userId, NSString* pushToken) {
+      
+        if (pushToken != nil)
+//        [[NSUserDefaults standardUserDefaults] setValue:userId forKey:@"objectId"];
+//        [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            [[NSUserDefaults standardUserDefaults] setObject:userId forKey:@"objectId"];
+        
+        
+        NSUserDefaults *def=[NSUserDefaults standardUserDefaults];
+        [def setObject:userId forKey:@"objectId"];
+        [def synchronize];
+
+    }];
+    
+    view=[[ViewController alloc]initWithNibName:@"ViewController" bundle:nil];
+    UINavigationController *nav=[[UINavigationController alloc]initWithRootViewController:view];
+    self.window.rootViewController=nav;
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    [[NSUserDefaults standardUserDefaults] setValue:@"0" forKey:@"Avalue"];
+    [[NSUserDefaults standardUserDefaults]synchronize];
+    [self mainViewSwitch];
+    
+//    if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)])
+//    {
+//        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+//        
+//    }
+//    else
+//    {
+//        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+//         (UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert)];
+//    }
+    
     return YES;
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
+//- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
+//{
+//    if (error.code == 3010) {
+//        NSLog(@"Push notifications are not supported in the iOS Simulator.");
+//    } else {
+//        // show some alert or otherwise handle the failure to register.
+//        NSLog(@"application:didFailToRegisterForRemoteNotificationsWithError: %@", error);
+//    }
+//}
+//
+//- (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString* )identifier forRemoteNotification:(NSDictionary *)userInfo completionHandler:(void(^)())completionHandler
+//{
+//    //handle the actions
+//    if ([identifier isEqualToString:@"declineAction"]){
+//    }
+//    else if ([identifier isEqualToString:@"answerAction"]){
+//    }
+//}
+//- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+//{
+//    
+//    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+//    [currentInstallation setDeviceTokenFromData:deviceToken];
+//    
+//    
+//    NSString  *token_string = [[[[deviceToken description]    stringByReplacingOccurrencesOfString:@"<"withString:@""]
+//                                stringByReplacingOccurrencesOfString:@">" withString:@""]
+//                               stringByReplacingOccurrencesOfString: @" " withString: @""];
+//    
+//    [[NSUserDefaults standardUserDefaults] setValue:token_string forKey:@"objectId"];
+//    [[NSUserDefaults standardUserDefaults] synchronize];
+//    
+//    [currentInstallation saveInBackground];
+//}
+//
+//
+//- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+//{
+//    [PFPush handlePush:userInfo];
+//}
+//- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings
+//{
+//    //register to receive notifications
+//    [application registerForRemoteNotifications];
+//}
+//- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler
+//{
+////    aps =     {
+////        alert = hgh;
+////        sound = default;
+////    };
+////}
+////{
+//    UIApplicationState state = [application applicationState];
+//    if (state == UIApplicationStateActive)
+//    {
+//        NSString *message=[NSString stringWithFormat:@"%@",[[userInfo valueForKey:@"aps"] valueForKey:@"alert"]];
+//        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"You have Receive new notification" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+//        [alert show];
+//    }
+//    else
+//    {
+//        [self mainViewSwitch];
+//    }
+//}
+
+-(void)mainViewSwitch
+{
+    leftSwipeViewController * left=[[leftSwipeViewController alloc]initWithNibName:@"leftSwipeViewController" bundle:nil];
+    leftViewController * leftViewController_O=[[leftViewController alloc]initWithNibName:@"leftViewController" bundle:nil];
+    
+    UINavigationController * navigation=[[UINavigationController alloc]initWithRootViewController:left];
+    MMDrawerController * drawerController = [[MMDrawerController alloc]
+                                             initWithCenterViewController:navigation
+                                             leftDrawerViewController:leftViewController_O
+                                             rightDrawerViewController:nil];
+    [drawerController setMaximumLeftDrawerWidth:220];
+    [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeNone];
+    [drawerController setCloseDrawerGestureModeMask:MMCloseDrawerGestureModeAll];
+    if (![@"1" isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:@"Avalue"]])
+    { [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeNone];
+    }
+    else
+    {
+        [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeAll];
+    }
+    [self.window setRootViewController:drawerController];
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application
+{
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+  //  [[NSUserDefaults standardUserDefaults] setValue:@"0" forKey:@"Avalue"];
+    
+  //  [[NSUserDefaults standardUserDefaults]synchronize];
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application {
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application {
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application {
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+- (void)applicationWillTerminate:(UIApplication *)application
+{
+  //  [[NSUserDefaults standardUserDefaults] setValue:@"0" forKey:@"Avalue"];
+    
+   // [[NSUserDefaults standardUserDefaults]synchronize];
 }
 
+- (void)saveContext
+{
+    NSError *error = nil;
+    _managedObjectContext = self.managedObjectContext;
+    if (_managedObjectContext != nil)
+    {
+        if ([_managedObjectContext hasChanges] && ![_managedObjectContext save:&error]) {
+//            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+            abort();
+        }
+    }
+}
+
+#pragma mark - Core Data stack
+- (NSManagedObjectContext *)managedObjectContext
+{
+    if (_managedObjectContext != nil) {
+        return _managedObjectContext;
+    }
+    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+    if (coordinator != nil) {
+        _managedObjectContext = [[NSManagedObjectContext alloc] init];
+        [_managedObjectContext setPersistentStoreCoordinator:coordinator];
+    }
+    return _managedObjectContext;
+}
+
+// Returns the managed object model for the application.
+// If the model doesn't already exist, it is created from the application's model.
+- (NSManagedObjectModel *)managedObjectModel
+{
+    if (_managedObjectModel != nil)
+    {
+        return _managedObjectModel;
+    }
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"payooze" withExtension:@"momd"];
+    if (!modelURL) {
+        modelURL = [[NSBundle mainBundle] URLForResource:@"czedr" withExtension:@"momd"];
+    }
+    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+    return _managedObjectModel;
+}
+
+// Returns the persistent store coordinator for the application.
+// If the coordinator doesn't already exist, it is created and the application's store added to it.
+
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator
+{
+    if (_persistentStoreCoordinator != nil)
+    {
+        return _persistentStoreCoordinator;
+    }
+    
+    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"czedr.sqlite"];
+    NSError *error = nil;
+    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
+    {
+        abort();
+    }
+    return _persistentStoreCoordinator;
+}
+
+#pragma mark - Application's Documents directory
+// Returns the URL to the application's Documents directory.
+- (NSURL *)applicationDocumentsDirectory
+{
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
 @end

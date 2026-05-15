@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Czedr Sandbox</title>
+  <style>
+    :root { --bg:#0f1419; --card:#1a2332; --accent:#3d8bfd; --ok:#3dd68c; --err:#f87171; --text:#e7ecf3; --muted:#8b9cb3; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg); color:var(--text);
+      padding:max(16px,env(safe-area-inset-top)) 16px 32px; line-height:1.45; }
+    h1 { font-size:1.35rem; margin:0 0 4px; }
+    .sub { color:var(--muted); font-size:0.85rem; margin-bottom:16px; }
+    .card { background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; border:1px solid #2a3548; }
+    label { display:block; font-size:0.75rem; color:var(--muted); margin-bottom:4px; }
+    input,button { width:100%; font-size:16px; padding:10px 12px; border-radius:8px; border:1px solid #2a3548;
+      background:#0f1419; color:var(--text); margin-bottom:10px; }
+    button { background:var(--accent); border:none; font-weight:600; }
+    button.secondary { background:#2a3548; }
+    .row { display:flex; gap:8px; } .row button { flex:1; }
+    #log { font-family:ui-monospace,monospace; font-size:0.72rem; max-height:180px; overflow:auto;
+      white-space:pre-wrap; color:var(--muted); }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:0.75rem; background:#243044; }
+    .pill.ok { background:#1a3d2e; color:var(--ok); } .pill.bad { background:#3d1a1a; color:var(--err); }
+    .balance { font-size:1.8rem; font-weight:700; color:var(--ok); }
+    a { color:var(--accent); }
+    .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+    .tabs button { flex:1; margin:0; min-width:70px; }
+    .tabs button.active { outline:2px solid var(--accent); }
+    section.panel { display:none; } section.panel.active { display:block; }
+  </style>
+</head>
+<body>
+  <h1>Czedr Sandbox</h1>
+  <p class="sub">Test Czedr on your iPhone in Safari — same Wi‑Fi as your Windows PC. No Mac required for API testing.</p>
+
+  <div class="card">
+    <label>API base URL</label>
+    <input id="apiBase" type="url" placeholder="http://192.168.1.10:8080">
+    <div class="row">
+      <button type="button" class="secondary" id="useThisHost">Use this page’s host</button>
+      <button type="button" id="healthBtn">Health check</button>
+    </div>
+    <span id="healthPill" class="pill">unknown</span>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab active" data-tab="auth">Auth</button>
+    <button type="button" class="tab" data-tab="money">Money</button>
+    <button type="button" class="tab" data-tab="pin">PIN</button>
+  </div>
+
+  <section id="panel-auth" class="panel active">
+    <div class="card">
+      <h2 style="margin:0 0 10px;font-size:1rem">Register</h2>
+      <input id="regEmail" type="email" placeholder="email@example.com" autocomplete="email">
+      <input id="regPass" type="password" placeholder="Password (10+ chars)" autocomplete="new-password">
+      <button type="button" id="registerBtn">Create account</button>
+    </div>
+    <div class="card">
+      <h2 style="margin:0 0 10px;font-size:1rem">Login</h2>
+      <input id="loginEmail" type="email" placeholder="email" autocomplete="username">
+      <input id="loginPass" type="password" placeholder="password" autocomplete="current-password">
+      <button type="button" id="loginBtn">Sign in</button>
+      <button type="button" class="secondary" id="logoutBtn">Sign out</button>
+    </div>
+    <div id="sessionCard" class="card" style="display:none">
+      <span class="pill ok">Signed in</span>
+      <div id="sessionInfo" style="font-size:0.85rem;margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2 style="margin:0 0 10px;font-size:1rem">Forgot password</h2>
+      <input id="forgotEmail" type="email" placeholder="account email">
+      <button type="button" class="secondary" id="forgotBtn">Send reset code</button>
+      <input id="resetToken" type="text" placeholder="Reset code (local dev)">
+      <input id="resetPass" type="password" placeholder="New password (10+ chars)">
+      <button type="button" id="resetBtn">Set new password</button>
+    </div>
+  </section>
+
+  <section id="panel-money" class="panel">
+    <div class="card">
+      <div class="balance" id="balance">—</div>
+      <p class="sub" style="margin:0">USD ledger balance</p>
+      <button type="button" id="balanceBtn">Refresh balance</button>
+    </div>
+    <div class="card">
+      <label>Pay Czedr ID</label>
+      <input id="payTo" type="text" placeholder="CZ12345678" autocapitalize="characters">
+      <label>Amount (USD)</label>
+      <input id="payAmount" type="number" step="0.01" min="0.01" placeholder="10.00">
+      <input id="payMemo" type="text" placeholder="Memo (optional)">
+      <button type="button" id="transferBtn">Send payment</button>
+    </div>
+    <div class="card">
+      <button type="button" class="secondary" id="historyBtn">Load history</button>
+      <pre id="historyOut" style="margin:8px 0 0;font-size:0.75rem;color:var(--muted)"></pre>
+    </div>
+  </section>
+
+  <section id="panel-pin" class="panel">
+    <div class="card">
+      <p style="margin:0 0 10px;font-size:0.85rem;color:var(--muted)">4-digit PIN (dev API; native app uses encrypted PIN).</p>
+      <input id="pinValue" type="password" inputmode="numeric" maxlength="4" placeholder="1234">
+      <button type="button" id="setPinBtn">Set PIN</button>
+      <button type="button" class="secondary" id="verifyPinBtn">Verify PIN</button>
+    </div>
+  </section>
+
+  <div class="card"><label>Log</label><div id="log"></div></div>
+
+  <p class="sub">Native app: needs a one-time cloud build → <a href="/v1/dev/setup">setup info</a></p>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const TOKEN_KEY = 'czedr_sandbox_token';
+  const BASE_KEY = 'czedr_sandbox_base';
+
+  function log(msg) {
+    $('log').textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg + '\n' + $('log').textContent;
+  }
+
+  function base() {
+    const b = $('apiBase').value.trim().replace(/\/$/, '');
+    if (!b) throw new Error('Set API base URL');
+    return b;
+  }
+
+  function saveBase() { localStorage.setItem(BASE_KEY, $('apiBase').value.trim()); }
+
+  async function api(method, path, body, auth) {
+    const headers = { Accept: 'application/json' };
+    if (body) headers['Content-Type'] = 'application/json';
+    if (auth) {
+      const t = localStorage.getItem(TOKEN_KEY);
+      if (!t) throw new Error('Not signed in');
+      headers.Authorization = 'Bearer ' + t;
+    }
+    const res = await fetch(base() + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    const json = await res.json();
+    if (!res.ok || json.Status !== 'true') throw new Error(json.Data?.[0]?.result || JSON.stringify(json));
+    return json.Data;
+  }
+
+  function showSession(d) {
+    $('sessionCard').style.display = 'block';
+    $('sessionInfo').innerHTML = '<strong>' + (d.czedr_id || d.user?.czedr_id || '—') + '</strong><br>' +
+      (d.email || d.user?.email || '') + '<br>PIN: ' + (d.user_pin === '1' ? 'set' : 'not set');
+  }
+
+  document.querySelectorAll('.tab').forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll('.tab').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+      btn.classList.add('active');
+      $('panel-' + btn.dataset.tab).classList.add('active');
+    };
+  });
+
+  $('useThisHost').onclick = () => { $('apiBase').value = location.origin; saveBase(); log('Base = ' + location.origin); };
+  $('healthBtn').onclick = async () => {
+    try {
+      saveBase();
+      await api('GET', '/v1/health');
+      $('healthPill').textContent = 'online'; $('healthPill').className = 'pill ok';
+      log('Health OK');
+    } catch (e) {
+      $('healthPill').textContent = 'offline'; $('healthPill').className = 'pill bad';
+      log('Health: ' + e.message);
+    }
+  };
+
+  $('registerBtn').onclick = async () => {
+    try {
+      saveBase();
+      const d = await api('POST', '/v1/auth/register', { email: $('regEmail').value.trim(), password: $('regPass').value });
+      localStorage.setItem(TOKEN_KEY, d.auth_token);
+      showSession({ czedr_id: d.user.czedr_id, email: d.user.email, user_pin: '0' });
+      log('Registered ' + d.user.czedr_id);
+    } catch (e) { log('Register: ' + e.message); }
+  };
+
+  $('forgotBtn').onclick = async () => {
+    try {
+      saveBase();
+      const email = $('forgotEmail').value.trim() || $('loginEmail').value.trim();
+      const d = await api('POST', '/v1/auth/forgot-password', { user_email: email, email });
+      log(d.message || 'Reset requested');
+      if (d.reset_token) {
+        $('resetToken').value = d.reset_token;
+        log('Dev reset code filled in');
+      }
+    } catch (e) { log('Forgot: ' + e.message); }
+  };
+
+  $('resetBtn').onclick = async () => {
+    try {
+      saveBase();
+      await api('POST', '/v1/auth/reset-password', {
+        reset_token: $('resetToken').value.trim(),
+        password: $('resetPass').value
+      });
+      log('Password reset — sign in with new password');
+    } catch (e) { log('Reset: ' + e.message); }
+  };
+
+  $('loginBtn').onclick = async () => {
+    try {
+      saveBase();
+      const d = await api('POST', '/v1/auth/login', { user_email: $('loginEmail').value.trim(), user_pwd: $('loginPass').value });
+      localStorage.setItem(TOKEN_KEY, d.auth_code);
+      showSession(d);
+      log('Logged in ' + d.czedr_id);
+    } catch (e) { log('Login: ' + e.message); }
+  };
+
+  $('logoutBtn').onclick = async () => {
+    try { await api('POST', '/v1/auth/logout', null, true); } catch (_) {}
+    localStorage.removeItem(TOKEN_KEY);
+    $('sessionCard').style.display = 'none';
+    log('Signed out');
+  };
+
+  $('balanceBtn').onclick = async () => {
+    try {
+      const d = await api('GET', '/v1/ledger/balance', null, true);
+      $('balance').textContent = '$' + (d.balance_cents / 100).toFixed(2);
+    } catch (e) { log('Balance: ' + e.message); }
+  };
+
+  $('transferBtn').onclick = async () => {
+    try {
+      const cents = Math.round(parseFloat($('payAmount').value) * 100);
+      await api('POST', '/v1/transfers', {
+        to_czedr_id: $('payTo').value.trim().toUpperCase(),
+        amount_cents: cents,
+        memo: $('payMemo').value || 'Sandbox',
+        idempotency_key: 'sb-' + Date.now()
+      }, true);
+      log('Transfer sent');
+      $('balanceBtn').click();
+    } catch (e) { log('Transfer: ' + e.message); }
+  };
+
+  $('historyBtn').onclick = async () => {
+    try {
+      const d = await api('GET', '/v1/transfers/history', null, true);
+      $('historyOut').textContent = JSON.stringify(d.transactions || [], null, 2);
+    } catch (e) { log('History: ' + e.message); }
+  };
+
+  $('setPinBtn').onclick = async () => {
+    try {
+      await api('POST', '/userpin', { user_pin: $('pinValue').value }, true);
+      log('PIN set');
+    } catch (e) { log('Set PIN: ' + e.message); }
+  };
+
+  $('verifyPinBtn').onclick = async () => {
+    try {
+      await api('POST', '/checkpin', { user_pin: $('pinValue').value }, true);
+      log('PIN OK');
+    } catch (e) { log('Verify PIN: ' + e.message); }
+  };
+
+  const saved = localStorage.getItem(BASE_KEY);
+  if (saved) $('apiBase').value = saved;
+  else if (location.hostname !== '127.0.0.1' && location.hostname !== 'localhost') $('apiBase').value = location.origin;
+})();
+</script>
+</body>
+</html>

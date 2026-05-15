@@ -1,0 +1,13 @@
+{
+  "comment": "Reference only — iOS cannot load this file by email. Use Safari sandbox on iPhone instead.",
+  "api_base": "http://REPLACE_WITH_PC_LAN_IP:8080",
+  "sandbox_url": "http://REPLACE_WITH_PC_LAN_IP:8080/sandbox",
+  "health_url": "http://REPLACE_WITH_PC_LAN_IP:8080/v1/health",
+  "use_v1_api": true,
+  "native_app_notes": {
+    "build_required": "Apple requires macOS or cloud CI (Codemagic, GitHub Actions) to install the .ipa",
+    "testflight": "After one cloud build, install via TestFlight — no Mac needed on your desk",
+    "runtime_override_key": "czedr_api_base",
+    "runtime_override_hint": "Future app builds read NSUserDefaults key czedr_api_base if set via dev menu"
+  }
+}

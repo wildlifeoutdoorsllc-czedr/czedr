@@ -1,0 +1,116 @@
+# Build Czedr on a cloud Mac and upload to TestFlight.
+# Trigger: Actions tab → "iOS TestFlight" → Run workflow
+# Docs: docs/TESTFLIGHT_SETUP.md
+
+name: iOS TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: "Optional API URL baked into the app (e.g. https://api.yourdomain.com)"
+        required: false
+        default: ""
+  push:
+    branches: [main, master]
+    paths:
+      - ".github/workflows/ios-testflight.yml"
+      - "payooxe/**"
+      - "classes/**"
+      - "payooxe.xcodeproj/**"
+      - "fastlane/**"
+      - "Czedr*.h"
+      - "Czedr*.m"
+      - "SharedServiceController.*"
+      - "ios/**"
+
+concurrency:
+  group: ios-testflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testflight:
+    name: Build & upload to TestFlight
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set API base URL (optional)
+        if: ${{ github.event.inputs.api_base_url != '' || vars.CZEDR_API_BASE != '' }}
+        env:
+          INPUT_URL: ${{ github.event.inputs.api_base_url }}
+          VAR_URL: ${{ vars.CZEDR_API_BASE }}
+        run: |
+          URL="${INPUT_URL:-$VAR_URL}"
+          if [ -n "$URL" ]; then
+            /usr/bin/sed -i '' "s|#define CZEDR_API_BASE \".*\"|#define CZEDR_API_BASE \"$URL\"|" CzedrConfig.h
+            echo "CzedrConfig.h API base set to: $URL"
+          fi
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Install Fastlane
+        run: bundle install
+
+      - name: Create temporary keychain
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD="${{ secrets.KEYCHAIN_PASSWORD }}"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+
+      - name: Import distribution certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERT_PATH=$RUNNER_TEMP/build_certificate.p12
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERT_PATH"
+          security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+      - name: Download App Store provisioning profile
+        uses: apple-actions/download-provisioning-profiles@v4
+        with:
+          bundle-id: com.czedr.app
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          profile-type: IOS_APP_STORE
+
+      - name: Build and upload to TestFlight
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          FL_DISABLE_COLORS: "1"
+        run: bundle exec fastlane ios beta
+
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Czedr-ipa
+          path: build/*.ipa
+          if-no-files-found: ignore

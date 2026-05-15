@@ -1,0 +1,155 @@
+/* 
+  Localizable.strings
+  Czedr
+
+  Created by Manya on 07/12/16.
+  Copyright © 2016 Renu. All rights reserved.
+*/
+
+//English
+"error" = "error";
+"email address" = "email address";
+"password" = "password";
+"LOGIN" = "LOGIN";
+"forgot password?" = "forgot password?";
+"SIGN UP NOW!" = "SIGN UP NOW!";
+"New User?" = "New User?";
+"Fill" = "Fill out the form below & get instant access today!";
+"name" = "name";
+"confirm password" = "confirm password";
+"mobile number" = "mobile number";
+"SIGN UP" = "SIGN UP";
+"Cancel" = "Cancel";
+"GENRATE NEW PIN" = "GENERATE NEW PIN";
+"ENTER NEW CZEDR PIN" = "ENTER NEW CZEDR PIN";
+"CONFIRM YOUR CZEDR PIN" = "CONFIRM YOUR CZEDR PIN";
+"Don't worry!" = "Don't worry! We've got your back. Enter your registered email address below and we will email you the instruction to reset your password.";
+"Don't worry! Pin" = "Don't worry! We've got your back. Enter your registered email address below and we will email you the instruction to reset your pin.";
+"PAY NOW" = "PAY NOW";
+"PROFILE" = "PROFILE";
+"Reset Pin" = "Reset Pin";
+"RESET PASSWORD" = "RESET PASSWORD";
+"Home" = "Home";
+"Make Payments" = "Make Payments";
+"Pending Invoices" = "Pending Invoices";
+"History" = "History";
+"My Profile" = "My Profile";
+"Your ID" = "Your Czedr ID";
+"Recipient ID" = "Recipient Czedr ID";
+"Enter amount" = "Enter amount";
+"ENTER YOUR PIN" = "ENTER YOUR CZEDR PIN";
+"VALIDATE" = "VALIDATE";
+"Enter Description" = "Enter Description";
+"HISTORY INVOICE" = "HISTORY INVOICE";
+"Paid (USD)" = "Paid (USD)";
+"Received" = "Received (USD)";
+"Details:" = "Details:";
+"CREATE NEW INVOICE" = "CREATE NEW INVOICE";
+"SEND INVOICE" = "SEND INVOICE";
+"Received Invoices" = "Received Invoices";
+"Sent Invoices" = "Sent Invoices";
+"No invoice available!" = "No invoice available!";
+"No history found" = "No history found";
+"General info & Settings" =  "General info & Settings";
+"Linked Cards" = "Linked Cards";
+"ADD CARD" = "ADD CARD";
+"UPDATE CARD" = "UPDATE CARD";
+"Card Number" = "Card Number";
+"Expiry Date" = "Expiry Date";
+"CVV Number" = "CVV Number";
+"Set As Default" = "Set As Default";
+"ADD" = "ADD";
+"DELETE" = "DELETE";
+"GENERAL INFO" = "GENERAL INFO";
+"Contact Number" = "Contact Number";
+"Profile Picture" = "Profile Picture";
+"Update Profile" = "Update Profile";
+"Change Password" = "Change Password";
+"Change Pin" = "Change Pin";
+"Forgot Pin" = "Forgot Pin";
+"CHANGE CZEDR PIN" = "CHANGE CZEDR PIN";
+"ENTER OLD PIN" = "ENTER OLD PIN";
+"ENTER NEW PIN" = "ENTER NEW PIN";
+"CONFIRM YOUR PIN" = "CONFIRM YOUR PIN";
+"Enter old password" = "Enter old password";
+"Enter confirm password" = "Enter confirm password";
+"Enter new password" = "Enter new password";
+"Update Password" = "Update Password";
+"INVOICE DETAILS" = "INVOICE DETAILS";
+"Pending (USD)" = "Pending (USD)";
+"SEND REMINDER" = "SEND REMINDER";
+"REJECT INVOICE" = "REJECT INVOICE";
+"CANCEL INVOICE" = "CANCEL INVOICE";
+
+//Alerts
+"Your network" = "Your network is seem to be offline, please check your network connection";
+"Attention" = "Attention";
+"enter email" = "Please enter email address!";
+"enter password" = "Please enter password!";
+"address is invalid" = "This email address is invalid.";
+"correct values" = "Please enter the correct values in the required fields.";
+"OK" = "OK";
+"delete card" = "You want to delete card?";
+"NO" = "NO";
+"YES" = "YES";
+"valid expiry date" = "Please select valid expiry date!";
+"name of card" = "Please enter name of card!";
+"enter card number" = "Please enter card number!";
+"select expirydate" = "Please select expirydate!";
+"enter CVV number" = "Please enter CVV number!";
+"update your details" = "Please update your details!";
+"atleast 13 digit" = "Please enter atleast 13 digit!";
+"digit less than 20" = "Please enter digit less than 20";
+"three digit" = "Please enter three digit cvv number";
+"from gallery" = "Choose from gallery";
+"Open Camera" = "Open Camera";
+"Card not added" = "Your Card not added";
+"Card Added" = "Card Added";
+"Card has been added" = "Your Card has been added";
+"Card has been deleted" = "Your Card has been deleted";
+"Card has been updated" = "Your Card has been updated";
+"card image not uploaded" = "card image not uploaded";
+"enter old password" = "Please enter old password!";
+"enter new password" = "Please enter new password!";
+"enter confirmed password" = "Please enter confirmed password!";
+"Password not confirmed" = "Password not confirmed!";
+"enter all Pin values" = "Please enter all Pin values!";
+"enter old Pin values" = "Please enter old Pin values!";
+"values are not confirmed" = "Pin values are not confirmed!";
+"Please enter Id" = "Please enter Id!";
+"enter valid amount" = "Please enter valid amount!";
+"enter description" = "Please enter description!";
+"enter your four digit pin" = "Please enter your four digit pin!";
+"validate your id" = "Please validate your id!";
+"password has been reset" = "Your password has been reset";
+"enter username" = "Please enter username!";
+"enter contact number" = "Please enter contact number!";
+"Profile Updated" = "Profile Updated";
+"User Image not Uploaded" = "User Image not Uploaded";
+"User Image Uploaded" = "User Image Uploaded";
+"Reminder has been set" = "Your Reminder has been set";
+"succesfully canceled" = "Invoice succesfully canceled.";
+"not linked any cards" = "You have not linked any cards yet,so kindly link one now!";
+"Name is required" = "Name is required!";
+"Email address is required" = "Email address is required!";
+"Password is required" = "Password is required!";
+"Confirm password is required" = "Confirm password is required!";
+"invoice has been canceled" = "Your invoice has been canceled";
+"Mobile number is required" = "Mobile number is required!";
+"Please enter valid id" = "Please enter valid id";
+"Try again to make payment" = "Try again to make payment";
+"account is pending activation" = "Your account is pending activation. Please check your email and confirm your account to login.";
+"not a valid registered user id" = "The entered email address is not a valid registered user id. Please enter your registered email address.";
+"Payment is successful" = "Payment is successful!! Your Transaction ID is";
+
+//*****//
+"Alert" = "Alert";
+"secure sensitive data" = "Select an image to protect your Czedr account data.";
+"Card Deleted" = "Card Deleted";
+"Card Updated" = "Card Updated";
+"Card not Updated" = "Card not Updated";
+"Your Card has not been updated" = "Your Card has not been updated";
+"Success" = "Success";
+"invoice has been created" = "Your invoice has been created";
+"Your pin has been reset" = "Your pin has been reset";
+

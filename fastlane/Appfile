@@ -1,0 +1,5 @@
+app_identifier("com.czedr.app")
+package_name("com.czedr.app")
+
+# Set via GitHub Actions secrets
+team_id(ENV["APPLE_TEAM_ID"]) if ENV["APPLE_TEAM_ID"]

@@ -1,0 +1,8 @@
+# Optional Moov ACH file builder (export only — no bank connection)
+# API: http://127.0.0.1:8081
+services:
+  moov-ach:
+    image: moov/ach:latest
+    ports:
+      - "8081:8080"
+    restart: unless-stopped

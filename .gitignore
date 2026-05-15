@@ -1,0 +1,19 @@
+.env
+DB details for Czedr.txt
+*.pptx
+~$*
+storage/ach_exports/*
+!storage/ach_exports/.gitkeep
+config/database.vault.local.php
+*.local.php
+!config/database.local.php.example
+
+# iOS CI / Fastlane
+build/
+*.ipa
+*.dSYM.zip
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+Gemfile.lock
