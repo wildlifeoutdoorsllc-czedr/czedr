@@ -12,7 +12,7 @@ on:
         required: false
         default: ""
   push:
-    branches: [main, master]
+    branches: [main, master, czedrmaster]
     paths:
       - ".github/workflows/ios-testflight.yml"
       - "payooxe/**"
@@ -33,10 +33,12 @@ jobs:
     name: Build & upload to TestFlight
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set API base URL (optional)
         if: ${{ github.event.inputs.api_base_url != '' || vars.CZEDR_API_BASE != '' }}
@@ -109,7 +111,7 @@ jobs:
 
       - name: Upload IPA artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Czedr-ipa
           path: build/*.ipa
