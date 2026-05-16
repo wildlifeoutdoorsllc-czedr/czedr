@@ -143,7 +143,6 @@
 		AF5971841A9B37F6003CB3C3 /* Invoice2ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = AF5971821A9B37F6003CB3C3 /* Invoice2ViewController.xib */; };
 		AFBF698E1A9CB2570061D5F0 /* pendingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AFBF698C1A9CB2570061D5F0 /* pendingViewController.m */; };
 		AFBF698F1A9CB2570061D5F0 /* pendingViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = AFBF698D1A9CB2570061D5F0 /* pendingViewController.xib */; };
-		B322AACD1CBE0CF1008B4AE0 /* OneSignal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B322AACC1CBE0CF1008B4AE0 /* OneSignal.framework */; };
 		B3D374411CE4A5F500D479D9 /* NSData+ImageContentType.m in Sources */ = {isa = PBXBuildFile; fileRef = B3D374231CE4A5F500D479D9 /* NSData+ImageContentType.m */; };
 		B3D374421CE4A5F500D479D9 /* SDImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = B3D374251CE4A5F500D479D9 /* SDImageCache.m */; };
 		B3D374431CE4A5F500D479D9 /* SDWebImageCompat.m in Sources */ = {isa = PBXBuildFile; fileRef = B3D374271CE4A5F500D479D9 /* SDWebImageCompat.m */; };
@@ -394,7 +393,6 @@
 		AFBF698B1A9CB2570061D5F0 /* pendingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pendingViewController.h; sourceTree = "<group>"; };
 		AFBF698C1A9CB2570061D5F0 /* pendingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = pendingViewController.m; sourceTree = "<group>"; };
 		AFBF698D1A9CB2570061D5F0 /* pendingViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = pendingViewController.xib; sourceTree = "<group>"; };
-		B322AACC1CBE0CF1008B4AE0 /* OneSignal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OneSignal.framework; sourceTree = "<group>"; };
 		B3D374221CE4A5F500D479D9 /* NSData+ImageContentType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+ImageContentType.h"; sourceTree = "<group>"; };
 		B3D374231CE4A5F500D479D9 /* NSData+ImageContentType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+ImageContentType.m"; sourceTree = "<group>"; };
 		B3D374241CE4A5F500D479D9 /* SDImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDImageCache.h; sourceTree = "<group>"; };
@@ -442,7 +440,6 @@
 				0687034B1B1F18DD00FA1E14 /* Foundation.framework in Frameworks */,
 				068703491B1F18D600FA1E14 /* CoreGraphics.framework in Frameworks */,
 				068703371B1EFC7200FA1E14 /* MobileCoreServices.framework in Frameworks */,
-				B322AACD1CBE0CF1008B4AE0 /* OneSignal.framework in Frameworks */,
 				068703351B1EFC6B00FA1E14 /* Security.framework in Frameworks */,
 				AF2CBE661A94B49E0078CE75 /* QuartzCore.framework in Frameworks */,
 			);
@@ -618,7 +615,6 @@
 		AF2ED9A90F0C4C450020ECBA = {
 			isa = PBXGroup;
 			children = (
-				B322AACC1CBE0CF1008B4AE0 /* OneSignal.framework */,
 				06AAA71A1B27028500D29773 /* RNCrypt */,
 				06F4EBDC1B22CBA6002AD8C1 /* arrowgrey.png */,
 				06F4EBD91B22C5BA002AD8C1 /* AsyncImageView.h */,

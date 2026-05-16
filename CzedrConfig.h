@@ -9,6 +9,9 @@
 /** 1 = Czedr API only; 0 = legacy-shaped paths on the same Czedr host */
 #define CZEDR_USE_V1_API 1
 
+/** Legacy OneSignal SDK (2015) crashes on modern iOS at launch — off until SDK is upgraded. */
+#define CZEDR_ENABLE_ONESIGNAL 0
+
 /** Simulator: 127.0.0.1 — physical device: your PC LAN IP */
 #define CZEDR_API_BASE "http://127.0.0.1:8080"
 

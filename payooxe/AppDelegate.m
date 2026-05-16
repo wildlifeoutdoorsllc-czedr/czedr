@@ -28,63 +28,18 @@
 //cliet id XaqgeDkV3eBSDhbvvYAvNpc86sjqZc8hFUfqwtBT
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    
-  [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    (void)application;
+    (void)launchOptions;
+
+    if (self.window == nil) {
+        self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    }
     [CzedrTheme applyGlobalAppearance];
     self.window.backgroundColor = [CzedrTheme darkBackground];
-
-    // Override point  for customization after application launch.
-
-    //    [Parse setApplicationId:@"7XWEXhCjOtiQzRCN4txZuASMpIfm3Y6EhgbZnK9A"
-    //                  clientKey:@"XaqgeDkV3eBSDhbvvYAvNpc86sjqZc8hFUfqwtBT"];
-    
-    //Old Key
-    //2ec66c2c-45ef-4aef-a088-5647b19333c2
-    
-    //New Key
-    //a2df22b2-0a54-4912-834d-def832ffd348
-    
-    @try {
-        self.oneSignal = [[OneSignal alloc]
-                          initWithLaunchOptions:launchOptions
-                          appId:@"a2df22b2-0a54-4912-834d-def832ffd348"
-                          handleNotification:^(NSString *message, NSDictionary* additionalData, BOOL isActive)
-        {
-           if (additionalData)
-           {
-              NSString *customKey = additionalData[@"customKey"];
-              if (customKey)
-              NSLog(@"customKey: %@", customKey);
-            }
-           }];
-        [self.oneSignal enableInAppAlertNotification:true];
-    } @catch (NSException *exception) {
-        NSLog(@"OneSignal init failed: %@", exception);
-        self.oneSignal = nil;
-    }
-
-    if (self.oneSignal) [self.oneSignal IdsAvailable:^(NSString *userId, NSString* pushToken) {
-      
-        if (pushToken != nil)
-//        [[NSUserDefaults standardUserDefaults] setValue:userId forKey:@"objectId"];
-//        [[NSUserDefaults standardUserDefaults] synchronize];
-            
-            [[NSUserDefaults standardUserDefaults] setObject:userId forKey:@"objectId"];
-        
-        
-        NSUserDefaults *def=[NSUserDefaults standardUserDefaults];
-        [def setObject:userId forKey:@"objectId"];
-        [def synchronize];
-
-    }];
-
-    view=[[ViewController alloc]initWithNibName:@"ViewController" bundle:nil];
-    UINavigationController *nav=[[UINavigationController alloc]initWithRootViewController:view];
-    self.window.rootViewController=nav;
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     [[NSUserDefaults standardUserDefaults] setValue:@"0" forKey:@"Avalue"];
-    [[NSUserDefaults standardUserDefaults]synchronize];
+    [[NSUserDefaults standardUserDefaults] synchronize];
     [self mainViewSwitch];
+    [self.window makeKeyAndVisible];
     
 //    if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)])
 //    {

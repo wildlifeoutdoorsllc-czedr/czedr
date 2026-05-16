@@ -62,8 +62,8 @@
                                                  name:@"call_cardcount"
                                                object:nil];
     NSString *autcode=[[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"];
-    NSString *myCzedrId=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"id"];
-    czedrIdLabel.text=myCzedrId;
+    NSString *myCzedrId = [SharedServiceController savedCzedrUserId];
+    czedrIdLabel.text = myCzedrId;
     [[NSUserDefaults standardUserDefaults] setValue:@"store_databse" forKey:@"update_value"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
@@ -105,14 +105,12 @@
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
-    dispatch_queue_t backgroundQueue = dispatch_queue_create("dispatch_queue_#1", 0);
-    dispatch_async(backgroundQueue, ^{
-        [self recevied_service];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-//            [self call_loadCardsService];
+    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length > 0) {
+        dispatch_queue_t backgroundQueue = dispatch_queue_create("dispatch_queue_#1", 0);
+        dispatch_async(backgroundQueue, ^{
+            [self recevied_service];
         });
-    });
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -302,7 +300,7 @@
 -(void)call_loadCardsService
 {
     if ([SharedServiceController usesV1API]) {
-        NSString *czedrId = [[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"id"];
+        NSString *czedrId = [SharedServiceController savedCzedrUserId];
         NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
         czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, czedrId ?: @""];
         [SharedServiceController fetchLedgerBalanceSuccess:^(NSDictionary *data) {

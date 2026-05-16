@@ -8,8 +8,6 @@
 
 #import <UIKit/UIKit.h>
 #import "ViewController.h"
-//#import <Parse/Parse.h>
-#import <OneSignal/OneSignal.h>
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 {
@@ -20,7 +18,5 @@
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (readonly, strong, nonatomic) NSManagedObjectContext *writerManagedObjectContext;
 @property (strong, nonatomic) UIWindow *window;
-@property (strong, nonatomic) OneSignal *oneSignal;
 
 @end
-

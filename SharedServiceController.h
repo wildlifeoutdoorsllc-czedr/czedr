@@ -27,6 +27,10 @@ typedef void (^CzedrAPIFailureBlock)(NSString *message);
 + (NSString *)apiBaseURLString;
 + (NSString *)authToken;
 
+/** Saved login user dictionary, or nil if missing / wrong type. */
++ (NSDictionary *)savedUserPayload;
++ (NSString *)savedCzedrUserId;
+
 /** Persist login session (auth_code + userDataArray) from v1 or legacy response payload. */
 + (void)saveLoginPayload:(NSDictionary *)data;
 

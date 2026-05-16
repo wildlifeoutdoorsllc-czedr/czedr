@@ -30,6 +30,22 @@
     return [[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"] ?: @"";
 }
 
++ (NSDictionary *)savedUserPayload
+{
+    id data = [[NSUserDefaults standardUserDefaults] objectForKey:@"userDataArray"];
+    return [data isKindOfClass:[NSDictionary class]] ? data : nil;
+}
+
++ (NSString *)savedCzedrUserId
+{
+    NSDictionary *user = [self savedUserPayload];
+    if (!user) {
+        return @"";
+    }
+    id cid = user[@"id"] ?: user[@"czedr_id"];
+    return [cid isKindOfClass:[NSString class]] ? cid : @"";
+}
+
 + (void)saveLoginPayload:(NSDictionary *)data
 {
     if (![data isKindOfClass:[NSDictionary class]]) {
