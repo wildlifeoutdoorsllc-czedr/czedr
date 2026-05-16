@@ -40,7 +40,7 @@ platform :ios do
       build_number: build_number
     )
 
-  profile_name = lane_context[SharedValues::SIGH_NAME]
+    profile_name = lane_context[SharedValues::SIGH_NAME]
 
     build_app(
       project: "payooxe.xcodeproj",
