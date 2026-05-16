@@ -11,10 +11,10 @@ if (-not (Test-Path "$root\.env")) {
     php "$root\scripts\generate-env-key.php"
 }
 
-Write-Host "Starting Czedr API on http://127.0.0.1:8080 ..."
+Write-Host "Starting Czedr API on http://0.0.0.0:8080 (localhost + LAN) ..."
 Start-Process powershell -ArgumentList @(
     '-NoProfile', '-Command',
-    "php -S 127.0.0.1:8080 -t `"$root\backend\public`" `"$root\backend\public\index.php`""
+    "Set-Location `"$root\backend\public`"; php -S 0.0.0.0:8080 -t `"$root\backend\public`" `"$root\backend\public\index.php`""
 ) -WindowStyle Minimized
 
 Start-Sleep -Seconds 2

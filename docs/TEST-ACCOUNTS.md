@@ -20,14 +20,14 @@ Apply migration **`database/migrations/008_user_role.sql`** (included in **`inst
 
 ```powershell
 cd D:\CZEDR\scripts
-.\start-iphone-sandbox.ps1
+.\start-php-server.ps1
 ```
 
-Leave that window open. Note the line:
+Leave that window open. The script prints **health** and **sandbox** URLs for this PC and your **LAN IP**, for example:
 
-`iPhone Safari: http://192.168.x.x:8080/sandbox`
+`http://192.168.x.x:8080/sandbox`
 
-(iPhone and PC must be on the **same Wi‑Fi**.)
+(Phone and PC must be on the **same Wi‑Fi** for LAN URLs. **`start-iphone-sandbox.ps1`** runs the same server.)
 
 ---
 
@@ -111,7 +111,7 @@ Creates random Alice/Bob emails and prints IDs for API testing.
 
 | Problem | Fix |
 |---------|-----|
-| iPhone can’t open sandbox URL | Same Wi‑Fi; allow Windows Firewall port **8080**; use IP from `start-iphone-sandbox.ps1` |
+| iPhone can’t open sandbox URL | Same Wi‑Fi; allow Windows Firewall port **8080**; use IP printed by `start-php-server.ps1` |
 | Sign-in failed / Invalid credentials | API not running; or password changed by `test-forgot-password.php` — run `php scripts/reset-test-passwords.php` or `create-test-accounts.ps1` again |
 | Invalid Czedr ID | Copy ID from latest `create-test-accounts.ps1` output |
 | $0 balance | Check `.env` has `APP_ENV=local`; register a **new** email |

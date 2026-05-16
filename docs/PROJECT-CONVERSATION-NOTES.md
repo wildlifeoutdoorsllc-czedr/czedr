@@ -32,7 +32,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 
 ### iPhone testing without a Mac
 
-- **Safari sandbox**: `scripts/start-iphone-sandbox.ps1` → open `http://<PC-IP>:8080/sandbox`
+- **Safari sandbox**: `scripts/start-php-server.ps1` → open `http://<PC-IP>:8080/sandbox` (`start-iphone-sandbox.ps1` is the same)
 - Cannot email a config file to change the native app; URLs are baked in at build time
 - **TestFlight**: GitHub Actions — see `docs/TESTFLIGHT_SETUP.md`
 
@@ -45,8 +45,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 
 | Script | Purpose |
 |--------|---------|
-| `start-iphone-sandbox.ps1` | API on `0.0.0.0:8080` for iPhone on Wi‑Fi |
-| `start-php-server.ps1` | API on `127.0.0.1` only |
+| `start-php-server.ps1` | API on `0.0.0.0:8080` (emulator + LAN). `start-iphone-sandbox.ps1` calls this script. |
 | `create-test-accounts.ps1` | Seed Alice/Bob |
 | `test-api.php` | API smoke test |
 | `test-transfer-demo.php` | Two-user transfer |
@@ -77,7 +76,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 | Symptom | Fix |
 |---------|-----|
 | `{"result":"Not found"}` | Legacy path or server not running; use `/v1/...` or legacy bridge; restart PHP |
-| iPhone can’t reach API | Same Wi‑Fi; run `start-iphone-sandbox.ps1`; allow firewall port 8080 |
+| iPhone can’t reach API | Same Wi‑Fi; run `start-php-server.ps1`; allow firewall port 8080 |
 | Undo All in Cursor | Try Redo (`Ctrl+Y`); files on disk were mostly fine; commit protects going forward |
 | Alice login fails after tests | Password may have been reset by `test-forgot-password.php`; use forgot-password or re-seed |
 

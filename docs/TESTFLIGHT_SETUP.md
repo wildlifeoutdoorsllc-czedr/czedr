@@ -94,10 +94,10 @@ Use the web sandbox (no build):
 
 ```powershell
 cd scripts
-.\start-iphone-sandbox.ps1
+.\start-php-server.ps1
 ```
 
-On iPhone Safari: `http://YOUR_PC_IP:8080/sandbox`
+On iPhone Safari: `http://YOUR_PC_IP:8080/sandbox` (your PC’s IP is printed when the server starts).
 
 ## After TestFlight install — point app at your PC (optional)
 

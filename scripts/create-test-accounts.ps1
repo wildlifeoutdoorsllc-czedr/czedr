@@ -8,7 +8,7 @@ try {
 } catch {
     Write-Host "Starting API is required. Run in another window:" -ForegroundColor Yellow
     Write-Host "  cd $root\scripts" -ForegroundColor Cyan
-    Write-Host "  .\start-iphone-sandbox.ps1" -ForegroundColor Cyan
+    Write-Host "  .\start-php-server.ps1" -ForegroundColor Cyan
     Write-Host ""
     exit 1
 }
