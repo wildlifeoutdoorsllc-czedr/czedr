@@ -40,12 +40,21 @@ platform :ios do
       build_number: build_number
     )
 
+  profile_name = lane_context[SharedValues::SIGH_NAME]
+
     build_app(
       project: "payooxe.xcodeproj",
       scheme: "payooxe",
       configuration: "Release",
       export_method: "app-store",
-      export_options: "ios/ExportOptions.plist",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        uploadSymbols: true,
+        provisioningProfiles: {
+          "com.czedr.app" => profile_name
+        }
+      },
       output_directory: "./build",
       output_name: "Czedr",
       xcargs: "DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')} IPHONEOS_DEPLOYMENT_TARGET=13.0",
