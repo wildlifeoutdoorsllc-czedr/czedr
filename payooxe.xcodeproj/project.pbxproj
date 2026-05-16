@@ -926,7 +926,7 @@
 				TargetAttributes = {
 					AF2ED9B10F0C4C450020ECBA = {
 						CreatedOnToolsVersion = 6.1;
-						DevelopmentTeam = Q9S8P26U5X;
+						DevelopmentTeam = RTBD3X8LWC;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -939,7 +939,7 @@
 					};
 					AF2ED9CA0F0C4C460020ECBA = {
 						CreatedOnToolsVersion = 6.1;
-						DevelopmentTeam = Q9S8P26U5X;
+						DevelopmentTeam = RTBD3X8LWC;
 						TestTargetID = AF2ED9B10F0C4C450020ECBA;
 					};
 				};
@@ -1195,8 +1195,6 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Michael Alexander (Q9S8P26U5X)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Michael Alexander (Q9S8P26U5X)";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1217,7 +1215,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PROVISIONING_PROFILE = "20c00968-b68a-4237-8a18-daa77e1e5b0a";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1241,8 +1238,6 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Michael Alexander (Q9S8P26U5X)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Michael Alexander (Q9S8P26U5X)";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1256,7 +1251,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PROVISIONING_PROFILE = "20c00968-b68a-4237-8a18-daa77e1e5b0a";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;

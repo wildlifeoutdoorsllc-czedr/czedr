@@ -27,7 +27,8 @@ platform :ios do
       use_automatic_signing: true,
       team_id: ENV.fetch("APPLE_TEAM_ID"),
       bundle_identifier: "com.czedr.app",
-      targets: ["payooxe"]
+      targets: ["payooxe"],
+      build_configurations: ["Release"]
     )
 
     build_number = ENV.fetch("GITHUB_RUN_NUMBER", "1")
