@@ -203,8 +203,8 @@
 		CZED0A231F60000100CZEDR /* CzedrSignupCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CzedrSignupCrypto.m; sourceTree = "<group>"; };
 		CZED0B221F60000200CZEDR /* CzedrRuntimeConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CzedrRuntimeConfig.h; sourceTree = "<group>"; };
 		CZED0B231F60000200CZEDR /* CzedrRuntimeConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CzedrRuntimeConfig.m; sourceTree = "<group>"; };
-		CZED0C221F60000300CZEDR /* CzedrTheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CzedrTheme.h; sourceTree = "<group>"; };
-		CZED0C231F60000300CZEDR /* CzedrTheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CzedrTheme.m; sourceTree = "<group>"; };
+		CZED0C221F60000300CZEDR /* CzedrTheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = classes/CzedrTheme.h; sourceTree = "<group>"; };
+		CZED0C231F60000300CZEDR /* CzedrTheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = classes/CzedrTheme.m; sourceTree = "<group>"; };
 		068F846B1B182B2E003652F0 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
 		068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPRequestOperation.m; sourceTree = "<group>"; };
 		068F846D1B182B2E003652F0 /* AFHTTPRequestOperationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperationManager.h; sourceTree = "<group>"; };
@@ -1271,7 +1271,8 @@
 				GCC_PREFIX_HEADER = "";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/..",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/classes",
 				);
 				INFOPLIST_FILE = payooxe/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -1296,7 +1297,8 @@
 				GCC_PREFIX_HEADER = "";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/..",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/classes",
 				);
 				INFOPLIST_FILE = payooxe/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
