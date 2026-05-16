@@ -19,7 +19,8 @@ platform :ios do
       api_key: api_key,
       app_identifier: "com.czedr.app",
       skip_install: false,
-      readonly: false
+      readonly: false,
+      force: true
     )
 
     profile_uuid = lane_context[SharedValues::SIGH_UUID]
