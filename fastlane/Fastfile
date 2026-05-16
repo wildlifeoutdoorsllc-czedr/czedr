@@ -22,13 +22,16 @@ platform :ios do
       readonly: false
     )
 
+    profile_uuid = lane_context[SharedValues::SIGH_UUID]
     update_code_signing_settings(
       path: "payooxe.xcodeproj",
-      use_automatic_signing: true,
+      use_automatic_signing: false,
       team_id: ENV.fetch("APPLE_TEAM_ID"),
       bundle_identifier: "com.czedr.app",
       targets: ["payooxe"],
-      build_configurations: ["Release"]
+      build_configurations: ["Release"],
+      code_sign_identity: "Apple Distribution",
+      profile_uuid: profile_uuid
     )
 
     build_number = ENV.fetch("GITHUB_RUN_NUMBER", "1")
@@ -45,11 +48,8 @@ platform :ios do
       export_options: "ios/ExportOptions.plist",
       output_directory: "./build",
       output_name: "Czedr",
-      xcargs: [
-        "-allowProvisioningUpdates",
-        "DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')}",
-        "IPHONEOS_DEPLOYMENT_TARGET=13.0"
-      ].join(" "),
+      xcargs: "DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')} IPHONEOS_DEPLOYMENT_TARGET=13.0",
+      codesigning_identity: "Apple Distribution",
       skip_package_dependencies_resolution: true,
       disable_package_automatic_updates: true
     )
