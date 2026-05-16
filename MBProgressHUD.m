@@ -682,8 +682,10 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 	} else if ([keyPath isEqualToString:@"detailsLabelFont"]) {
 		detailsLabel.font = self.detailsLabelFont;
 	} else if ([keyPath isEqualToString:@"progress"]) {
-		if ([indicator respondsToSelector:@selector(setProgress:)]) {
-			[(id)indicator setProgress:progress];
+		if ([indicator isKindOfClass:[MBRoundProgressView class]]) {
+			[(MBRoundProgressView *)indicator setProgress:progress];
+		} else if ([indicator isKindOfClass:[MBBarProgressView class]]) {
+			[(MBBarProgressView *)indicator setProgress:progress];
 		}
 		return;
 	}
