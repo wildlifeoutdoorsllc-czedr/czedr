@@ -37,6 +37,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>access camera</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Czedr uses your location only while you are using the app to support location-based notifications and nearby features when you enable them.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>photos</string>
 	<key>UIAppFonts</key>
