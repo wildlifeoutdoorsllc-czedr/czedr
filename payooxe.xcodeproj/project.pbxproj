@@ -58,8 +58,6 @@
 		06AAA7271B27028500D29773 /* RNCryptorEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 06AAA7211B27028500D29773 /* RNCryptorEngine.m */; };
 		06AAA7281B27028500D29773 /* RNDecryptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 06AAA7231B27028500D29773 /* RNDecryptor.m */; };
 		06AAA7291B27028500D29773 /* RNEncryptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 06AAA7251B27028500D29773 /* RNEncryptor.m */; };
-		06D4DE611B21A92600DAAAF7 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06D4DE5F1B21A92600DAAAF7 /* Bolts.framework */; };
-		06D4DE621B21A92600DAAAF7 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06D4DE601B21A92600DAAAF7 /* Parse.framework */; };
 		06D4DE641B21ABCF00DAAAF7 /* MediaToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06D4DE631B21ABCF00DAAAF7 /* MediaToolbox.framework */; };
 		06D4DE661B21ABF100DAAAF7 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06D4DE651B21ABF100DAAAF7 /* CoreMedia.framework */; };
 		06D4DE681B21AC0400DAAAF7 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 06D4DE671B21AC0300DAAAF7 /* libsqlite3.dylib */; };
@@ -276,8 +274,6 @@
 		06AAA7231B27028500D29773 /* RNDecryptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNDecryptor.m; sourceTree = "<group>"; };
 		06AAA7241B27028500D29773 /* RNEncryptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNEncryptor.h; sourceTree = "<group>"; };
 		06AAA7251B27028500D29773 /* RNEncryptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNEncryptor.m; sourceTree = "<group>"; };
-		06D4DE5F1B21A92600DAAAF7 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Bolts.framework; sourceTree = "<group>"; };
-		06D4DE601B21A92600DAAAF7 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		06D4DE631B21ABCF00DAAAF7 /* MediaToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaToolbox.framework; path = System/Library/Frameworks/MediaToolbox.framework; sourceTree = SDKROOT; };
 		06D4DE651B21ABF100DAAAF7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		06D4DE671B21AC0300DAAAF7 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
@@ -446,8 +442,6 @@
 				0687034B1B1F18DD00FA1E14 /* Foundation.framework in Frameworks */,
 				068703491B1F18D600FA1E14 /* CoreGraphics.framework in Frameworks */,
 				068703371B1EFC7200FA1E14 /* MobileCoreServices.framework in Frameworks */,
-				06D4DE621B21A92600DAAAF7 /* Parse.framework in Frameworks */,
-				06D4DE611B21A92600DAAAF7 /* Bolts.framework in Frameworks */,
 				B322AACD1CBE0CF1008B4AE0 /* OneSignal.framework in Frameworks */,
 				068703351B1EFC6B00FA1E14 /* Security.framework in Frameworks */,
 				AF2CBE661A94B49E0078CE75 /* QuartzCore.framework in Frameworks */,
@@ -475,8 +469,6 @@
 				06D4DE671B21AC0300DAAAF7 /* libsqlite3.dylib */,
 				06D4DE651B21ABF100DAAAF7 /* CoreMedia.framework */,
 				06D4DE631B21ABCF00DAAAF7 /* MediaToolbox.framework */,
-				06D4DE5F1B21A92600DAAAF7 /* Bolts.framework */,
-				06D4DE601B21A92600DAAAF7 /* Parse.framework */,
 				068703361B1EFC7200FA1E14 /* MobileCoreServices.framework */,
 				068703341B1EFC6B00FA1E14 /* Security.framework */,
 				AF2CBE651A94B49E0078CE75 /* QuartzCore.framework */,

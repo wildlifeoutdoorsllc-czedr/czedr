@@ -36,11 +36,11 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>access camera</string>
+	<string>Czedr uses the camera when you choose to take a profile photo or capture an image while adding a payment card.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Czedr uses your location only while you are using the app to support location-based notifications and nearby features when you enable them.</string>
+	<string>Czedr does not use your location for payments or your account. This permission is required by Apple because a push notification library in the app can reference location APIs; Czedr does not request your location during normal use.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>photos</string>
+	<string>Czedr uses your photo library when you choose an existing picture for your profile or when adding a payment card.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AVENIR.OTF</string>
