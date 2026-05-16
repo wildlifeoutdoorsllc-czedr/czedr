@@ -28,14 +28,8 @@
 #import "RNCryptor.h"
 #import "RNCryptor+Private.h"
 #import <Security/SecRandom.h>
+#import <CommonCrypto/CommonKeyDerivation.h>
 #import <fcntl.h>
-
-extern int SecRandomCopyBytes(SecRandomRef rnd, size_t count, uint8_t *bytes) __attribute__((weak_import));
-extern int
-CCKeyDerivationPBKDF( CCPBKDFAlgorithm algorithm, const char *password, size_t passwordLen,
-                     const uint8_t *salt, size_t saltLen,
-                     CCPseudoRandomAlgorithm prf, uint rounds,
-                     uint8_t *derivedKey, size_t derivedKeyLen) __attribute__((weak_import));
 
 
 NSString *const kRNCryptorErrorDomain = @"net.robnapier.RNCryptManager";
@@ -359,14 +353,8 @@ static int RN_SecRandomCopyBytes(void *rnd, size_t count, uint8_t *bytes) {
 {
   NSMutableData *data = [NSMutableData dataWithLength:length];
 
-  int result;
-  if (SecRandomCopyBytes != NULL) {
-    result = SecRandomCopyBytes(NULL, length, data.mutableBytes);
-  }
-  else {
-    result = RN_SecRandomCopyBytes(NULL, length, data.mutableBytes);
-  }
-  NSAssert(result == 0, @"Unable to generate random bytes: %d", errno);
+  int result = SecRandomCopyBytes(kSecRandomDefault, length, data.mutableBytes);
+  NSAssert(result == errSecSuccess, @"Unable to generate random bytes: %d", result);
 
   return data;
 }
