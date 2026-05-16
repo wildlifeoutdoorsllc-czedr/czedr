@@ -44,21 +44,26 @@
     //New Key
     //a2df22b2-0a54-4912-834d-def832ffd348
     
-    self.oneSignal = [[OneSignal alloc]
-                      initWithLaunchOptions:launchOptions
-                      appId:@"a2df22b2-0a54-4912-834d-def832ffd348"
-                      handleNotification:^(NSString *message, NSDictionary* additionalData, BOOL isActive)
-    {
-       if (additionalData)
-       {
-          NSString *customKey = additionalData[@"customKey"];
-          if (customKey)
-          NSLog(@"customKey: %@", customKey);
-        }
-       }];
-    [self.oneSignal enableInAppAlertNotification:true];
+    @try {
+        self.oneSignal = [[OneSignal alloc]
+                          initWithLaunchOptions:launchOptions
+                          appId:@"a2df22b2-0a54-4912-834d-def832ffd348"
+                          handleNotification:^(NSString *message, NSDictionary* additionalData, BOOL isActive)
+        {
+           if (additionalData)
+           {
+              NSString *customKey = additionalData[@"customKey"];
+              if (customKey)
+              NSLog(@"customKey: %@", customKey);
+            }
+           }];
+        [self.oneSignal enableInAppAlertNotification:true];
+    } @catch (NSException *exception) {
+        NSLog(@"OneSignal init failed: %@", exception);
+        self.oneSignal = nil;
+    }
 
-    [self.oneSignal IdsAvailable:^(NSString *userId, NSString* pushToken) {
+    if (self.oneSignal) [self.oneSignal IdsAvailable:^(NSString *userId, NSString* pushToken) {
       
         if (pushToken != nil)
 //        [[NSUserDefaults standardUserDefaults] setValue:userId forKey:@"objectId"];
@@ -72,7 +77,7 @@
         [def synchronize];
 
     }];
-    
+
     view=[[ViewController alloc]initWithNibName:@"ViewController" bundle:nil];
     UINavigationController *nav=[[UINavigationController alloc]initWithRootViewController:view];
     self.window.rootViewController=nav;
@@ -223,8 +228,7 @@
     if (_managedObjectContext != nil)
     {
         if ([_managedObjectContext hasChanges] && ![_managedObjectContext save:&error]) {
-//            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
+            NSLog(@"Core Data save failed: %@, %@", error, [error userInfo]);
         }
     }
 }
@@ -274,7 +278,8 @@
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
     if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
     {
-        abort();
+        NSLog(@"Core Data store failed: %@", error);
+        _persistentStoreCoordinator = nil;
     }
     return _persistentStoreCoordinator;
 }

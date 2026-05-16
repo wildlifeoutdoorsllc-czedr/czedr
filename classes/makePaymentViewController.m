@@ -230,8 +230,9 @@
     
     payNowBool = false;
     
-    [_czedrId setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_amount setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    UIColor *placeholderColor = [UIColor whiteColor];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_czedrId color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_amount color:placeholderColor font:nil];
     if ([[[NSUserDefaults standardUserDefaults] valueForKey:@"pmakepaymentclick"] isEqualToString:@"makepayment"]) {
         [backbtn setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];
     }

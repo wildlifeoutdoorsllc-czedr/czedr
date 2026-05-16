@@ -70,13 +70,12 @@
     _email.clipsToBounds = YES;
     _password.layer.cornerRadius=3;
     _password.clipsToBounds = YES;
-    [_email setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_password setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    UIFont *fieldFont = [UIFont fontWithName:@"AVENIR" size:14.0];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_email color:[UIColor whiteColor] font:fieldFont];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_password color:[UIColor whiteColor] font:fieldFont];
    loginbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     signupbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     forgetbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
-    [_email setValue:[UIFont fontWithName: @"AVENIR" size:14.0] forKeyPath:@"_placeholderLabel.font"];
-    [_password setValue:[UIFont fontWithName: @"AVENIR" size:14.0] forKeyPath:@"_placeholderLabel.font"];
     _email.font=[UIFont fontWithName:@"AVENIR" size:14.0];
     _password.font=[UIFont fontWithName:@"AVENIR" size:14.0];
     [CzedrTheme applyDeckLookToView:self.view];

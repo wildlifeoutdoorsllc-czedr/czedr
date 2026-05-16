@@ -98,6 +98,28 @@
     }
 }
 
++ (void)applyPlaceholderAppearanceToTextField:(UITextField *)field
+                                        color:(UIColor *)color
+                                         font:(UIFont *)font
+{
+    if (!field) {
+        return;
+    }
+    NSString *placeholder = field.placeholder ?: @"";
+    if (placeholder.length == 0) {
+        return;
+    }
+    NSMutableDictionary *attributes = [NSMutableDictionary dictionary];
+    if (color) {
+        attributes[NSForegroundColorAttributeName] = color;
+    }
+    if (font) {
+        attributes[NSFontAttributeName] = font;
+    }
+    field.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder
+                                                                attributes:attributes];
+}
+
 + (void)styleOrangeTextView:(UITextView *)textView {
     textView.backgroundColor = [self orangeField];
     textView.textColor = [UIColor whiteColor];

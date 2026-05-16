@@ -71,11 +71,12 @@
     _signUp.clipsToBounds=YES;
     _cancelButton.layer.cornerRadius=3;
     _cancelButton.clipsToBounds=YES;
-    [_emailAddress setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_password setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_name setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_mobileNumber setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_confirmPassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    UIColor *placeholderColor = [UIColor whiteColor];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_emailAddress color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_password color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_name color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_mobileNumber color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_confirmPassword color:placeholderColor font:nil];
     [CzedrTheme applyDeckLookToView:self.view];
     _scrollView.backgroundColor = [UIColor clearColor];
     [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:nil];

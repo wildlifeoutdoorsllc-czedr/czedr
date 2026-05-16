@@ -65,8 +65,7 @@
     _emailAddress.clipsToBounds = YES;
     _ResetPassword.layer.cornerRadius=3;
     _ResetPassword.clipsToBounds = YES;
-    [_emailAddress setValue:[UIColor whiteColor]
-                    forKeyPath:@"_placeholderLabel.textColor"];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_emailAddress color:[UIColor whiteColor] font:nil];
     [CzedrTheme applyDeckLookToView:self.view];
     [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_Viewdetail1 logoView:nil];
 }

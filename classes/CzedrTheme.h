@@ -36,6 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)applyDeckLookToView:(UIView *)view;
 
 + (void)styleOrangeField:(UITextField *)field;
+/** Safe placeholder styling (avoids private _placeholderLabel KVC, which crashes on iOS 13+). */
++ (void)applyPlaceholderAppearanceToTextField:(UITextField *)field
+                                        color:(UIColor *)color
+                                         font:(nullable UIFont *)font;
 + (void)styleOrangeTextView:(UITextView *)textView;
 + (void)styleRedPrimaryButton:(UIButton *)button;
 + (void)styleCharcoalButton:(UIButton *)button;

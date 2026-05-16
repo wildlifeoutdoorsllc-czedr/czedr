@@ -226,9 +226,10 @@ replacementString:(NSString *)string
 
 -(void)viewWillAppear:(BOOL)animated
 {
-    [_name setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_cvvNumber setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_cardNumber setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    UIColor *placeholderColor = [UIColor whiteColor];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_name color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_cvvNumber color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_cardNumber color:placeholderColor font:nil];
     [CzedrTheme applyDeckLookToView:self.view];
 }
 

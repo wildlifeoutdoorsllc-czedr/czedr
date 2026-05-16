@@ -38,9 +38,10 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
-    [oldpassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [newpassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [confirmpassword setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    UIColor *placeholderColor = [UIColor whiteColor];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:oldpassword color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:newpassword color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:confirmpassword color:placeholderColor font:nil];
     [CzedrTheme applyDeckLookToView:self.view];
 }
 

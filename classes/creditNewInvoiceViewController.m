@@ -91,8 +91,9 @@
     _pin4.clipsToBounds = YES;
     _sendInvoice.layer.cornerRadius=3;
     _sendInvoice.clipsToBounds = YES;
-    [_czedrId setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
-    [_amount setValue:[UIColor whiteColor] forKeyPath:@"_placeholderLabel.textColor"];
+    UIColor *placeholderColor = [UIColor whiteColor];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_czedrId color:placeholderColor font:nil];
+    [CzedrTheme applyPlaceholderAppearanceToTextField:_amount color:placeholderColor font:nil];
     [CzedrTheme applyDeckLookToView:self.view];
   }
 

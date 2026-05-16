@@ -473,6 +473,9 @@
 -(void)store_indabase
 {
     managedObjectContext = [self managedObjectContext];
+    if (managedObjectContext == nil) {
+        return;
+    }
     NSError *error;
     NSFetchRequest * Brand = [[NSFetchRequest alloc] init];
     [Brand setEntity:[NSEntityDescription entityForName:@"Cards" inManagedObjectContext:managedObjectContext]];
