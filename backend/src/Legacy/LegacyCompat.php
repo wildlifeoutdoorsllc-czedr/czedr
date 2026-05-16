@@ -10,7 +10,6 @@ use Czedr\Http\Request;
 use Czedr\Http\Router;
 use Czedr\Invoice\InvoiceService;
 use Czedr\Ledger\LedgerService;
-use Czedr\Vault\BankAccountVault;
 
 /**
  * Maps legacy iOS path names (POST /login, /invoicerecev, …) to the v1 API.
@@ -22,7 +21,6 @@ final class LegacyCompat
         private readonly PasswordResetService $passwordReset,
         private readonly LedgerService $ledger,
         private readonly InvoiceService $invoices,
-        private readonly BankAccountVault $vault,
         /** @var callable(Request, callable(string): void): void */
         private readonly mixed $withAuth,
         /** @var callable(array): array */
@@ -55,6 +53,7 @@ final class LegacyCompat
                 (string) ($r->body['user_email'] ?? $r->body['email'] ?? ''),
                 (string) ($r->body['user_pwd'] ?? $r->body['password'] ?? ''),
                 null,
+                AuthService::optionalReferrerFromSignupBody($r->body),
                 $r->ip,
                 $r->userAgent
             );
@@ -110,21 +109,14 @@ final class LegacyCompat
         }));
 
         $router->post('/valid_recipient', fn (Request $r) => ($this->withAuth)($r, function (string $uid) use ($r) {
-            $czedrId = strtoupper(trim((string) ($r->body['czedr_id'] ?? $r->body['payooze_id'] ?? '')));
-            $pdo = \Czedr\Database\ConnectionFactory::saturn();
-            $stmt = $pdo->prepare(
-                'SELECT czedr_id, email FROM users WHERE czedr_id = :cid AND status = \'active\' LIMIT 1'
-            );
-            $stmt->execute(['cid' => $czedrId]);
-            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-            if (!$row) {
-                throw new \InvalidArgumentException('Invalid Czedr Id');
-            }
-            JsonResponse::ok([
-                'czedr_id' => $row['czedr_id'],
-                'result' => $row['email'],
-                'display_name' => $row['email'],
-            ]);
+            $czedrId = strtoupper(trim((string) (
+                $r->body['czedr_id']
+                    ?? $r->body['rec_czedr_id']
+                    ?? $r->body['payooze_id']
+                    ?? $r->body['rec_payooze_id']
+                    ?? ''
+            )));
+            JsonResponse::ok($this->auth->recipientLookupForViewer($uid, $czedrId));
         }));
 
         $router->post('/transactionhistroy', fn (Request $r) => ($this->withAuth)($r, function (string $uid) {
@@ -168,23 +160,10 @@ final class LegacyCompat
         }));
 
         $router->post('/creditcarddetail', fn (Request $r) => ($this->withAuth)($r, function (string $uid) {
-            $accounts = $this->vault->listMasked($uid);
-            $cards = [];
-            foreach ($accounts as $a) {
-                $cards[] = [
-                    'id' => $a['id'] ?? '',
-                    'bank_account_id' => $a['id'] ?? '',
-                    'cardnumber' => $a['account_last4'] ?? '0000',
-                    'name' => $a['holder_name'] ?? '',
-                    'type' => $a['account_type'] ?? 'checking',
-                ];
-            }
-            JsonResponse::okList($cards, count($cards));
+            JsonResponse::okList([], 0);
         }));
 
-        $router->post('/deletecreditcard', fn (Request $r) => ($this->withAuth)($r, function (string $uid) use ($r) {
-            $id = (string) ($r->body['bank_account_id'] ?? $r->body['card_id'] ?? $r->body['id'] ?? '');
-            $this->vault->delete($uid, $id, $r->ip, $r->userAgent);
+        $router->post('/deletecreditcard', fn (Request $r) => ($this->withAuth)($r, function (string $uid) {
             JsonResponse::ok(['deleted' => true]);
         }));
 

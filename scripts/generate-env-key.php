@@ -1,26 +1,14 @@
 <?php
 declare(strict_types=1);
 
-$key = random_bytes(32);
-$encoded = base64_encode($key);
+// Ledger-only API: no application code consumes MASTER_KEY_BASE64. This script is retained so
+// older docs/commands still succeed; it ensures .env exists from the example.
 $envPath = dirname(__DIR__) . '/.env';
 $example = dirname(__DIR__) . '/.env.example';
 
 if (!is_file($envPath) && is_file($example)) {
     copy($example, $envPath);
+    echo "Created .env from .env.example\n";
 }
 
-$content = is_file($envPath) ? file_get_contents($envPath) : '';
-if (preg_match('/^MASTER_KEY_BASE64=(\S+)/m', $content, $m) && $m[1] !== '') {
-    echo "MASTER_KEY_BASE64 already set in .env\n";
-    exit(0);
-}
-
-$line = 'MASTER_KEY_BASE64=' . $encoded;
-if (preg_match('/^MASTER_KEY_BASE64=.*$/m', $content)) {
-    $content = preg_replace('/^MASTER_KEY_BASE64=.*$/m', $line, $content);
-} else {
-    $content .= "\n" . $line . "\n";
-}
-file_put_contents($envPath, $content);
-echo "Generated MASTER_KEY_BASE64 in .env (keep secret; never commit)\n";
+echo "Czedr ledger-only: no encryption master key is required. Tune APP_ENV and database settings in .env as needed.\n";

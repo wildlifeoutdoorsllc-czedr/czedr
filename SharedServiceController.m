@@ -352,6 +352,17 @@
                     failure:failure];
 }
 
++ (void)fetchReferralEarningsSuccess:(CzedrAPISuccessBlock)success
+                           failure:(CzedrAPIFailureBlock)failure
+{
+    [self requestJSONMethod:@"GET"
+                       path:@"/v1/referrals/earnings"
+                 parameters:nil
+              authenticated:YES
+                    success:success
+                    failure:failure];
+}
+
 + (void)transferToCzedrId:(NSString *)czedrId
               amountCents:(NSInteger)amountCents
                      memo:(NSString *)memo
@@ -429,6 +440,7 @@
                     } failure:failure];
 }
 
+// Ledger-only API: POST /v1/bank-accounts returns HTTP 501; GET returns an empty list.
 + (void)addBankAccountHolder:(NSString *)holderName
                      routing:(NSString *)routing
                      account:(NSString *)account

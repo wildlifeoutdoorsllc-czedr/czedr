@@ -67,7 +67,7 @@ final class PasswordResetService
 
         $out = ['message' => $message, 'expires_in_minutes' => self::EXPIRY_MINUTES];
 
-        if (Env::get('APP_ENV', 'local') === 'local') {
+        if (Env::isLocal()) {
             $base = rtrim(Env::get('APP_PUBLIC_URL', 'http://127.0.0.1:8080') ?? 'http://127.0.0.1:8080', '/');
             $out['reset_token'] = $token;
             $out['reset_url'] = $base . '/sandbox#reset=' . urlencode($token);
@@ -144,7 +144,7 @@ final class PasswordResetService
         file_put_contents($logDir . '/password-reset.log', $line, FILE_APPEND | LOCK_EX);
 
         // Production: integrate SMTP / SendGrid / SES using MAIL_* env vars.
-        if (Env::get('APP_ENV', 'local') !== 'local') {
+        if (!Env::isLocal()) {
             return;
         }
     }

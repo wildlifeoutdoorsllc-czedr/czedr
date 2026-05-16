@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Czedr;
 
-use Czedr\Ach\AchBatchExporter;
 use Czedr\Audit\AuditService;
 use Czedr\Auth\AuthService;
 use Czedr\Auth\PasswordResetService;
@@ -15,18 +14,17 @@ use Czedr\Invoice\InvoiceService;
 use Czedr\Legacy\LegacyCompat;
 use Czedr\Ledger\LedgerService;
 use Czedr\Media\ProfileMediaService;
-use Czedr\Security\FieldEncryptor;
 use Czedr\Security\ImageDerivedCryptor;
-use Czedr\Vault\BankAccountVault;
+use Czedr\Support\Env;
 
 final class App
 {
+    private const LEDGER_ONLY_EXTERNAL_MONEY_MSG = 'Czedr is ledger-only: there is no card or ACH processing. Money moves only between Czedr balances.';
+
     private Router $router;
     private AuditService $audit;
     private AuthService $auth;
     private LedgerService $ledger;
-    private BankAccountVault $vault;
-    private AchBatchExporter $ach;
     private InvoiceService $invoices;
     private ProfileMediaService $profileMedia;
     private SignupChallengeService $signupChallenges;
@@ -41,9 +39,6 @@ final class App
         $this->signupChallenges = new SignupChallengeService();
         $this->passwordReset = new PasswordResetService($this->audit);
         $this->auth = new AuthService($this->audit, $this->ledger);
-        $encryptor = FieldEncryptor::fromEnv();
-        $this->vault = new BankAccountVault($encryptor, $this->audit);
-        $this->ach = new AchBatchExporter($this->vault, $this->audit);
         $this->router = new Router();
         $this->registerRoutes();
     }
@@ -60,10 +55,38 @@ final class App
     private function registerRoutes(): void
     {
         $this->router->get('/v1/health', function (Request $r) {
-            JsonResponse::ok(['service' => 'czedr-api', 'ledger' => 'internal_only']);
+            JsonResponse::ok([
+                'service' => 'czedr-api',
+                'ledger' => 'internal_only',
+                'settlement' => 'internal_ledger_only',
+                'bank_or_ach' => false,
+                'transfer_fee_cents' => LedgerService::transferFeeCents(),
+                'referral_reward_cents' => LedgerService::referralRewardCents(),
+            ]);
+        });
+
+        $this->router->get('/v1/admin/revenue-ledger', function (Request $r) {
+            $secret = Env::get('CZEDR_ADMIN_REPORT_TOKEN');
+            if ($secret === null || $secret === '') {
+                JsonResponse::error('Not found', 404);
+                return;
+            }
+            $provided = (string) ($r->headers['X-CZEDR-ADMIN-TOKEN'] ?? '');
+            if ($provided === '') {
+                $provided = (string) ($r->bearerToken() ?? '');
+            }
+            if ($provided === '' || !hash_equals($secret, $provided)) {
+                JsonResponse::error('Unauthorized', 401);
+                return;
+            }
+            JsonResponse::ok($this->ledger->getRevenueLedgerReport());
         });
 
         $this->router->get('/v1/dev/setup', function (Request $r) {
+            if (!Env::isLocal()) {
+                JsonResponse::error('Not found', 404);
+                return;
+            }
             $host = $_SERVER['HTTP_HOST'] ?? '127.0.0.1:8080';
             $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
             $base = $scheme . '://' . $host;
@@ -71,6 +94,7 @@ final class App
                 'sandbox_url' => $base . '/sandbox',
                 'api_base' => $base,
                 'health_url' => $base . '/v1/health',
+                'product' => 'internal_ledger_only_no_card_or_ach',
                 'iphone_without_mac' => [
                     'test_in_safari' => 'Open sandbox_url on your iPhone (same Wi‑Fi as this PC).',
                     'native_app' => 'Apple requires building on macOS or a cloud CI service (Codemagic, GitHub Actions + TestFlight).',
@@ -90,6 +114,7 @@ final class App
                 (string) ($r->body['password'] ?? ''),
                 isset($r->body['czedr_id']) ? (string) $r->body['czedr_id']
                     : (isset($r->body['payooze_id']) ? (string) $r->body['payooze_id'] : null),
+                AuthService::optionalReferrerFromSignupBody($r->body),
                 $r->ip,
                 $r->userAgent
             );
@@ -113,6 +138,7 @@ final class App
                 (string) ($payload['email'] ?? $payload['user_email'] ?? ''),
                 (string) ($payload['password'] ?? $payload['user_pwd'] ?? ''),
                 isset($payload['czedr_id']) ? (string) $payload['czedr_id'] : null,
+                AuthService::optionalReferrerFromSignupBody($payload),
                 $r->ip,
                 $r->userAgent
             );
@@ -200,10 +226,21 @@ final class App
             JsonResponse::ok([
                 'balance_cents' => $this->ledger->getBalanceCents($uid),
                 'currency' => 'USD',
+                'transfer_fee_cents' => LedgerService::transferFeeCents(),
+                'referral_reward_cents' => LedgerService::referralRewardCents(),
             ]);
         }));
 
+        $this->router->get('/v1/referrals/earnings', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $lim = (int) ($_GET['recent_limit'] ?? $r->body['recent_limit'] ?? 25);
+            JsonResponse::ok($this->ledger->referralEarningsForUser($uid, $lim));
+        }));
+
         $this->router->post('/v1/ledger/load', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            if (!Env::allowSelfServiceLedgerLoad()) {
+                JsonResponse::error('Self-service account load is disabled', 403);
+                return;
+            }
             $txn = $this->ledger->credit(
                 $uid,
                 (int) ($r->body['amount_cents'] ?? 0),
@@ -217,20 +254,7 @@ final class App
 
         $this->router->get('/v1/users/validate', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
             $czedrId = (string) ($_GET['czedr_id'] ?? $r->body['czedr_id'] ?? '');
-            $pdo = \Czedr\Database\ConnectionFactory::saturn();
-            $stmt = $pdo->prepare(
-                'SELECT czedr_id, email FROM users WHERE czedr_id = :cid AND status = \'active\' LIMIT 1'
-            );
-            $stmt->execute(['cid' => strtoupper(trim($czedrId))]);
-            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-            if (!$row) {
-                throw new \InvalidArgumentException('Invalid Czedr Id');
-            }
-            JsonResponse::ok([
-                'czedr_id' => $row['czedr_id'],
-                'display_name' => $row['email'],
-                'result' => $row['email'],
-            ]);
+            JsonResponse::ok($this->auth->recipientLookupForViewer($uid, $czedrId));
         }));
 
         $this->router->post('/v1/transfers', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
@@ -281,39 +305,24 @@ final class App
             JsonResponse::okList($list['rows'], $list['total']);
         }));
 
-        $this->router->post('/v1/bank-accounts', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
-            $ref = $this->vault->create($uid, [
-                'holder_name' => (string) ($r->body['holder_name'] ?? ''),
-                'routing' => (string) ($r->body['routing'] ?? ''),
-                'account' => (string) ($r->body['account'] ?? ''),
-                'account_type' => (string) ($r->body['account_type'] ?? 'checking'),
-                'mandate' => is_array($r->body['mandate'] ?? null) ? $r->body['mandate'] : [],
-            ], $r->ip, $r->userAgent);
-            JsonResponse::ok($ref);
+        $this->router->post('/v1/bank-accounts', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            JsonResponse::error(self::LEDGER_ONLY_EXTERNAL_MONEY_MSG, 501);
         }));
 
         $this->router->get('/v1/bank-accounts', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            JsonResponse::ok(['accounts' => $this->vault->listMasked($uid)]);
+            JsonResponse::ok([
+                'accounts' => [],
+                'ledger_only' => true,
+                'message' => self::LEDGER_ONLY_EXTERNAL_MONEY_MSG,
+            ]);
         }));
 
-        $this->router->post('/v1/bank-accounts/delete', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
-            $this->vault->delete($uid, (string) ($r->body['bank_account_id'] ?? ''), $r->ip, $r->userAgent);
-            JsonResponse::ok(['deleted' => true]);
+        $this->router->post('/v1/bank-accounts/delete', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            JsonResponse::ok(['deleted' => true, 'ledger_only' => true]);
         }));
 
-        $this->router->post('/v1/ach/export', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
-            $entries = $r->body['entries'] ?? [];
-            if (!is_array($entries)) {
-                throw new \InvalidArgumentException('entries must be an array');
-            }
-            $out = $this->ach->exportBatch(
-                $uid,
-                $entries,
-                (string) ($r->body['note'] ?? ''),
-                $r->ip,
-                $r->userAgent
-            );
-            JsonResponse::ok($out);
+        $this->router->post('/v1/ach/export', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            JsonResponse::error(self::LEDGER_ONLY_EXTERNAL_MONEY_MSG, 501);
         }));
 
         $this->router->post('/v1/profile/avatar', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
@@ -348,7 +357,7 @@ final class App
         }));
 
         $this->router->post('/v1/legacy/card/decrypt', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            JsonResponse::ok(['result' => 'Use bank account linking via Czedr API']);
+            JsonResponse::ok(['result' => self::LEDGER_ONLY_EXTERNAL_MONEY_MSG]);
         }));
 
         $this->router->post('/v1/legacy/card/update', fn (Request $r) => $this->withAuth($r, function (string $uid) {
@@ -360,7 +369,6 @@ final class App
             $this->passwordReset,
             $this->ledger,
             $this->invoices,
-            $this->vault,
             fn (Request $r, callable $fn) => $this->withAuth($r, $fn),
             fn (array $out) => $this->loginResponsePayload($out),
         ))->register($this->router);

@@ -21,6 +21,18 @@ final class AuthService
     ) {
     }
 
+    /** @param array<string, mixed> $body */
+    public static function optionalReferrerFromSignupBody(array $body): ?string
+    {
+        foreach (['referrer_czedr_id', 'referred_by_czedr_id', 'referrer_payooze_id'] as $key) {
+            if (!empty($body[$key])) {
+                return (string) $body[$key];
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @return array{user: array<string, mixed>, auth_token: string}
      */
@@ -28,6 +40,7 @@ final class AuthService
         string $email,
         string $password,
         ?string $czedrId,
+        ?string $referrerCzedrId,
         ?string $ip,
         ?string $userAgent,
     ): array {
@@ -41,14 +54,27 @@ final class AuthService
 
         $userId = Uuid::v4();
         $czedrId = $czedrId ?: $this->generateCzedrId();
+        $czedrId = strtoupper(trim($czedrId));
+
+        $referrerUserId = $this->resolveReferrerUserId($referrerCzedrId);
+        if ($referrerUserId !== null && $czedrId === strtoupper(trim((string) $referrerCzedrId))) {
+            throw new \InvalidArgumentException('Referrer cannot be the same as your Czedr ID');
+        }
+
         $hash = password_hash($password, PASSWORD_ARGON2ID);
 
         $pdo = ConnectionFactory::saturn();
         $stmt = $pdo->prepare(
-            'INSERT INTO users (id, czedr_id, email, password_hash) VALUES (:id, :cid, :email, :hash)'
+            'INSERT INTO users (id, czedr_id, email, password_hash, referred_by_user_id) VALUES (:id, :cid, :email, :hash, :ref)'
         );
         try {
-            $stmt->execute(['id' => $userId, 'cid' => $czedrId, 'email' => $email, 'hash' => $hash]);
+            $stmt->execute([
+                'id' => $userId,
+                'cid' => $czedrId,
+                'email' => $email,
+                'hash' => $hash,
+                'ref' => $referrerUserId,
+            ]);
         } catch (\PDOException $e) {
             if ($e->getCode() === '23000') {
                 throw new \InvalidArgumentException('Email or Czedr ID already exists');
@@ -57,7 +83,7 @@ final class AuthService
         }
 
         $this->ledger->ensureAccount($userId);
-        if (Env::get('APP_ENV', 'local') === 'local') {
+        if (Env::isLocal()) {
             $this->ledger->credit(
                 $userId,
                 10000,
@@ -68,12 +94,38 @@ final class AuthService
             );
         }
         $token = $this->createSession($userId);
-        $this->audit->log($userId, 'auth.register', 'user', $userId, $ip, $userAgent, []);
+        $meta = [];
+        if ($referrerUserId !== null) {
+            $meta['referred_by_user_id'] = $referrerUserId;
+        }
+        $this->audit->log($userId, 'auth.register', 'user', $userId, $ip, $userAgent, $meta);
 
         return [
             'user' => $this->findUserById($userId),
             'auth_token' => $token,
         ];
+    }
+
+    /** @return non-empty-string|null */
+    private function resolveReferrerUserId(?string $referrerCzedrId): ?string
+    {
+        if ($referrerCzedrId === null || trim($referrerCzedrId) === '') {
+            return null;
+        }
+        $cid = strtoupper(trim($referrerCzedrId));
+        if (in_array($cid, ['SYSTEM', 'REVENUE'], true)) {
+            throw new \InvalidArgumentException('Invalid referrer Czedr ID');
+        }
+
+        $pdo = ConnectionFactory::saturn();
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE czedr_id = :cid AND status = \'active\' LIMIT 1');
+        $stmt->execute(['cid' => $cid]);
+        $id = $stmt->fetchColumn();
+        if (!$id) {
+            throw new \InvalidArgumentException('Referrer Czedr ID not found');
+        }
+
+        return (string) $id;
     }
 
     /**
@@ -87,6 +139,10 @@ final class AuthService
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$user || !password_verify($password, $user['password_hash'])) {
             $this->audit->log(null, 'auth.login_failed', 'user', null, $ip, $userAgent, ['email' => $email]);
+            throw new \InvalidArgumentException('Invalid credentials');
+        }
+        if (in_array((string) ($user['czedr_id'] ?? ''), ['SYSTEM', 'REVENUE'], true)) {
+            $this->audit->log(null, 'auth.login_failed', 'user', null, $ip, $userAgent, ['email' => $email, 'reason' => 'internal_ledger_user']);
             throw new \InvalidArgumentException('Invalid credentials');
         }
         $token = $this->createSession($user['id']);
@@ -212,7 +268,7 @@ final class AuthService
     {
         $pdo = ConnectionFactory::saturn();
         $stmt = $pdo->prepare(
-            'SELECT id, czedr_id, email, status, created_at FROM users WHERE id = :id LIMIT 1'
+            'SELECT id, czedr_id, email, status, role, created_at FROM users WHERE id = :id LIMIT 1'
         );
         $stmt->execute(['id' => $userId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -231,6 +287,54 @@ final class AuthService
         unset($row['payooze_id'], $row['password_hash'], $row['pin_hash']);
 
         return $row;
+    }
+
+    public function isStaff(string $userId): bool
+    {
+        $pdo = ConnectionFactory::saturn();
+        $stmt = $pdo->prepare('SELECT role FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $userId]);
+        $role = $stmt->fetchColumn();
+
+        return $role === 'staff';
+    }
+
+    /**
+     * Recipient validation: regular members get a masked label; `staff` users see the recipient email.
+     *
+     * @return array{czedr_id: string, display_name: string, result: string}
+     */
+    public function recipientLookupForViewer(string $viewerUserId, string $targetCzedrId): array
+    {
+        $staff = $this->isStaff($viewerUserId);
+        $cidKey = strtoupper(trim($targetCzedrId));
+        if ($cidKey === '' || in_array($cidKey, ['SYSTEM', 'REVENUE'], true)) {
+            throw new \InvalidArgumentException('Invalid Czedr Id');
+        }
+        $pdo = ConnectionFactory::saturn();
+        $stmt = $pdo->prepare(
+            'SELECT czedr_id, email FROM users WHERE czedr_id = :cid AND status = \'active\' LIMIT 1'
+        );
+        $stmt->execute(['cid' => $cidKey]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            throw new \InvalidArgumentException('Invalid Czedr Id');
+        }
+        $label = $staff ? (string) $row['email'] : self::maskedRecipientLabel((string) $row['czedr_id']);
+
+        return [
+            'czedr_id' => (string) $row['czedr_id'],
+            'display_name' => $label,
+            'result' => $label,
+        ];
+    }
+
+    public static function maskedRecipientLabel(string $czedrId): string
+    {
+        $czedrId = strtoupper(trim($czedrId));
+        $tail = strlen($czedrId) >= 4 ? substr($czedrId, -4) : $czedrId;
+
+        return 'Czedr member · …' . $tail;
     }
 
     private function generateCzedrId(): string

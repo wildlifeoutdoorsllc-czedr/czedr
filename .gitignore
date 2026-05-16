@@ -1,4 +1,7 @@
 .env
+# Local business / distribution PDFs (do not commit)
+S3cur3*.pdf
+*Payment*Systems*Distribution*.pdf
 DB details for Czedr.txt
 *.pptx
 docs/deck-slides/*.png

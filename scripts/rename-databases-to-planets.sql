@@ -1,3 +1,4 @@
+-- LEGACY / HISTORICAL — Czedr is Saturn-only for new installs. Do not run for current ledger-only deployments.
 -- Rename Czedr databases to planet names (MySQL / AWS RDS)
 -- Run as a privileged user (e.g. master) after backup.
 -- Update PHP/app config to use new database names after this script succeeds.

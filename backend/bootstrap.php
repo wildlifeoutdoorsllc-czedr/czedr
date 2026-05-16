@@ -8,7 +8,7 @@ require_once CZEDR_ROOT . '/backend/src/Autoload.php';
 
 \Czedr\Support\Env::load(CZEDR_ROOT . '/.env');
 
-if (\Czedr\Support\Env::get('APP_ENV', 'local') === 'local' && \Czedr\Support\Env::get('APP_DEBUG', 'false') === 'true') {
+if (\Czedr\Support\Env::isLocal() && \Czedr\Support\Env::get('APP_DEBUG', 'false') === 'true') {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 }

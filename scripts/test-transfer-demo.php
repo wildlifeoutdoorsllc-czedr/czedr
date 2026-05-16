@@ -76,7 +76,10 @@ $txn = api('POST', '/v1/transfers', [
     'idempotency_key' => 'demo-txn-' . bin2hex(random_bytes(4)),
     'memo' => 'Demo payment',
 ], $tokenA);
+$feeCents = (int) ($txn['fee_cents'] ?? 0);
+$totalDebit = (int) ($txn['total_debit_cents'] ?? (2550 + $feeCents));
 echo "  Transaction: {$txn['id']} status={$txn['status']}\n";
+echo "  Service fee: \$" . ($feeCents / 100) . " | Total debited from Alice: \$" . ($totalDebit / 100) . "\n";
 
 $balA = api('GET', '/v1/ledger/balance', null, $tokenA);
 $balB = api('GET', '/v1/ledger/balance', null, $tokenB);

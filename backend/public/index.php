@@ -15,6 +15,22 @@ if (isset($static[$path]) && is_readable($static[$path])) {
 
 require_once dirname(__DIR__) . '/bootstrap.php';
 
+if (\Czedr\Support\Env::get('CZEDR_AUTO_MIGRATE', '0') === '1') {
+    try {
+        $applied = \Czedr\Database\MigrationRunner::runPending();
+        if ($applied > 0) {
+            error_log("Czedr: applied {$applied} database migration(s).");
+        }
+    } catch (Throwable $e) {
+        error_log('Czedr MigrationRunner: ' . $e->getMessage());
+        Czedr\Http\JsonResponse::error(
+            \Czedr\Support\Env::get('APP_DEBUG', 'false') === 'true' ? $e->getMessage() : 'Service unavailable',
+            503
+        );
+        exit;
+    }
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET' && !str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json')) {
     // Prefer JSON bodies for all mutations (no secrets in query strings)
     header('Content-Type: application/json; charset=utf-8');

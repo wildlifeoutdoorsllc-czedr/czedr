@@ -8,9 +8,8 @@ Use it as a handoff if you return later or share the repo with someone else.
 ## Product direction
 
 - **Czedr** replaces legacy Payooze / 3ds3cur3 / S3cur3e branding.
-- Users pay by **Czedr ID** on an **internal ledger** (no card required for P2P).
-- Sensitive bank/card data, when linked, is split across **planet** MySQL databases (mercury–jupiter); users/sessions/ledger on **saturn**.
-- **No single admin** should see full card numbers; field-level encryption + vault split.
+- Users pay by **Czedr ID** on an **internal ledger** only: **no** card, **no** ACH, **no** bank account storage in the shipped API.
+- **Single MySQL database (`saturn`)** holds users, sessions, ledger, invoices, and audit. (Planet-split vault code was removed from the runtime product to reduce scope and risk.)
 
 ---
 
@@ -19,7 +18,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 ### Backend (`backend/`, `database/`)
 
 - PHP 8.3 REST API at `/v1/*`
-- Planet vault, ledger, auth, invoices, bank accounts, audit
+- Ledger, auth, invoices, audit (`saturn` schema only)
 - **Secure auth**: image-derived AES (Library of Congress challenge) for signup, login, PIN
 - **Forgot password**: `POST /v1/auth/forgot-password`, `POST /v1/auth/reset-password`
 - **Legacy bridge**: old iOS paths (`/login`, `/invoicerecev`, etc.) map to v1
@@ -61,8 +60,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 | Piece | Role |
 |-------|------|
 | `czedr_id` | Public ID (e.g. `CZAB79D695`) |
-| Saturn DB | Users, sessions, ledger, invoices, reset tokens |
-| Mercury–Jupiter | Encrypted bank field shards |
+| Saturn DB | Users, sessions, ledger, invoices, audit, reset tokens |
 | Image challenge | Random LoC image; key = base64(image)[0:16] + md5(challenge_id)[0:16]; AES-256-ECB |
 
 ---
@@ -87,7 +85,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 
 ## Zelle
 
-- No public Zelle API for apps; bank/partner programs only. Czedr uses internal ledger + optional ACH export stub.
+- No public Zelle API for apps; bank/partner programs only. Czedr settles value on the **internal ledger** only.
 
 ---
 

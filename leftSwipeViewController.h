@@ -22,11 +22,12 @@
 @property (weak, nonatomic) IBOutlet UILabel *pndingInvoicsLbl;
 @property (weak, nonatomic) IBOutlet UILabel *histryLbl;
 @property (weak, nonatomic) IBOutlet UILabel *myProfileLbl;
-
+@property (weak, nonatomic) IBOutlet UIButton *referralEarningsBtn;
+@property (strong) NSManagedObject *device;
 
 - (IBAction)pendingButton:(id)sender;
 - (IBAction)makePaymentButton:(id)sender;
 - (IBAction)historyButton:(id)sender;
 - (IBAction)profileButton:(id)sender;
-@property (strong) NSManagedObject *device;
+- (IBAction)referralEarningsButton:(id)sender;
 @end

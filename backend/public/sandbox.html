@@ -51,7 +51,7 @@
       <p class="tag">we make payments easy</p>
     </div>
   </div>
-  <p class="sub">Test Czedr on your iPhone in Safari — same Wi‑Fi as your Windows PC. No Mac required for API testing.</p>
+  <p class="sub">Test Czedr on your iPhone in Safari — same Wi‑Fi as your Windows PC. No Mac required for API testing. <strong>Ledger-only:</strong> no card or bank linking; balances move between Czedr IDs only.</p>
 
   <div class="card">
     <label>API base URL</label>
@@ -83,6 +83,8 @@
       <h2 style="margin:0 0 10px;font-size:1rem">Register new account</h2>
       <input id="regEmail" type="email" placeholder="Email address" autocomplete="email">
       <input id="regPass" type="password" placeholder="Password (10+ chars)" autocomplete="new-password">
+      <label>Friend’s Czedr ID (optional)</label>
+      <input id="regReferrer" type="text" placeholder="Who referred you? e.g. CZ12345678" autocapitalize="characters">
       <button type="button" id="registerBtn">Create account</button>
       <button type="button" class="linkish secondary" id="showSignInBtn">Already have an account? Sign in</button>
     </div>
@@ -111,10 +113,16 @@
       <input id="payTo" type="text" placeholder="CZ12345678" autocapitalize="characters">
       <label>Amount (USD)</label>
       <input id="payAmount" type="number" step="0.01" min="0.01" placeholder="10.00">
+      <p class="sub" style="margin:4px 0 0" id="payFeeNote">The <strong>sender</strong> pays the platform fee in addition to the amount below (recipient gets the full amount). Refresh balance to see the current fee.</p>
       <input id="payMemo" type="text" placeholder="Memo (optional)">
       <label>4-digit PIN (required)</label>
       <input id="payPin" type="password" inputmode="numeric" maxlength="4" placeholder="1234">
       <button type="button" id="transferBtn">Send payment</button>
+    </div>
+    <div class="card">
+      <button type="button" class="secondary" id="referralEarningsBtn">Referral earnings</button>
+      <p class="sub" style="margin:6px 0 0">Shows total credits earned when people you referred send payments. Rewards are already in your balance above.</p>
+      <pre id="referralEarningsOut" style="margin:8px 0 0;font-size:0.72rem;color:var(--muted)"></pre>
     </div>
     <div class="card">
       <button type="button" class="secondary" id="historyBtn">Load history</button>
@@ -211,7 +219,10 @@
   $('registerBtn').onclick = async () => {
     try {
       saveBase();
-      const d = await api('POST', '/v1/auth/register', { email: $('regEmail').value.trim(), password: $('regPass').value });
+      const ref = $('regReferrer').value.trim();
+      const body = { email: $('regEmail').value.trim(), password: $('regPass').value };
+      if (ref) body.referrer_czedr_id = ref.toUpperCase();
+      const d = await api('POST', '/v1/auth/register', body);
       localStorage.setItem(TOKEN_KEY, d.auth_token);
       showSession({ czedr_id: d.user.czedr_id, email: d.user.email, user_pin: '0' });
       showAuthMode('signin');
@@ -267,6 +278,12 @@
     try {
       const d = await api('GET', '/v1/ledger/balance', null, true);
       $('balance').textContent = '$' + (d.balance_cents / 100).toFixed(2);
+      const fc = typeof d.transfer_fee_cents === 'number' ? d.transfer_fee_cents : 0;
+      if (fc > 0) {
+        $('payFeeNote').textContent = 'You (sender) pay $' + (fc / 100).toFixed(2) + ' per payment on top of the amount above—the person you pay still receives the full amount.';
+      } else {
+        $('payFeeNote').textContent = 'No per-payment platform fee (CZEDR_TRANSFER_FEE_CENTS=0).';
+      }
     } catch (e) { log('Balance: ' + e.message); }
   };
 
@@ -278,14 +295,17 @@
         return;
       }
       const cents = Math.round(parseFloat($('payAmount').value) * 100);
-      await api('POST', '/v1/transfers', {
+      const out = await api('POST', '/v1/transfers', {
         to_czedr_id: $('payTo').value.trim().toUpperCase(),
         amount_cents: cents,
         memo: $('payMemo').value || 'Sandbox',
         user_pin: pin,
         idempotency_key: 'sb-' + Date.now()
       }, true);
-      log('Transfer sent');
+      const fee = typeof out.fee_cents === 'number' ? out.fee_cents : 0;
+      const tot = typeof out.total_debit_cents === 'number' ? out.total_debit_cents : cents + fee;
+      const refRew = typeof out.referral_reward_cents === 'number' ? out.referral_reward_cents : 0;
+      log('Transfer sent (you pay total $' + (tot / 100).toFixed(2) + ' incl. fee $' + (fee / 100).toFixed(2) + (refRew > 0 ? '; referrer earns $' + (refRew / 100).toFixed(2) : '') + ')');
       $('balanceBtn').click();
     } catch (e) { log('Transfer: ' + e.message); }
   };
@@ -295,6 +315,15 @@
       const d = await api('GET', '/v1/transfers/history', null, true);
       $('historyOut').textContent = JSON.stringify(d.transactions || [], null, 2);
     } catch (e) { log('History: ' + e.message); }
+  };
+
+  $('referralEarningsBtn').onclick = async () => {
+    try {
+      const d = await api('GET', '/v1/referrals/earnings', null, true);
+      $('referralEarningsOut').textContent = JSON.stringify(d, null, 2);
+      const t = typeof d.referral_earnings_total_cents === 'number' ? d.referral_earnings_total_cents : null;
+      if (t !== null) log('Referral earnings: $' + (t / 100).toFixed(2) + ' total (already in balance)');
+    } catch (e) { log('Referral earnings: ' + e.message); }
   };
 
   $('setPinBtn').onclick = async () => {

@@ -80,6 +80,10 @@ typedef void (^CzedrAPIFailureBlock)(NSString *message);
 + (void)fetchLedgerBalanceSuccess:(CzedrAPISuccessBlock)success
                           failure:(CzedrAPIFailureBlock)failure;
 
+/** Referral rewards already credited to ledger balance; see response keys referral_earnings_total_cents, recent_credits, … */
++ (void)fetchReferralEarningsSuccess:(CzedrAPISuccessBlock)success
+                           failure:(CzedrAPIFailureBlock)failure;
+
 + (void)transferToCzedrId:(NSString *)czedrId
               amountCents:(NSInteger)amountCents
                      memo:(NSString *)memo

@@ -1,7 +1,8 @@
 <?php
 
 /**
- * PDO helper for Czedr planet databases (MySQL 8.x compatible).
+ * PDO helper for the Czedr application database (MySQL 8.x compatible).
+ * Keys in `databases` map to logical names (e.g. `app` → `saturn`).
  */
 class Database
 {

@@ -45,4 +45,23 @@ final class Env
         }
         return $v;
     }
+
+    /** True only when APP_ENV is explicitly set to "local" (never when unset — defaults to production). */
+    public static function isLocal(): bool
+    {
+        return self::get('APP_ENV', 'production') === 'local';
+    }
+
+    /**
+     * Self-service ledger credits (POST /v1/ledger/load). Allowed in local dev, or when
+     * CZEDR_ALLOW_LEDGER_LOAD=1 (e.g. staging). Disabled in production by default.
+     */
+    public static function allowSelfServiceLedgerLoad(): bool
+    {
+        if (self::get('CZEDR_ALLOW_LEDGER_LOAD', '0') === '1') {
+            return true;
+        }
+
+        return self::isLocal();
+    }
 }

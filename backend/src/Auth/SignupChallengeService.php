@@ -124,6 +124,18 @@ final class SignupChallengeService
 
     public function fetchImageBytes(string $imageUrl): string
     {
+        $parsed = parse_url($imageUrl);
+        if (!is_array($parsed) || empty($parsed['scheme'])) {
+            throw new \InvalidArgumentException('Invalid challenge image URL');
+        }
+        $scheme = strtolower((string) $parsed['scheme']);
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            throw new \InvalidArgumentException('Invalid challenge image URL');
+        }
+        $host = strtolower((string) ($parsed['host'] ?? ''));
+        if ($host === '' || ($host !== 'loc.gov' && !str_ends_with($host, '.loc.gov'))) {
+            throw new \InvalidArgumentException('Challenge images must be served from loc.gov');
+        }
         $body = $this->httpGet($imageUrl);
         if ($body === null || strlen($body) < 256) {
             throw new \RuntimeException('Could not download challenge image');

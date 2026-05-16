@@ -17,29 +17,11 @@ final class ConnectionFactory
     {
         $cfg = self::base();
         $db = $cfg['databases']['app'] ?? 'saturn';
-        return self::planet('app', $db, 'VAULT_USER_SATURN', 'VAULT_PASS_SATURN');
+
+        return self::connect('app', $db, 'VAULT_USER_SATURN', 'VAULT_PASS_SATURN');
     }
 
-    /**
-     * @param 'holder_name'|'account_type'|'routing'|'account'|'mandate' $field
-     */
-    public static function vault(string $field): PDO
-    {
-        $map = [
-            'holder_name' => ['mercury', 'VAULT_USER_MERCURY', 'VAULT_PASS_MERCURY'],
-            'account_type' => ['venus', 'VAULT_USER_VENUS', 'VAULT_PASS_VENUS'],
-            'routing' => ['earth', 'VAULT_USER_EARTH', 'VAULT_PASS_EARTH'],
-            'account' => ['mars', 'VAULT_USER_MARS', 'VAULT_PASS_MARS'],
-            'mandate' => ['jupiter', 'VAULT_USER_JUPITER', 'VAULT_PASS_JUPITER'],
-        ];
-        if (!isset($map[$field])) {
-            throw new \InvalidArgumentException("Unknown vault field: {$field}");
-        }
-        [$db, $userEnv, $passEnv] = $map[$field];
-        return self::planet($db, $db, $userEnv, $passEnv);
-    }
-
-    private static function planet(string $key, string $dbName, ?string $userEnv = null, ?string $passEnv = null): PDO
+    private static function connect(string $key, string $dbName, ?string $userEnv = null, ?string $passEnv = null): PDO
     {
         $cacheKey = $key . ':' . $dbName;
         if (isset(self::$pool[$cacheKey])) {
@@ -50,16 +32,19 @@ final class ConnectionFactory
         $user = ($userEnv && Env::get($userEnv)) ? Env::get($userEnv) : $cfg['user'];
         $pass = ($passEnv && Env::get($passEnv) !== null) ? Env::get($passEnv) : $cfg['pass'];
 
+        $resolvedDb = $dbName === 'saturn' ? ($cfg['databases']['app'] ?? 'saturn') : $dbName;
+
         $dsn = sprintf(
             'mysql:host=%s;port=%d;dbname=%s;charset=%s',
             $cfg['host'],
             (int) $cfg['port'],
-            $dbName === 'saturn' ? ($cfg['databases']['app'] ?? 'saturn') : $dbName,
+            $resolvedDb,
             $cfg['charset']
         );
 
         $pdo = new PDO($dsn, $user, $pass, $cfg['options']);
         self::$pool[$cacheKey] = $pdo;
+
         return $pdo;
     }
 
@@ -72,6 +57,7 @@ final class ConnectionFactory
             }
             self::$baseConfig = require $path;
         }
+
         return self::$baseConfig;
     }
 }

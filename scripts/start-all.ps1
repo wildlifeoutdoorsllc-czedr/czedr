@@ -1,4 +1,4 @@
-# Start MySQL + Czedr PHP API (+ optional Moov ACH)
+# Start MySQL + Czedr PHP API
 $root = Split-Path $PSScriptRoot -Parent
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
@@ -23,15 +23,6 @@ try {
     Write-Host "API health: $($r.Content)"
 } catch {
     Write-Host "API not responding yet — check PHP process."
-}
-
-if (Get-Command docker -ErrorAction SilentlyContinue) {
-    Write-Host "Starting Moov ACH (optional) on http://127.0.0.1:8081 ..."
-    Push-Location $root
-    docker compose up -d moov-ach 2>$null
-    Pop-Location
-} else {
-    Write-Host "Docker not found — skip Moov ACH (ACH export uses placeholder files)."
 }
 
 Write-Host "`nRun demo: php scripts\test-transfer-demo.php"

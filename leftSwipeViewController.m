@@ -23,6 +23,7 @@
 @interface leftSwipeViewController ()
 {
      NSManagedObjectContext *managedObjectContext;
+     BOOL _referralBalanceTapAdded;
 }
 @end
 
@@ -69,6 +70,9 @@
     NSString *strYourId = NSLocalizedString(@"Czedr ID", Nil);
      czedrIdLabel.text=[NSString stringWithFormat:@"%@ - %@",strYourId,czedrIdLabel.text];
     
+    [self.referralEarningsBtn setTitle:NSLocalizedString(@"Referral earnings", nil) forState:UIControlStateNormal];
+    [self syncReferralEarningsUIWithAuthToken:autcode ?: @""];
+    
     if (autcode.length==0)
     {
         ViewController *ViewController_O=[[ViewController alloc]initWithNibName:@"ViewController" bundle:nil];
@@ -96,6 +100,8 @@
     self.navigationController.navigationBar.hidden=YES;
     czedrIdLabel.textColor = [CzedrTheme mutedText];
     [CzedrTheme applyDeckLookToView:self.view];
+    NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
+    [self syncReferralEarningsUIWithAuthToken:tok];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
@@ -151,6 +157,26 @@
     [[NSUserDefaults standardUserDefaults] synchronize];
     profileViewController *profile=[[profileViewController alloc]initWithNibName:@"profileViewController" bundle:nil];
     [self.navigationController pushViewController:profile animated:YES];
+}
+
+- (void)syncReferralEarningsUIWithAuthToken:(NSString *)token
+{
+    BOOL v1 = [SharedServiceController usesV1API];
+    BOOL authed = token.length > 0;
+    self.referralEarningsBtn.hidden = !(v1 && authed);
+    if (v1 && authed && !_referralBalanceTapAdded) {
+        countlable.userInteractionEnabled = YES;
+        UITapGestureRecognizer *refTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showReferralEarnings)];
+        [countlable addGestureRecognizer:refTap];
+        _referralBalanceTapAdded = YES;
+    } else if (!v1 || !authed) {
+        countlable.userInteractionEnabled = NO;
+    }
+}
+
+- (IBAction)referralEarningsButton:(id)sender
+{
+    [self showReferralEarnings];
 }
 
 -(void)call_CardcountService
@@ -284,10 +310,10 @@
             float dollars = cents / 100.0f;
             [SharedServiceController syncBankAccountsToCoreData:^{
                 [SharedServiceController fetchLinkedAccountCountSuccess:^(NSInteger count) {
-                    countlable.text = [NSString stringWithFormat:@"$%.2f | %ld linked", dollars, (long)count];
+                    countlable.text = [NSString stringWithFormat:@"$%.2f | %ld linked · tap for referral earnings", dollars, (long)count];
                     [MBProgressHUD hideHUDForView:self.view animated:YES];
                 } failure:^(NSString *message) {
-                    countlable.text = [NSString stringWithFormat:@"$%.2f", dollars];
+                    countlable.text = [NSString stringWithFormat:@"$%.2f · tap for referral earnings", dollars];
                     [MBProgressHUD hideHUDForView:self.view animated:YES];
                 }];
             }];
@@ -479,5 +505,26 @@
         [[NSUserDefaults standardUserDefaults] synchronize];
         [self checkdatabase_count];
     }
+}
+- (void)showReferralEarnings
+{
+    if (![SharedServiceController usesV1API]) { return; }
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    [SharedServiceController fetchReferralEarningsSuccess:^(NSDictionary *data) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        NSInteger total = [[data objectForKey:@"referral_earnings_total_cents"] integerValue];
+        NSInteger cnt = [[data objectForKey:@"referral_payment_count"] integerValue];
+        float usd = total / 100.f;
+        NSString *title = NSLocalizedString(@"Referral earnings", nil);
+        NSString *msg = [NSString stringWithFormat:@"Total from referrals: $%.2f (%ld referee payments).\n\nThese credits are already included in your Czedr balance.", usd, (long)cnt];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:msg preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+    } failure:^(NSString *message) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Error", nil) message:message preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+    }];
 }
 @end
