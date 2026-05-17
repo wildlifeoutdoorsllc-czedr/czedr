@@ -280,6 +280,10 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         lastCenterNav = nav;
     }
 
+    if (!drawer.view.window) {
+        return;
+    }
+
     UIView *bar = [drawer.view viewWithTag:kCzedrTopChromeTag];
     if (!bar) {
         bar = [self buildTopChromeWithTarget:target];

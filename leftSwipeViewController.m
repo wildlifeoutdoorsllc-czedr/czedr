@@ -25,6 +25,7 @@
 {
      NSManagedObjectContext *managedObjectContext;
      BOOL _referralBalanceTapAdded;
+     BOOL _homeDataLoaded;
 }
 @end
 
@@ -73,7 +74,6 @@
     
     [self.referralEarningsBtn setTitle:NSLocalizedString(@"Referral earnings", nil) forState:UIControlStateNormal];
     [self syncReferralEarningsUIWithAuthToken:autcode ?: @""];
-    [CzedrAppChrome installSessionBarInViewController:self];
     
     if (autcode.length==0)
     {
@@ -82,35 +82,35 @@
         [self.mm_drawerController setOpenDrawerGestureModeMask:(MMOpenDrawerGestureModeNone)];
         [self.navigationController pushViewController:ViewController_O animated:NO];
     }
-    else
-    {
-        dispatch_queue_t backgroundQueue = dispatch_queue_create("dispatch_queue_#1", 0);
-        dispatch_async(backgroundQueue, ^{
-
-            dispatch_async(dispatch_get_main_queue(), ^{
-               
-                [self call_loadCardsService];
-                
-            });
-        });
-    }
 }
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
     payNowBool = false;
     self.navigationController.navigationBar.hidden=YES;
-    czedrIdLabel.textColor = [CzedrTheme mutedText];
+    if (czedrIdLabel) {
+        czedrIdLabel.textColor = [CzedrTheme mutedText];
+    }
     [CzedrTheme applyDeckLookToView:self.view];
     NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
     [self syncReferralEarningsUIWithAuthToken:tok];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length > 0) {
-        [self recevied_service];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    if (_homeDataLoaded) {
+        return;
     }
+    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length == 0) {
+        return;
+    }
+    _homeDataLoaded = YES;
+    [self call_loadCardsService];
 }
 
 - (void)viewDidLayoutSubviews
@@ -308,21 +308,27 @@
     if ([SharedServiceController usesV1API]) {
         NSString *czedrId = [SharedServiceController savedCzedrUserId];
         NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
-        czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, czedrId ?: @""];
+        if (czedrIdLabel) {
+            czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, czedrId ?: @""];
+        }
+        __weak typeof(self) weakSelf = self;
         [SharedServiceController fetchLedgerBalanceSuccess:^(NSDictionary *data) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf || !strongSelf.isViewLoaded) {
+                return;
+            }
             NSInteger cents = [[data objectForKey:@"balance_cents"] integerValue];
             float dollars = cents / 100.0f;
-            [SharedServiceController syncBankAccountsToCoreData:^{
-                [SharedServiceController fetchLinkedAccountCountSuccess:^(NSInteger count) {
-                    countlable.text = [NSString stringWithFormat:@"$%.2f | %ld linked · tap for referral earnings", dollars, (long)count];
-                    [MBProgressHUD hideHUDForView:self.view animated:YES];
-                } failure:^(NSString *message) {
-                    countlable.text = [NSString stringWithFormat:@"$%.2f · tap for referral earnings", dollars];
-                    [MBProgressHUD hideHUDForView:self.view animated:YES];
-                }];
-            }];
+            if (strongSelf->countlable) {
+                strongSelf->countlable.text = [NSString stringWithFormat:@"$%.2f · tap for referral earnings", dollars];
+            }
+            [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
         } failure:^(NSString *message) {
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            (void)message;
+            if (strongSelf && strongSelf.isViewLoaded) {
+                [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
+            }
         }];
         return;
     }

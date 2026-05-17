@@ -388,13 +388,17 @@
 
 - (void)navigateToHomeAfterPin
 {
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    UIView *hudHost = self.view.window ?: self.view;
+    [MBProgressHUD hideHUDForView:hudHost animated:NO];
     leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
     UINavigationController *nav = self.navigationController;
-    if (nav) {
-        [nav setViewControllers:@[home] animated:YES];
+    if (!nav) {
+        return;
     }
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [nav setViewControllers:@[home] animated:NO];
+        [CzedrAppChrome refreshSessionBarForDrawer:home.mm_drawerController];
+    });
 }
 
 @end

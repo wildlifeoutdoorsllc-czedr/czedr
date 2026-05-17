@@ -26,6 +26,18 @@
 
 @implementation ViewController
 
+- (UIView *)hudHostView
+{
+    if (self.view.window) {
+        return self.view.window;
+    }
+    if (self.view.superview) {
+        return self.view;
+    }
+    UIWindow *key = UIApplication.sharedApplication.keyWindow;
+    return key ?: self.view;
+}
+
 - (void)ensureUserInfoData
 {
     if (!user_infodata) {
@@ -40,7 +52,7 @@
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         [self ensureUserInfoData];
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        [MBProgressHUD hideHUDForView:[self hudHostView] animated:NO];
         [user_infodata removeAllObjects];
         [user_infodata addObject:data];
 
@@ -50,10 +62,8 @@
             return;
         }
 
-        [self parse_registerService];
         NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
         UINavigationController *nav = self.navigationController;
-        MMDrawerController *drawer = self.mm_drawerController;
         if ([userPin isEqualToString:@"0"]) {
             GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
             if (nav) {
@@ -61,11 +71,16 @@
             }
             return;
         }
+
         leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
-        if (nav) {
-            [nav setViewControllers:@[home] animated:YES];
+        if (!nav) {
+            return;
         }
-        [CzedrAppChrome refreshSessionBarForDrawer:drawer ?: home.mm_drawerController];
+        // Defer replacing the stack so MBProgressHUD is not torn down with the login view mid-flight.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [nav setViewControllers:@[home] animated:NO];
+            [CzedrAppChrome refreshSessionBarForDrawer:home.mm_drawerController];
+        });
     });
 }
 
@@ -313,7 +328,7 @@
     }
     CzedrSetAPIBaseOverride(apiBase);
 
-    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    [MBProgressHUD showHUDAddedTo:[self hudHostView] animated:YES];
     __weak typeof(self) weakSelf = self;
     [CzedrLanAPIFinder resolveWithCompletion:^(NSString *resolvedBase, NSError *resolveError) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -324,7 +339,7 @@
             strongSelf.apiBaseTextField.text = resolvedBase;
             CzedrSetAPIBaseOverride(resolvedBase);
         } else if (resolveError.localizedDescription.length > 0) {
-            [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
+            [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:resolveError.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [alert show];
             return;
@@ -333,7 +348,7 @@
         ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc]init];
         int reach = [reachAbilty updateInterfaceWithReachability];
         if (reach==0){
-            [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
+            [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
             NSString *strAttention = NSLocalizedString(@"Attention", Nil);
             NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
             NSString *strOk = NSLocalizedString(@"OK", Nil);
@@ -348,7 +363,7 @@
                 [strongSelf completeLoginWithPayload:data];
             } failure:^(NSString *message) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
+                    [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                     [alert show];
                 });
