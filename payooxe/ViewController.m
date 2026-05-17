@@ -63,24 +63,19 @@
         }
 
         NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
-        UINavigationController *nav = self.navigationController;
         if ([userPin isEqualToString:@"0"]) {
             GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
+            UINavigationController *nav = self.navigationController;
             if (nav) {
                 [nav pushViewController:pinVC animated:YES];
             }
             return;
         }
 
-        leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
-        if (!nav) {
-            return;
+        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        if ([app respondsToSelector:@selector(presentHomeAfterLogin)]) {
+            [app presentHomeAfterLogin];
         }
-        // Defer replacing the stack so MBProgressHUD is not torn down with the login view mid-flight.
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [nav setViewControllers:@[home] animated:NO];
-            [CzedrAppChrome refreshSessionBarForDrawer:home.mm_drawerController];
-        });
     });
 }
 
@@ -330,104 +325,95 @@
 
     [MBProgressHUD showHUDAddedTo:[self hudHostView] animated:YES];
     __weak typeof(self) weakSelf = self;
-    [CzedrLanAPIFinder resolveWithCompletion:^(NSString *resolvedBase, NSError *resolveError) {
+    // Sign-in uses the URL in the field only (no full subnet scan — that ran on screen open).
+    [CzedrLanAPIFinder testBaseURL:apiBase completion:^(BOOL reachable) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (!reachable) {
+                [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@""
+                                                                message:@"Cannot reach the Czedr server. On your PC run START-IPHONE-TESTING.cmd, keep it open, and confirm iPhone and PC are on the same Wi-Fi."
+                                                               delegate:nil
+                                                      cancelButtonTitle:@"OK"
+                                                      otherButtonTitles:nil];
+                [alert show];
+                return;
+            }
+            [strongSelf performLoginRequest];
+        });
+    }];
+}
+
+- (void)performLoginRequest
+{
+    ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc] init];
+    int reach = [reachAbilty updateInterfaceWithReachability];
+    if (reach == 0) {
+        [MBProgressHUD hideHUDForView:[self hudHostView] animated:NO];
+        NSString *strAttention = NSLocalizedString(@"Attention", Nil);
+        NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
+        NSString *strOk = NSLocalizedString(@"OK", Nil);
+        UIAlertView *alertview = [[UIAlertView alloc] initWithTitle:strAttention message:strYourNetwork delegate:self cancelButtonTitle:strOk otherButtonTitles:nil, nil];
+        [alertview show];
+        return;
+    }
+
+    __weak typeof(self) weakSelf = self;
+    if ([SharedServiceController usesV1API]) {
+        [SharedServiceController loginSecureWithEmail:self.email.text
+                                             password:self.password.text
+                                              success:^(NSDictionary *data) {
+            [weakSelf completeLoginWithPayload:data];
+        } failure:^(NSString *message) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                [alert show];
+            });
+        }];
+        return;
+    }
+
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    [params setValue:self.email.text forKey:@"user_email"];
+    [params setValue:self.password.text forKey:@"user_pwd"];
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    [manager POST:[NSString stringWithFormat:@"%s/%s", base_url, "login"] parameters:params success:^(AFHTTPRequestOperation *operation, id responseObject) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        if (resolvedBase.length > 0) {
-            strongSelf.apiBaseTextField.text = resolvedBase;
-            CzedrSetAPIBaseOverride(resolvedBase);
-        } else if (resolveError.localizedDescription.length > 0) {
-            [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:resolveError.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
+        NSString *response = [NSString stringWithFormat:@"%@", operation.responseString];
+        NSString *status = [NSString stringWithFormat:@"%@", [[response JSONValue] valueForKey:@"Status"]];
+        if ([status isEqualToString:@"true"]) {
+            NSDictionary *data = [[response JSONValue] valueForKey:@"Data"];
+            [SharedServiceController saveLoginPayload:data];
+            [strongSelf completeLoginWithPayload:data];
+        } else {
+            NSString *Alertstatus = [NSString stringWithFormat:@"%@", [[[[response JSONValue] valueForKey:@"Data"] objectAtIndex:0] valueForKey:@"result"]];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:Alertstatus delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [alert show];
+        }
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        (void)operation;
+        (void)error;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
             return;
         }
-
-        ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc]init];
-        int reach = [reachAbilty updateInterfaceWithReachability];
-        if (reach==0){
-            [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
-            NSString *strAttention = NSLocalizedString(@"Attention", Nil);
-            NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
-            NSString *strOk = NSLocalizedString(@"OK", Nil);
-
-            UIAlertView *alertview=[[UIAlertView alloc]initWithTitle:strAttention message:strYourNetwork delegate:strongSelf cancelButtonTitle:strOk otherButtonTitles:nil, nil];
-            [alertview performSelectorOnMainThread:@selector(show) withObject:nil waitUntilDone:YES];
-        }
-        else if ([SharedServiceController usesV1API]) {
-            [SharedServiceController loginSecureWithEmail:strongSelf.email.text
-                                                 password:strongSelf.password.text
-                                                  success:^(NSDictionary *data) {
-                [strongSelf completeLoginWithPayload:data];
-            } failure:^(NSString *message) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
-                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                    [alert show];
-                });
-            }];
-            return;
-        }
-
-        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-        NSMutableDictionary *params = [[NSMutableDictionary alloc]init];
-        [params setValue:_email.text forKey:@"user_email"];
-        [params setValue:_password.text forKey:@"user_pwd"];
-       
-        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-        [manager POST:[NSString stringWithFormat:@"%s/%s",base_url,"login"] parameters:params success:^(AFHTTPRequestOperation *operation, id responseObject)
-         {
-             NSString *response;
-             [MBProgressHUD hideHUDForView:self.view animated:YES];
-             
-             response = [NSString stringWithFormat:@"%@",operation.responseString];
-        
-             NSString *status=[NSString stringWithFormat:@"%@",[[response JSONValue] valueForKey:@"Status"]];
-             if ([status isEqualToString:@"true"])
-             {
-                 NSDictionary *data=[[response JSONValue] valueForKey:@"Data"];
-                 [SharedServiceController saveLoginPayload:data];
-                 dispatch_async(dispatch_get_main_queue(), ^{
-                     [self completeLoginWithPayload:data];
-                 });
-             }
-             else
-             {
-                NSString *Alertstatus=[NSString stringWithFormat:@"%@",[[[[response JSONValue] valueForKey:@"Data"] objectAtIndex:0]valueForKey:@"result"]];
-                 
-                 NSString *language = [[[NSBundle mainBundle] preferredLocalizations] objectAtIndex:0];
-                 
-                 if([language isEqual:@"fr"])
-                 {
-                     if ([Alertstatus isEqual:@"Please enter a valid password and try again."])
-                     {
-                        Alertstatus = @"Entrez un mot de passe valide et réessayez.";
-                     }
-                     else if ([Alertstatus isEqual:@"An account with the entered email address does not exist."])
-                     {
-                         Alertstatus = @"Un compte avec l'adresse e-mail saisie n'existe pas";
-                     }
-                     else if ([Alertstatus isEqual:@"Your Account Is not Active."])
-                     {
-                         Alertstatus = @"Votre compte n'est pas actif.";
-                     }
-                 }
-                
-                UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:Alertstatus delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                 [alert show];
-                 return;
-             }
-         }
-    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                  [MBProgressHUD hideHUDForView:self.view animated:YES];
+        [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
         NSString *strErrorMsg = NSLocalizedString(@"error", Nil);
-        NSString *strOk = NSLocalizedString(@"OK", Nil);
-        
-        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:strErrorMsg delegate:nil cancelButtonTitle:strOk otherButtonTitles:nil, nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:strErrorMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alert show];
-                }];
     }];
 }
 

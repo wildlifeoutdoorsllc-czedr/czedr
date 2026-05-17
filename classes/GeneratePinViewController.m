@@ -12,6 +12,7 @@
 #import "CzedrAppChrome.h"
 #import "leftSwipeViewController.h"
 #import "UIViewController+MMDrawerController.h"
+#import "AppDelegate.h"
 @interface GeneratePinViewController () <UITextFieldDelegate>
 
 @end
@@ -390,15 +391,10 @@
 {
     UIView *hudHost = self.view.window ?: self.view;
     [MBProgressHUD hideHUDForView:hudHost animated:NO];
-    leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
-    UINavigationController *nav = self.navigationController;
-    if (!nav) {
-        return;
+    AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    if ([app respondsToSelector:@selector(presentHomeAfterLogin)]) {
+        [app presentHomeAfterLogin];
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [nav setViewControllers:@[home] animated:NO];
-        [CzedrAppChrome refreshSessionBarForDrawer:home.mm_drawerController];
-    });
 }
 
 @end

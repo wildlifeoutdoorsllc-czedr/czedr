@@ -126,28 +126,43 @@
 //    }
 //}
 
--(void)mainViewSwitch
+- (MMDrawerController *)drawerControllerWithCenterNavigation:(UINavigationController *)navigation
 {
-    leftSwipeViewController * left=[[leftSwipeViewController alloc]initWithNibName:@"leftSwipeViewController" bundle:nil];
-    leftViewController * leftViewController_O=[[leftViewController alloc]initWithNibName:@"leftViewController" bundle:nil];
-    
-    UINavigationController * navigation=[[UINavigationController alloc]initWithRootViewController:left];
-    MMDrawerController * drawerController = [[MMDrawerController alloc]
-                                             initWithCenterViewController:navigation
-                                             leftDrawerViewController:leftViewController_O
-                                             rightDrawerViewController:nil];
+    leftViewController *leftDrawer = [[leftViewController alloc] initWithNibName:@"leftViewController" bundle:nil];
+    MMDrawerController *drawerController = [[MMDrawerController alloc]
+                                          initWithCenterViewController:navigation
+                                          leftDrawerViewController:leftDrawer
+                                          rightDrawerViewController:nil];
     [drawerController setMaximumLeftDrawerWidth:220];
     [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeNone];
     [drawerController setCloseDrawerGestureModeMask:MMCloseDrawerGestureModeAll];
-    if (![@"1" isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:@"Avalue"]])
-    { [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeNone];
-    }
-    else
-    {
+    if ([@"1" isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:@"Avalue"]]) {
         [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeAll];
     }
-    [self.window setRootViewController:drawerController];
+    return drawerController;
+}
+
+-(void)mainViewSwitch
+{
+    leftSwipeViewController *left = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
+    UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:left];
+    navigation.navigationBarHidden = YES;
+    MMDrawerController *drawerController = [self drawerControllerWithCenterNavigation:navigation];
+    self.window.rootViewController = drawerController;
     [CzedrAppChrome refreshSessionBarForDrawer:drawerController];
+}
+
+- (void)presentHomeAfterLogin
+{
+    leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
+    UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:home];
+    navigation.navigationBarHidden = YES;
+    MMDrawerController *drawerController = [self drawerControllerWithCenterNavigation:navigation];
+    self.window.rootViewController = drawerController;
+    [self.window makeKeyAndVisible];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [CzedrAppChrome refreshSessionBarForDrawer:drawerController];
+    });
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application

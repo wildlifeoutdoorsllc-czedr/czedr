@@ -19,4 +19,7 @@
 @property (readonly, strong, nonatomic) NSManagedObjectContext *writerManagedObjectContext;
 @property (strong, nonatomic) UIWindow *window;
 
+/** Rebuilds the drawer with home as center (call after successful sign-in). */
+- (void)presentHomeAfterLogin;
+
 @end
