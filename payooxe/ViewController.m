@@ -28,6 +28,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    if (![self isMemberOfClass:[ViewController class]]) {
+        return;
+    }
     user_infodata=[[NSMutableArray alloc]init];
     _email.delegate = self;
     _password.delegate = self;
@@ -92,6 +95,10 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
+    if (![self isMemberOfClass:[ViewController class]]) {
+        return;
+    }
     [self.navigationController setNavigationBarHidden:YES animated:YES];
     _viewDetail.layer.cornerRadius =10;
     _viewDetail.clipsToBounds = YES;
@@ -295,20 +302,26 @@
             [SharedServiceController loginSecureWithEmail:strongSelf.email.text
                                                  password:strongSelf.password.text
                                                   success:^(NSDictionary *data) {
-                [MBProgressHUD hideHUDForView:self.view animated:YES];
+                [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
                 [user_infodata addObject:data];
                 NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
-                [self parse_registerService];
+                [strongSelf parse_registerService];
                 if ([userPin isEqualToString:@"0"]) {
-                    GeneratePinViewController *OBJ = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
-                    [self.navigationController pushViewController:OBJ animated:YES];
+                    GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
+                    UINavigationController *nav = strongSelf.navigationController;
+                    if (nav) {
+                        [nav pushViewController:pinVC animated:YES];
+                    }
                 } else {
-                    leftSwipeViewController *left = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
-                    [self.navigationController pushViewController:left animated:YES];
-                    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+                    leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
+                    UINavigationController *nav = strongSelf.navigationController;
+                    if (nav) {
+                        [nav setViewControllers:@[home] animated:YES];
+                    }
+                    [CzedrAppChrome refreshSessionBarForDrawer:strongSelf.mm_drawerController];
                 }
             } failure:^(NSString *message) {
-                [MBProgressHUD hideHUDForView:self.view animated:YES];
+                [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
                 UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
             }];

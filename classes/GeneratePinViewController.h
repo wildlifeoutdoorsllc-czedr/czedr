@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Renu. All rights reserved.
 //
 
-#import "ViewController.h"
+#import <UIKit/UIKit.h>
 
-@interface GeneratePinViewController : ViewController
+@interface GeneratePinViewController : UIViewController
 {
     NSString *NewPassString;
 }

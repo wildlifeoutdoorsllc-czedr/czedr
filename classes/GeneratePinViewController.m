@@ -9,8 +9,10 @@
 #import "GeneratePinViewController.h"
 #import "CzedrTheme.h"
 #import "SharedServiceController.h"
+#import "CzedrAppChrome.h"
 #import "leftSwipeViewController.h"
-@interface GeneratePinViewController ()
+#import "UIViewController+MMDrawerController.h"
+@interface GeneratePinViewController () <UITextFieldDelegate>
 
 @end
 
@@ -83,6 +85,7 @@
     _pin8.layer.cornerRadius=3;
     _pin8.clipsToBounds = YES;
     [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
 }
 
 -(IBAction)save_click:(id)sender
@@ -317,8 +320,7 @@
                     [[NSUserDefaults standardUserDefaults] setValue:updated forKey:@"userDataArray"];
                     [[NSUserDefaults standardUserDefaults] synchronize];
                 }
-                leftSwipeViewController *obj = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
-                [self.navigationController pushViewController:obj animated:YES];
+                [self navigateToHomeAfterPin];
             } failure:^(NSString *message) {
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
                 if ([message rangeOfString:@"PIN already set" options:NSCaseInsensitiveSearch].location != NSNotFound) {
@@ -329,8 +331,7 @@
                         [[NSUserDefaults standardUserDefaults] setValue:updated forKey:@"userDataArray"];
                         [[NSUserDefaults standardUserDefaults] synchronize];
                     }
-                    leftSwipeViewController *obj = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
-                    [self.navigationController pushViewController:obj animated:YES];
+                    [self navigateToHomeAfterPin];
                     return;
                 }
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
@@ -352,8 +353,7 @@
              NSString *status=[NSString stringWithFormat:@"%@",[[response JSONValue] valueForKey:@"Status"]];
              if ([status isEqualToString:@"true"])
              {
-                 leftSwipeViewController *obj=[[leftSwipeViewController alloc]initWithNibName:@"leftSwipeViewController" bundle:nil];
-                 [self.navigationController pushViewController:obj animated:YES];
+                 [self navigateToHomeAfterPin];
              }
              else
              {
@@ -385,4 +385,16 @@
               }];
     }
 }
+
+- (void)navigateToHomeAfterPin
+{
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
+    UINavigationController *nav = self.navigationController;
+    if (nav) {
+        [nav setViewControllers:@[home] animated:YES];
+    }
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+}
+
 @end

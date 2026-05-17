@@ -69,12 +69,14 @@
     }
     NSString *czedrId = [user objectForKey:@"czedr_id"] ?: [data objectForKey:@"id"] ?: @"";
     NSString *email = [user objectForKey:@"email"] ?: @"";
+    NSString *name = [user objectForKey:@"name"] ?: [user objectForKey:@"display_name"] ?: email;
     return @{
         @"auth_code": [data objectForKey:@"auth_code"] ?: @"",
         @"id": czedrId,
         @"czedr_id": czedrId,
         @"email": email,
         @"email ": email,
+        @"name": name,
         @"user_pin": [data objectForKey:@"user_pin"] ?: @"0",
         @"profile_pic ": @"",
         @"user": user ?: @{}

@@ -193,7 +193,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         nav = (UINavigationController *)drawer.centerViewController;
     }
     if (back) {
-        back.enabled = (nav.viewControllers.count > 1);
+        back.enabled = (nav != nil && nav.viewControllers.count > 1);
     }
     if (forward) {
         forward.enabled = (CzedrForwardStack().count > 0);
@@ -260,6 +260,16 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         return;
     }
     if (![self isLoggedIn]) {
+        [self removeSessionBarFromDrawer:drawer];
+        return;
+    }
+
+    UIViewController *centerTop = nil;
+    if ([drawer.centerViewController isKindOfClass:[UINavigationController class]]) {
+        centerTop = [(UINavigationController *)drawer.centerViewController topViewController];
+    }
+    NSString *topClass = NSStringFromClass([centerTop class]);
+    if ([topClass isEqualToString:@"ViewController"] || [topClass isEqualToString:@"GeneratePinViewController"]) {
         [self removeSessionBarFromDrawer:drawer];
         return;
     }

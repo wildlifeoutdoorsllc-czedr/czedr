@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Renu. All rights reserved.
 //
 
-#import "ViewController.h"
+#import <UIKit/UIKit.h>
 
-@interface changePasswordViewController : ViewController
+@interface changePasswordViewController : UIViewController
 {
     IBOutlet UITextField *oldpassword;
     IBOutlet UITextField *newpassword;
