@@ -14,6 +14,8 @@
 #import "leftSwipeViewController.h"
 #import "leftViewController.h"
 #import "CzedrAppChrome.h"
+#import "GeneratePinViewController.h"
+#import "MBProgressHUD.h"
 #import <CoreData/CoreData.h>
 
 @interface AppDelegate ()
@@ -152,11 +154,56 @@
     [CzedrAppChrome refreshSessionBarForDrawer:drawerController];
 }
 
+- (void)presentPinSetupAfterLogin
+{
+    if (!self.window) {
+        return;
+    }
+    [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"Avalue"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [MBProgressHUD hideAllHUDsForView:self.window animated:NO];
+
+    GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
+    UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:pinVC];
+    navigation.navigationBarHidden = YES;
+
+    UIViewController *root = self.window.rootViewController;
+    if ([root isKindOfClass:[MMDrawerController class]]) {
+        MMDrawerController *drawer = (MMDrawerController *)root;
+        [drawer setCenterViewController:navigation withCloseAnimation:NO completion:nil];
+        return;
+    }
+
+    MMDrawerController *drawerController = [self drawerControllerWithCenterNavigation:navigation];
+    self.window.rootViewController = drawerController;
+    [self.window makeKeyAndVisible];
+}
+
 - (void)presentHomeAfterLogin
 {
+    if (!self.window) {
+        return;
+    }
+    [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"Avalue"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [MBProgressHUD hideAllHUDsForView:self.window animated:NO];
+
     leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
     UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:home];
     navigation.navigationBarHidden = YES;
+
+    UIViewController *root = self.window.rootViewController;
+    if ([root isKindOfClass:[MMDrawerController class]]) {
+        MMDrawerController *drawer = (MMDrawerController *)root;
+        [drawer setCenterViewController:navigation withCloseAnimation:NO completion:^(BOOL finished) {
+            (void)finished;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [CzedrAppChrome refreshSessionBarForDrawer:drawer];
+            });
+        }];
+        return;
+    }
+
     MMDrawerController *drawerController = [self drawerControllerWithCenterNavigation:navigation];
     self.window.rootViewController = drawerController;
     [self.window makeKeyAndVisible];

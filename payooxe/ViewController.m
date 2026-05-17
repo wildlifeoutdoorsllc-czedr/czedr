@@ -50,11 +50,17 @@
     if (![data isKindOfClass:[NSDictionary class]]) {
         return;
     }
+    AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    if (![app isKindOfClass:[AppDelegate class]]) {
+        return;
+    }
+    __weak AppDelegate *weakApp = app;
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self ensureUserInfoData];
-        [MBProgressHUD hideHUDForView:[self hudHostView] animated:NO];
-        [user_infodata removeAllObjects];
-        [user_infodata addObject:data];
+        __strong AppDelegate *strongApp = weakApp;
+        if (!strongApp || !strongApp.window) {
+            return;
+        }
+        [MBProgressHUD hideAllHUDsForView:strongApp.window animated:NO];
 
         if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length == 0) {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Sign-in succeeded but the session was not saved. Try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -62,20 +68,20 @@
             return;
         }
 
-        NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
-        if ([userPin isEqualToString:@"0"]) {
-            GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
-            UINavigationController *nav = self.navigationController;
-            if (nav) {
-                [nav pushViewController:pinVC animated:YES];
-            }
-            return;
-        }
+        [self ensureUserInfoData];
+        [user_infodata removeAllObjects];
+        [user_infodata addObject:data];
 
-        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-        if ([app respondsToSelector:@selector(presentHomeAfterLogin)]) {
-            [app presentHomeAfterLogin];
-        }
+        NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
+        void (^finish)(void) = ^{
+            if ([userPin isEqualToString:@"0"]) {
+                [strongApp presentPinSetupAfterLogin];
+            } else {
+                [strongApp presentHomeAfterLogin];
+            }
+        };
+        // Defer one turn so AFNetworking / HUD teardown cannot race the drawer swap.
+        dispatch_async(dispatch_get_main_queue(), finish);
     });
 }
 
@@ -366,7 +372,11 @@
         [SharedServiceController loginSecureWithEmail:self.email.text
                                              password:self.password.text
                                               success:^(NSDictionary *data) {
-            [weakSelf completeLoginWithPayload:data];
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            [strongSelf completeLoginWithPayload:data];
         } failure:^(NSString *message) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong typeof(weakSelf) strongSelf = weakSelf;
