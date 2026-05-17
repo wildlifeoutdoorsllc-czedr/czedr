@@ -1,4 +1,5 @@
 .env
+.cache/
 # Local business / distribution PDFs (do not commit)
 S3cur3*.pdf
 *Payment*Systems*Distribution*.pdf
@@ -13,6 +14,12 @@ storage/ach_exports/*
 config/database.vault.local.php
 *.local.php
 !config/database.local.php.example
+
+# Local signing keys (never commit)
+secrets/
+
+# Local TestFlight watcher state
+scripts/.testflight-watch-state.txt
 
 # iOS CI / Fastlane
 build/

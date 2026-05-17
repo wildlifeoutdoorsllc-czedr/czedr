@@ -122,3 +122,10 @@ jobs:
           name: Czedr-ipa
           path: build/*.ipa
           if-no-files-found: ignore
+
+      # On your Windows dev PC: run WATCH-TESTFLIGHT-AND-RESTART.cmd (or restart manually via RESTART-IPHONE-TESTING.cmd).
+      - name: Local dev reminder
+        if: success()
+        run: |
+          echo "::notice::TestFlight upload finished (build ${BUILD_NUMBER:-unknown})."
+          echo "::notice::On Windows: run RESTART-IPHONE-TESTING.cmd or leave WATCH-TESTFLIGHT-AND-RESTART.cmd running."
