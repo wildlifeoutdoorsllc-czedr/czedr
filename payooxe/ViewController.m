@@ -17,6 +17,7 @@
 #import "CzedrRuntimeConfig.h"
 #import "CzedrLanAPIFinder.h"
 #import "CzedrAppChrome.h"
+#import "UIViewController+MMDrawerController.h"
 
 @interface ViewController () <UITextFieldDelegate>
 @property (nonatomic, strong) UITextField *apiBaseTextField;
