@@ -16,6 +16,7 @@
 #import "InvoiceDetailViewController.h"
 #import "SharedServiceController.h"
 #import "leftSwipeViewController.h"
+#import "CzedrAppChrome.h"
 @interface pendingInvoicesViewController ()
 
 @end
@@ -25,6 +26,7 @@ static int sent_totalcount;
 @implementation pendingInvoicesViewController
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     if ([[[NSUserDefaults standardUserDefaults] valueForKey:@"pendingclick"] isEqualToString:@"pending"])
     {
         [back setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];

@@ -15,6 +15,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "UIViewController+MMDrawerController.h"
 #import "SharedServiceController.h"
+#import "CzedrAppChrome.h"
 #import "CzedrAvatarHelper.h"
 #import "MMDrawerVisualState.h"
 #import "MMDrawerBarButtonItem.h"
@@ -54,6 +55,7 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     //load the image
     
     namelbl.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"name"];

@@ -13,6 +13,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "leftSwipeViewController.h"
 #import "leftViewController.h"
+#import "CzedrAppChrome.h"
 #import <CoreData/CoreData.h>
 
 @interface AppDelegate ()
@@ -142,6 +143,7 @@
         [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeAll];
     }
     [self.window setRootViewController:drawerController];
+    [CzedrAppChrome refreshSessionBarForDrawer:drawerController];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application

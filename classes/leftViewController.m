@@ -135,7 +135,10 @@
             _nav = [[UINavigationController alloc] initWithRootViewController:left];
             _nav.navigationBarHidden=YES;
             [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES
-                                                   completion:nil];
+                                                   completion:^(BOOL finished) {
+                (void)finished;
+                [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+            }];
         }
         break;
         case 1:
@@ -146,7 +149,10 @@
             [[NSUserDefaults standardUserDefaults]setValue:@"profile" forKey:@"profileclick"];
             [[NSUserDefaults standardUserDefaults] synchronize];
             [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES
-                                                   completion:nil];
+                                                   completion:^(BOOL finished) {
+                (void)finished;
+                [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+            }];
         }
         break;
         case 2:
@@ -158,7 +164,10 @@
             
             _nav = [[UINavigationController alloc] initWithRootViewController:pending];
             _nav.navigationBarHidden=YES;
-            [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES completion:nil];
+            [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES completion:^(BOOL finished) {
+                (void)finished;
+                [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+            }];
         }
         break;
         case 3:
@@ -168,7 +177,10 @@
             makePaymentViewController *payment=[[makePaymentViewController alloc]initWithNibName:@"makePaymentViewController" bundle:nil];
             _nav = [[UINavigationController alloc] initWithRootViewController:payment];
             _nav.navigationBarHidden=YES;
-            [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES completion:nil];
+            [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES completion:^(BOOL finished) {
+                (void)finished;
+                [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+            }];
         }
         break;
         case 4:
@@ -179,7 +191,10 @@
             [self.navigationController pushViewController:history animated:YES];
             _nav = [[UINavigationController alloc] initWithRootViewController:history];
             _nav.navigationBarHidden=YES;
-            [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES completion:nil];
+            [self.mm_drawerController setCenterViewController:_nav withCloseAnimation:YES completion:^(BOOL finished) {
+                (void)finished;
+                [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+            }];
         }
             break;
         case 5:

@@ -12,6 +12,7 @@
 #import "MMDrawerBarButtonItem.h"
 #import <QuartzCore/QuartzCore.h>
 #import "SharedServiceController.h"
+#import "CzedrAppChrome.h"
 #import "pendingInvoicesViewController.h"
 #import <CoreData/CoreData.h>
 @interface makePaymentViewController ()
@@ -206,6 +207,7 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     _scroll_view.contentSize=CGSizeMake(320, 568);
     _czedrId.layer.cornerRadius=3;
     _czedrId.clipsToBounds = YES;

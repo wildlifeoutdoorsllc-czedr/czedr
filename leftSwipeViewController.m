@@ -104,7 +104,7 @@
     [CzedrTheme applyDeckLookToView:self.view];
     NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
     [self syncReferralEarningsUIWithAuthToken:tok];
-    [CzedrAppChrome installSessionBarInViewController:self];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
@@ -114,6 +114,12 @@
             [self recevied_service];
         });
     }
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
 }
 
 - (void)didReceiveMemoryWarning

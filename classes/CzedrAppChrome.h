@@ -9,7 +9,10 @@
 
 @interface CzedrAppChrome : NSObject
 
-/** Four-button bar pinned to the bottom of a view controller (Home screen). */
+/** Four-button bar on the main drawer (visible on every logged-in screen). */
++ (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer;
+
+/** Ensures the session bar is shown (uses drawer when available). */
 + (UIView *)installSessionBarInViewController:(UIViewController *)host;
 
 + (void)logoutFromViewController:(UIViewController *)host drawer:(MMDrawerController *)drawer;

@@ -16,6 +16,7 @@
 #import "GeneratePinViewController.h"
 #import "CzedrRuntimeConfig.h"
 #import "CzedrLanAPIFinder.h"
+#import "CzedrAppChrome.h"
 
 @interface ViewController () <UITextFieldDelegate>
 @property (nonatomic, strong) UITextField *apiBaseTextField;
@@ -303,6 +304,7 @@
                 } else {
                     leftSwipeViewController *left = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
                     [self.navigationController pushViewController:left animated:YES];
+                    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
                 }
             } failure:^(NSString *message) {
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
