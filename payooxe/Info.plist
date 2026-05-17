@@ -34,7 +34,11 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Czedr connects to your development server on your Wi-Fi network when you test against a computer running the Czedr API.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Czedr uses the camera when you choose to take a profile photo or capture an image while adding a payment card.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
