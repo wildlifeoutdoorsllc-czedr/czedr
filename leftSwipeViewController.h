@@ -30,4 +30,9 @@
 - (IBAction)historyButton:(id)sender;
 - (IBAction)profileButton:(id)sender;
 - (IBAction)referralEarningsButton:(id)sender;
+
+- (void)sessionLogout:(id)sender;
+- (void)sessionMinimize:(id)sender;
+- (void)sessionMaximize:(id)sender;
+- (void)sessionExit:(id)sender;
 @end

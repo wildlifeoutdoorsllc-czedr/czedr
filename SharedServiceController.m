@@ -587,6 +587,32 @@
     return [NSURL URLWithString:[NSString stringWithFormat:@"%@/v1/media/profile/%@", base, encoded ?: storedName]];
 }
 
++ (void)logoutWithSuccess:(void (^)(void))success
+                  failure:(CzedrAPIFailureBlock)failure
+{
+    if (![self usesV1API]) {
+        failure(@"Logout requires Czedr API");
+        return;
+    }
+    NSString *token = [self authToken];
+    if (token.length == 0) {
+        if (success) {
+            success();
+        }
+        return;
+    }
+    [self requestJSONMethod:@"POST"
+                       path:@"/v1/auth/logout"
+                 parameters:nil
+              authenticated:YES
+                    success:^(__unused NSDictionary *data) {
+                        if (success) {
+                            success();
+                        }
+                    }
+                    failure:failure];
+}
+
 + (void)saveProfilePicFilename:(NSString *)filename
 {
     if (![filename isKindOfClass:[NSString class]] || filename.length == 0) {

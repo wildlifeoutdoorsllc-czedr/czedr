@@ -19,6 +19,7 @@
 #import "ViewController.h"
 #import "SharedServiceController.h"
 #import "addCreditViewController.h"
+#import "CzedrAppChrome.h"
 #import <CoreData/CoreData.h>
 @interface leftSwipeViewController ()
 {
@@ -72,6 +73,7 @@
     
     [self.referralEarningsBtn setTitle:NSLocalizedString(@"Referral earnings", nil) forState:UIControlStateNormal];
     [self syncReferralEarningsUIWithAuthToken:autcode ?: @""];
+    [CzedrAppChrome installSessionBarInViewController:self];
     
     if (autcode.length==0)
     {
@@ -102,6 +104,7 @@
     [CzedrTheme applyDeckLookToView:self.view];
     NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
     [self syncReferralEarningsUIWithAuthToken:tok];
+    [CzedrAppChrome installSessionBarInViewController:self];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
@@ -507,6 +510,30 @@
         [self checkdatabase_count];
     }
 }
+- (void)sessionLogout:(id)sender
+{
+    (void)sender;
+    [CzedrAppChrome logoutFromViewController:self drawer:self.mm_drawerController];
+}
+
+- (void)sessionMinimize:(id)sender
+{
+    (void)sender;
+    [CzedrAppChrome minimizeFromViewController:self drawer:self.mm_drawerController];
+}
+
+- (void)sessionMaximize:(id)sender
+{
+    (void)sender;
+    [CzedrAppChrome maximizeFromViewController:self drawer:self.mm_drawerController];
+}
+
+- (void)sessionExit:(id)sender
+{
+    (void)sender;
+    [CzedrAppChrome exitFromViewController:self drawer:self.mm_drawerController];
+}
+
 - (void)showReferralEarnings
 {
     if (![SharedServiceController usesV1API]) { return; }

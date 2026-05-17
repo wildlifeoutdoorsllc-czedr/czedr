@@ -26,6 +26,7 @@
 		CZED0B241F60000200CZEDR /* CzedrRuntimeConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED0B231F60000200CZEDR /* CzedrRuntimeConfig.m */; };
 		CZED0C241F60000300CZEDR /* CzedrTheme.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED0C231F60000300CZEDR /* CzedrTheme.m */; };
 		CZED0D241F60000400CZEDR /* CzedrAvatarHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED0D231F60000400CZEDR /* CzedrAvatarHelper.m */; };
+		CZED0E241F60000500CZEDR /* CzedrAppChrome.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED0E231F60000500CZEDR /* CzedrAppChrome.m */; };
 		068F847E1B182B2E003652F0 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */; };
 		068F847F1B182B2E003652F0 /* AFHTTPRequestOperationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846E1B182B2E003652F0 /* AFHTTPRequestOperationManager.m */; };
 		068F84801B182B2E003652F0 /* AFHTTPSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F84701B182B2E003652F0 /* AFHTTPSessionManager.m */; };
@@ -205,6 +206,8 @@
 		CZED0C231F60000300CZEDR /* CzedrTheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = classes/CzedrTheme.m; sourceTree = "<group>"; };
 		CZED0D221F60000400CZEDR /* CzedrAvatarHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = classes/CzedrAvatarHelper.h; sourceTree = "<group>"; };
 		CZED0D231F60000400CZEDR /* CzedrAvatarHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = classes/CzedrAvatarHelper.m; sourceTree = "<group>"; };
+		CZED0E221F60000500CZEDR /* CzedrAppChrome.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = classes/CzedrAppChrome.h; sourceTree = "<group>"; };
+		CZED0E231F60000500CZEDR /* CzedrAppChrome.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = classes/CzedrAppChrome.m; sourceTree = "<group>"; };
 		068F846B1B182B2E003652F0 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
 		068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPRequestOperation.m; sourceTree = "<group>"; };
 		068F846D1B182B2E003652F0 /* AFHTTPRequestOperationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperationManager.h; sourceTree = "<group>"; };
@@ -497,6 +500,8 @@
 				CZED0C231F60000300CZEDR /* CzedrTheme.m */,
 				CZED0D221F60000400CZEDR /* CzedrAvatarHelper.h */,
 				CZED0D231F60000400CZEDR /* CzedrAvatarHelper.m */,
+				CZED0E221F60000500CZEDR /* CzedrAppChrome.h */,
+				CZED0E231F60000500CZEDR /* CzedrAppChrome.m */,
 			);
 			name = Services_class;
 			sourceTree = "<group>";
@@ -1077,6 +1082,7 @@
 				CZED0B241F60000200CZEDR /* CzedrRuntimeConfig.m in Sources */,
 				CZED0C241F60000300CZEDR /* CzedrTheme.m in Sources */,
 				CZED0D241F60000400CZEDR /* CzedrAvatarHelper.m in Sources */,
+				CZED0E241F60000500CZEDR /* CzedrAppChrome.m in Sources */,
 				AF3FBE1B1A9C70B600F8FE78 /* GCPlaceholderTextView.m in Sources */,
 				068F84B11B182B54003652F0 /* SBJsonWriter.m in Sources */,
 				068F84A51B182B54003652F0 /* NSObject+SBJson.m in Sources */,

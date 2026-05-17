@@ -20,6 +20,7 @@
 
 #import "AppDelegate.h"
 #import "SharedServiceController.h"
+#import "CzedrAppChrome.h"
 @interface leftViewController ()
 
 @end
@@ -183,8 +184,7 @@
             break;
         case 5:
         {
-            [self parse_logout];
-            
+            [CzedrAppChrome logoutFromViewController:self drawer:self.mm_drawerController];
         }
             break;
 //              case 6:

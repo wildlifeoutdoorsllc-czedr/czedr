@@ -12,9 +12,9 @@ on:
         required: false
         default: ""
       build_number:
-        description: "iOS build number (CFBundleVersion), e.g. 44"
+        description: "iOS build number (CFBundleVersion), e.g. 45"
         required: false
-        default: "44"
+        default: "45"
   push:
     branches: [main, master, czedrmaster]
     paths:
@@ -110,7 +110,7 @@ jobs:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
-          BUILD_NUMBER: ${{ github.event.inputs.build_number || '44' }}
+          BUILD_NUMBER: ${{ github.event.inputs.build_number || '45' }}
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
           FL_DISABLE_COLORS: "1"
         run: bundle exec fastlane ios beta
