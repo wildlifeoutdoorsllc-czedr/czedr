@@ -267,13 +267,17 @@ final class AuthService
     private function findUserById(string $userId): array
     {
         $pdo = ConnectionFactory::saturn();
-        $stmt = $pdo->prepare(
-            'SELECT id, czedr_id, email, status, role, created_at FROM users WHERE id = :id LIMIT 1'
-        );
+        $cols = self::usersTableHasRoleColumn($pdo)
+            ? 'id, czedr_id, email, status, role, created_at'
+            : 'id, czedr_id, email, status, created_at';
+        $stmt = $pdo->prepare("SELECT {$cols} FROM users WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $userId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) {
             throw new \RuntimeException('User not found');
+        }
+        if (!isset($row['role'])) {
+            $row['role'] = 'member';
         }
         return $this->publicUserRow($row);
     }
@@ -292,11 +296,29 @@ final class AuthService
     public function isStaff(string $userId): bool
     {
         $pdo = ConnectionFactory::saturn();
+        if (!self::usersTableHasRoleColumn($pdo)) {
+            return false;
+        }
         $stmt = $pdo->prepare('SELECT role FROM users WHERE id = :id LIMIT 1');
         $stmt->execute(['id' => $userId]);
         $role = $stmt->fetchColumn();
 
         return $role === 'staff';
+    }
+
+    private static function usersTableHasRoleColumn(PDO $pdo): bool
+    {
+        static $has = null;
+        if ($has !== null) {
+            return $has;
+        }
+        $stmt = $pdo->query(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'role'"
+        );
+        $has = $stmt !== false && (int) $stmt->fetchColumn() > 0;
+
+        return $has;
     }
 
     /**

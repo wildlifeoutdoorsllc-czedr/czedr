@@ -40,6 +40,16 @@ Write-Host ""
 
 & (Join-Path $PSScriptRoot 'ensure-iphone-api-ready.ps1')
 
+Write-Host "Database: applying pending migrations..." -ForegroundColor DarkGray
+$migrateScript = Join-Path $PSScriptRoot 'run-migrations.php'
+if (Test-Path $migrateScript) {
+    & php $migrateScript
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Database migrations failed — fix MySQL/.env, then restart." -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+}
+
 $apiUrlFile = Join-Path $root 'scripts\iphone-api-url.txt'
 "http://${lanIp}:8080" | Set-Content -Path $apiUrlFile -Encoding UTF8
 
