@@ -3,6 +3,9 @@
 This file summarizes work and decisions from Cursor chat sessions (May 2026).  
 Use it as a handoff if you return later or share the repo with someone else.
 
+> **Latest full handoff (login crash, TestFlight builds 51–56, Windows setup, security review):**  
+> **`docs/AGENT-HANDOFF.md`** — start there for the next agent.
+
 ---
 
 ## Product direction
@@ -98,11 +101,13 @@ Use it as a handoff if you return later or share the repo with someone else.
 
 ## Next steps (when you continue)
 
-1. Push git to GitHub: `git push origin master`
-2. Add Apple/GitHub secrets → run **iOS TestFlight** workflow
-3. Point production API via `CZEDR_API_BASE` or workflow `api_base_url` input
-4. Optional: real email for password reset (SMTP env vars — not wired yet; local uses `storage/logs/password-reset.log`)
+See **`docs/AGENT-HANDOFF.md`** for current priorities. Short version:
+
+1. Upload **build 56** to TestFlight when Apple daily limit (90382) resets.
+2. User tests login on **build 56** (not 54) with `START-IPHONE-TESTING.cmd` running.
+3. Optional: security fixes (reserved `czedr_id`, legacy PIN routes, reset-token logging).
+4. Optional: real email for password reset (SMTP not wired; local uses `storage/logs/password-reset.log`).
 
 ---
 
-*Last updated: May 2026*
+*Last updated: 2026-05-17*
