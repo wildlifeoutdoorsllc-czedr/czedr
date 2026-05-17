@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIFont *)avenir:(CGFloat)size weight:(NSString *)weight;
 
+/** Accepts test addresses like alice@test.czedr (TLD longer than 4 chars). */
++ (BOOL)isValidEmailAddress:(NSString *)email;
+
 + (void)applyGlobalAppearance;
 
 /** Walk view hierarchy and replace legacy green/blue Payooze colors with deck palette. */

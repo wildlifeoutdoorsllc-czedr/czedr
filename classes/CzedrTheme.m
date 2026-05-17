@@ -48,6 +48,17 @@
     return font ?: [UIFont systemFontOfSize:size];
 }
 
++ (BOOL)isValidEmailAddress:(NSString *)email
+{
+    NSString *trimmed = [email stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (trimmed.length == 0) {
+        return NO;
+    }
+    NSString *pattern = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,63}";
+    NSPredicate *test = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", pattern];
+    return [test evaluateWithObject:trimmed];
+}
+
 + (void)applyGlobalAppearance {
     [[UINavigationBar appearance] setBarTintColor:[self orangeField]];
     [[UINavigationBar appearance] setTintColor:[UIColor whiteColor]];

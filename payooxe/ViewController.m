@@ -155,10 +155,7 @@
     }
    else if([_email.text length] > 0)
    {
-       NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
-       NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
-       int checkValue=[emailTest evaluateWithObject:_email.text];
-       if (checkValue==0)
+       if (![CzedrTheme isValidEmailAddress:_email.text])
        {
            NSString *strAttention = NSLocalizedString(@"Attention", Nil);
            NSString *strAddress = NSLocalizedString(@"address is invalid", Nil);
