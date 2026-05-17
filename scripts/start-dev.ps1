@@ -29,9 +29,13 @@ if (-not $SkipApi) {
     }
 
     $mysqlScript = Join-Path $PSScriptRoot 'start-mysql.ps1'
-    if ((Test-Path $mysqlScript) -and -not (Get-Process mysqld -ErrorAction SilentlyContinue)) {
-        Write-Host "Starting MySQL..." -ForegroundColor DarkGray
+    if (Test-Path $mysqlScript) {
+        Write-Host 'Starting MySQL...' -ForegroundColor DarkGray
         & $mysqlScript
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host 'WARNING: MySQL failed to start. Login will not work until MySQL is running.' -ForegroundColor Yellow
+            Write-Host '  Fix: run .\start-mysql.ps1 or start mysqld --console in an Admin window.' -ForegroundColor Yellow
+        }
     }
 
     $on8080 = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue
