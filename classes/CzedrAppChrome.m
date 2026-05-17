@@ -4,46 +4,93 @@
 
 #import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
+#import "CzedrMaximizeIconView.h"
 #import "SharedServiceController.h"
 #import "ViewController.h"
 #import "UIViewController+MMDrawerController.h"
 #import "MMDrawerController.h"
 #import "MBProgressHUD.h"
 
-static const NSInteger kCzedrSessionBarTag = 88040;
+static const NSInteger kCzedrTopChromeTag = 88040;
+static const NSInteger kChromeBackButtonTag = 88041;
+static const NSInteger kChromeForwardButtonTag = 88042;
+static const NSInteger kChromeMinimizeButtonTag = 88043;
+static const NSInteger kChromeMaximizeButtonTag = 88044;
 
-@interface CzedrSessionBarTarget : NSObject
+static NSMutableArray<UIViewController *> *CzedrForwardStack(void)
+{
+    static NSMutableArray<UIViewController *> *stack = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        stack = [NSMutableArray array];
+    });
+    return stack;
+}
+
+@interface CzedrTopChromeTarget : NSObject
 @property (nonatomic, weak) MMDrawerController *drawer;
-- (void)sessionLogout:(id)sender;
-- (void)sessionMinimize:(id)sender;
-- (void)sessionMaximize:(id)sender;
-- (void)sessionExit:(id)sender;
+- (void)chromeBack:(id)sender;
+- (void)chromeForward:(id)sender;
+- (void)chromeMinimize:(id)sender;
+- (void)chromeMaximize:(id)sender;
 @end
 
-@implementation CzedrSessionBarTarget
+@implementation CzedrTopChromeTarget
 
-- (UIViewController *)actionHost
+- (UINavigationController *)centerNavigation
 {
     if (!self.drawer) {
         return nil;
     }
-    UIViewController *host = self.drawer.centerViewController;
-    if ([host isKindOfClass:[UINavigationController class]]) {
-        host = [(UINavigationController *)host topViewController] ?: host;
+    UIViewController *center = self.drawer.centerViewController;
+    if ([center isKindOfClass:[UINavigationController class]]) {
+        return (UINavigationController *)center;
     }
-    return host;
+    return nil;
 }
 
-- (void)sessionLogout:(id)sender
+- (UIViewController *)actionHost
+{
+    UINavigationController *nav = [self centerNavigation];
+    return nav.topViewController ?: nav;
+}
+
+- (void)chromeBack:(id)sender
 {
     (void)sender;
-    UIViewController *host = [self actionHost];
-    if (host) {
-        [CzedrAppChrome logoutFromViewController:host drawer:self.drawer];
+    UINavigationController *nav = [self centerNavigation];
+    if (!nav || nav.viewControllers.count <= 1) {
+        return;
     }
+    UIViewController *leaving = nav.topViewController;
+    if (leaving) {
+        [CzedrForwardStack() removeAllObjects];
+        [CzedrForwardStack() addObject:leaving];
+    }
+    [nav popViewControllerAnimated:YES];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [CzedrAppChrome refreshSessionBarForDrawer:self.drawer];
+    });
 }
 
-- (void)sessionMinimize:(id)sender
+- (void)chromeForward:(id)sender
+{
+    (void)sender;
+    UINavigationController *nav = [self centerNavigation];
+    if (!nav || CzedrForwardStack().count == 0) {
+        return;
+    }
+    UIViewController *next = CzedrForwardStack().lastObject;
+    [CzedrForwardStack() removeLastObject];
+    if (next) {
+        [nav pushViewController:next animated:YES];
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [CzedrAppChrome refreshSessionBarForDrawer:self.drawer];
+    });
+}
+
+- (void)chromeMinimize:(id)sender
 {
     (void)sender;
     UIViewController *host = [self actionHost];
@@ -52,7 +99,7 @@ static const NSInteger kCzedrSessionBarTag = 88040;
     }
 }
 
-- (void)sessionMaximize:(id)sender
+- (void)chromeMaximize:(id)sender
 {
     (void)sender;
     UIViewController *host = [self actionHost];
@@ -61,25 +108,16 @@ static const NSInteger kCzedrSessionBarTag = 88040;
     }
 }
 
-- (void)sessionExit:(id)sender
-{
-    (void)sender;
-    UIViewController *host = [self actionHost];
-    if (host) {
-        [CzedrAppChrome exitFromViewController:host drawer:self.drawer];
-    }
-}
-
 @end
 
 @implementation CzedrAppChrome
 
-static CzedrSessionBarTarget *CzedrSessionBarTargetShared(void)
+static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 {
-    static CzedrSessionBarTarget *target = nil;
+    static CzedrTopChromeTarget *target = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        target = [[CzedrSessionBarTarget alloc] init];
+        target = [[CzedrTopChromeTarget alloc] init];
     });
     return target;
 }
@@ -89,78 +127,120 @@ static CzedrSessionBarTarget *CzedrSessionBarTargetShared(void)
     return [[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length > 0;
 }
 
-+ (UIButton *)sessionButton:(NSString *)title action:(SEL)action target:(id)target
++ (UIButton *)chromeButtonWithTitle:(NSString *)title target:(id)target action:(SEL)action
 {
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
     [button setTitle:title forState:UIControlStateNormal];
-    button.titleLabel.font = [CzedrTheme avenir:11.0 weight:@"heavy"];
-    button.titleLabel.adjustsFontSizeToFitWidth = YES;
-    button.titleLabel.minimumScaleFactor = 0.65;
-    button.titleLabel.numberOfLines = 1;
-    button.layer.cornerRadius = 5.0;
+    [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [button setTitleColor:[[UIColor whiteColor] colorWithAlphaComponent:0.35] forState:UIControlStateDisabled];
+    button.titleLabel.font = [CzedrTheme avenir:18.0 weight:@"heavy"];
+    button.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.15];
+    button.layer.cornerRadius = 4.0;
     button.clipsToBounds = YES;
-    button.layer.borderWidth = 1.0;
-    button.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.25].CGColor;
     [button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
     return button;
 }
 
-+ (void)layoutSessionBar:(UIView *)bar inContainerView:(UIView *)containerView
++ (UIButton *)chromeWindowButtonWithTitle:(NSString *)title target:(id)target action:(SEL)action
+{
+    UIButton *button = [self chromeButtonWithTitle:title target:target action:action];
+    button.titleLabel.font = [UIFont systemFontOfSize:20.0 weight:UIFontWeightLight];
+    button.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
+    return button;
+}
+
++ (void)layoutTopChrome:(UIView *)bar inContainerView:(UIView *)containerView drawer:(MMDrawerController *)drawer
 {
     if (!bar || !containerView) {
         return;
     }
-    CGFloat height = 48.0;
-    CGFloat horizontalInset = 10.0;
-    CGFloat bottomInset = 6.0;
+    CGFloat barHeight = 44.0;
+    CGFloat topInset = 0.0;
     if (@available(iOS 11.0, *)) {
-        bottomInset += containerView.safeAreaInsets.bottom;
+        topInset = containerView.safeAreaInsets.top;
     }
     CGFloat width = containerView.bounds.size.width;
-    CGFloat y = containerView.bounds.size.height - height - bottomInset;
-    bar.frame = CGRectMake(horizontalInset, y, width - horizontalInset * 2.0, height);
+    bar.frame = CGRectMake(0, topInset, width, barHeight);
 
-    NSArray *buttons = bar.subviews;
-    if (buttons.count == 0) {
-        return;
+    UIButton *back = (UIButton *)[bar viewWithTag:kChromeBackButtonTag];
+    UIButton *forward = (UIButton *)[bar viewWithTag:kChromeForwardButtonTag];
+    UIButton *minimize = (UIButton *)[bar viewWithTag:kChromeMinimizeButtonTag];
+    UIButton *maximize = (UIButton *)[bar viewWithTag:kChromeMaximizeButtonTag];
+
+    CGFloat pad = 10.0;
+    CGFloat navW = 40.0;
+    CGFloat navH = 32.0;
+    CGFloat navY = (barHeight - navH) / 2.0;
+    if (back) {
+        back.frame = CGRectMake(pad, navY, navW, navH);
     }
-    CGFloat gap = 6.0;
-    CGFloat buttonWidth = (bar.bounds.size.width - gap * ((CGFloat)buttons.count - 1.0)) / (CGFloat)buttons.count;
-    for (NSUInteger i = 0; i < buttons.count; i++) {
-        UIView *sub = buttons[i];
-        if (![sub isKindOfClass:[UIButton class]]) {
-            continue;
-        }
-        sub.frame = CGRectMake(i * (buttonWidth + gap), 4.0, buttonWidth, height - 8.0);
+    if (forward) {
+        forward.frame = CGRectMake(pad + navW + 6.0, navY, navW, navH);
+    }
+
+    CGFloat winW = 44.0;
+    CGFloat winH = 32.0;
+    CGFloat winY = (barHeight - winH) / 2.0;
+    if (maximize) {
+        maximize.frame = CGRectMake(width - pad - winW, winY, winW, winH);
+    }
+    if (minimize) {
+        minimize.frame = CGRectMake(width - pad - winW * 2.0 - 6.0, winY, winW, winH);
+    }
+
+    UINavigationController *nav = nil;
+    if ([drawer.centerViewController isKindOfClass:[UINavigationController class]]) {
+        nav = (UINavigationController *)drawer.centerViewController;
+    }
+    if (back) {
+        back.enabled = (nav.viewControllers.count > 1);
+    }
+    if (forward) {
+        forward.enabled = (CzedrForwardStack().count > 0);
     }
 }
 
-+ (UIView *)buildSessionBarWithTarget:(CzedrSessionBarTarget *)target
++ (UIView *)buildTopChromeWithTarget:(CzedrTopChromeTarget *)target
 {
-    CGFloat height = 48.0;
-    UIView *bar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, height)];
-    bar.tag = kCzedrSessionBarTag;
-    bar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-    bar.backgroundColor = [[CzedrTheme darkSurface] colorWithAlphaComponent:0.96];
-    bar.layer.cornerRadius = 8.0;
-    bar.layer.borderWidth = 1.0;
-    bar.layer.borderColor = [[CzedrTheme redPrimary] colorWithAlphaComponent:0.55].CGColor;
+    UIView *bar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+    bar.tag = kCzedrTopChromeTag;
+    bar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+    bar.backgroundColor = [[CzedrTheme darkSurface] colorWithAlphaComponent:0.94];
+    bar.layer.borderColor = [[UIColor blackColor] colorWithAlphaComponent:0.35].CGColor;
+    bar.layer.borderWidth = 0.0;
     bar.layer.shadowColor = [UIColor blackColor].CGColor;
-    bar.layer.shadowOpacity = 0.35;
-    bar.layer.shadowRadius = 4.0;
-    bar.layer.shadowOffset = CGSizeMake(0, -2);
+    bar.layer.shadowOpacity = 0.25;
+    bar.layer.shadowRadius = 3.0;
+    bar.layer.shadowOffset = CGSizeMake(0, 2);
 
-    NSArray *titles = @[@"Logout", @"Minimize", @"Maximize", @"Exit"];
-    NSArray *actions = @[@"sessionLogout:", @"sessionMinimize:", @"sessionMaximize:", @"sessionExit:"];
-    for (NSUInteger i = 0; i < titles.count; i++) {
-        UIButton *btn = [self sessionButton:titles[i] action:NSSelectorFromString(actions[i]) target:target];
-        if ([titles[i] isEqualToString:@"Logout"] || [titles[i] isEqualToString:@"Exit"]) {
-            [CzedrTheme styleRedPrimaryButton:btn];
-        } else {
-            [CzedrTheme styleCharcoalButton:btn];
-        }
-        [bar addSubview:btn];
-    }
+    UIButton *back = [self chromeButtonWithTitle:@"\u2190" target:target action:@selector(chromeBack:)];
+    back.tag = kChromeBackButtonTag;
+    back.accessibilityLabel = @"Back";
+    [bar addSubview:back];
+
+    UIButton *forward = [self chromeButtonWithTitle:@"\u2192" target:target action:@selector(chromeForward:)];
+    forward.tag = kChromeForwardButtonTag;
+    forward.accessibilityLabel = @"Forward";
+    [bar addSubview:forward];
+
+    UIButton *minimize = [self chromeWindowButtonWithTitle:@"_" target:target action:@selector(chromeMinimize:)];
+    minimize.tag = kChromeMinimizeButtonTag;
+    minimize.accessibilityLabel = @"Minimize";
+    [bar addSubview:minimize];
+
+    UIButton *maximize = [UIButton buttonWithType:UIButtonTypeCustom];
+    maximize.tag = kChromeMaximizeButtonTag;
+    maximize.accessibilityLabel = @"Maximize";
+    maximize.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
+    maximize.layer.cornerRadius = 4.0;
+    maximize.clipsToBounds = YES;
+    [maximize addTarget:target action:@selector(chromeMaximize:) forControlEvents:UIControlEventTouchUpInside];
+    CzedrMaximizeIconView *icon = [[CzedrMaximizeIconView alloc] initWithFrame:CGRectMake(0, 0, 44, 32)];
+    icon.userInteractionEnabled = NO;
+    icon.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [maximize addSubview:icon];
+    [bar addSubview:maximize];
+
     return bar;
 }
 
@@ -169,8 +249,9 @@ static CzedrSessionBarTarget *CzedrSessionBarTargetShared(void)
     if (!drawer) {
         return;
     }
-    UIView *bar = [drawer.view viewWithTag:kCzedrSessionBarTag];
+    UIView *bar = [drawer.view viewWithTag:kCzedrTopChromeTag];
     [bar removeFromSuperview];
+    [CzedrForwardStack() removeAllObjects];
 }
 
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer
@@ -183,15 +264,25 @@ static CzedrSessionBarTarget *CzedrSessionBarTargetShared(void)
         return;
     }
 
-    CzedrSessionBarTarget *target = CzedrSessionBarTargetShared();
+    CzedrTopChromeTarget *target = CzedrTopChromeTargetShared();
     target.drawer = drawer;
 
-    UIView *bar = [drawer.view viewWithTag:kCzedrSessionBarTag];
+    static __weak UINavigationController *lastCenterNav = nil;
+    UINavigationController *nav = nil;
+    if ([drawer.centerViewController isKindOfClass:[UINavigationController class]]) {
+        nav = (UINavigationController *)drawer.centerViewController;
+    }
+    if (nav != lastCenterNav) {
+        [CzedrForwardStack() removeAllObjects];
+        lastCenterNav = nav;
+    }
+
+    UIView *bar = [drawer.view viewWithTag:kCzedrTopChromeTag];
     if (!bar) {
-        bar = [self buildSessionBarWithTarget:target];
+        bar = [self buildTopChromeWithTarget:target];
         [drawer.view addSubview:bar];
     }
-    [self layoutSessionBar:bar inContainerView:drawer.view];
+    [self layoutTopChrome:bar inContainerView:drawer.view drawer:drawer];
     bar.hidden = NO;
     bar.userInteractionEnabled = YES;
     [drawer.view bringSubviewToFront:bar];
@@ -202,21 +293,9 @@ static CzedrSessionBarTarget *CzedrSessionBarTargetShared(void)
     MMDrawerController *drawer = host.mm_drawerController;
     if (drawer) {
         [self refreshSessionBarForDrawer:drawer];
-        return [drawer.view viewWithTag:kCzedrSessionBarTag];
+        return [drawer.view viewWithTag:kCzedrTopChromeTag];
     }
-    if (![self isLoggedIn]) {
-        return nil;
-    }
-    UIView *bar = [host.view viewWithTag:kCzedrSessionBarTag];
-    if (!bar) {
-        CzedrSessionBarTarget *target = CzedrSessionBarTargetShared();
-        target.drawer = drawer;
-        bar = [self buildSessionBarWithTarget:target];
-        [host.view addSubview:bar];
-    }
-    [self layoutSessionBar:bar inContainerView:host.view];
-    [host.view bringSubviewToFront:bar];
-    return bar;
+    return nil;
 }
 
 + (void)clearLocalSession
@@ -225,6 +304,7 @@ static CzedrSessionBarTarget *CzedrSessionBarTargetShared(void)
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"userDataArray"];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"profile_pic"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    [CzedrForwardStack() removeAllObjects];
 }
 
 + (void)showLoginFromViewController:(UIViewController *)host drawer:(MMDrawerController *)drawer

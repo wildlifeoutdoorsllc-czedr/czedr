@@ -1,6 +1,6 @@
 //
 //  CzedrAppChrome.h
-//  Session controls: logout, minimize menu, maximize menu, exit to sign-in.
+//  Top navigation and window-style controls for logged-in screens.
 //
 
 #import <UIKit/UIKit.h>
@@ -9,10 +9,9 @@
 
 @interface CzedrAppChrome : NSObject
 
-/** Four-button bar on the main drawer (visible on every logged-in screen). */
+/** Top bar: back/forward (left), minimize / maximize (upper right). */
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer;
 
-/** Ensures the session bar is shown (uses drawer when available). */
 + (UIView *)installSessionBarInViewController:(UIViewController *)host;
 
 + (void)logoutFromViewController:(UIViewController *)host drawer:(MMDrawerController *)drawer;
