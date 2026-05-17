@@ -9,6 +9,9 @@
 
 @interface CzedrAppChrome : NSObject
 
++ (BOOL)isLoggedIn;
++ (void)clearLocalSession;
+
 /** Top bar: back/forward (left), minimize / maximize (upper right). */
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer;
 
