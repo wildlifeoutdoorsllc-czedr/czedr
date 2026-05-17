@@ -37,6 +37,10 @@
     }
     [CzedrTheme applyGlobalAppearance];
     self.window.backgroundColor = [CzedrTheme darkBackground];
+    // New process after force-quit: stored auth must not skip sign-in (token alone is not enough).
+    if ([CzedrAppChrome isLoggedIn]) {
+        [CzedrAppChrome clearLocalSession];
+    }
     [[NSUserDefaults standardUserDefaults] setValue:@"0" forKey:@"Avalue"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [self mainViewSwitch];
