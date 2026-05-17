@@ -4,7 +4,6 @@
 
 #import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
-#import "CzedrMaximizeIconView.h"
 #import "SharedServiceController.h"
 #import "ViewController.h"
 #import "UIViewController+MMDrawerController.h"
@@ -178,14 +177,15 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         forward.frame = CGRectMake(pad + navW + 6.0, navY, navW, navH);
     }
 
-    CGFloat winW = 44.0;
+    CGFloat winW = 40.0;
     CGFloat winH = 32.0;
+    CGFloat winGap = 4.0;
     CGFloat winY = (barHeight - winH) / 2.0;
     if (maximize) {
         maximize.frame = CGRectMake(width - pad - winW, winY, winW, winH);
     }
     if (minimize) {
-        minimize.frame = CGRectMake(width - pad - winW * 2.0 - 6.0, winY, winW, winH);
+        minimize.frame = CGRectMake(width - pad - winW * 2.0 - winGap, winY, winW, winH);
     }
 
     UINavigationController *nav = nil;
@@ -223,22 +223,15 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     forward.accessibilityLabel = @"Forward";
     [bar addSubview:forward];
 
-    UIButton *minimize = [self chromeWindowButtonWithTitle:@"_" target:target action:@selector(chromeMinimize:)];
+    UIButton *minimize = [self chromeWindowButtonWithTitle:@"\u2212" target:target action:@selector(chromeMinimize:)];
     minimize.tag = kChromeMinimizeButtonTag;
     minimize.accessibilityLabel = @"Minimize";
     [bar addSubview:minimize];
 
-    UIButton *maximize = [UIButton buttonWithType:UIButtonTypeCustom];
+    UIButton *maximize = [self chromeWindowButtonWithTitle:@"+" target:target action:@selector(chromeMaximize:)];
     maximize.tag = kChromeMaximizeButtonTag;
     maximize.accessibilityLabel = @"Maximize";
-    maximize.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
-    maximize.layer.cornerRadius = 4.0;
-    maximize.clipsToBounds = YES;
-    [maximize addTarget:target action:@selector(chromeMaximize:) forControlEvents:UIControlEventTouchUpInside];
-    CzedrMaximizeIconView *icon = [[CzedrMaximizeIconView alloc] initWithFrame:CGRectMake(0, 0, 44, 32)];
-    icon.userInteractionEnabled = NO;
-    icon.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [maximize addSubview:icon];
+    maximize.titleLabel.font = [UIFont systemFontOfSize:22.0 weight:UIFontWeightLight];
     [bar addSubview:maximize];
 
     return bar;
