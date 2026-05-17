@@ -296,6 +296,7 @@
     int reach = [reachAbilty updateInterfaceWithReachability];
     if (reach==0)
     {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
         NSString *strAttention = NSLocalizedString(@"Attention", Nil);
         NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
         NSString *strOk = NSLocalizedString(@"OK", Nil);
@@ -320,6 +321,18 @@
                 [self.navigationController pushViewController:obj animated:YES];
             } failure:^(NSString *message) {
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
+                if ([message rangeOfString:@"PIN already set" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+                    NSMutableDictionary *stored = [[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] mutableCopy];
+                    if ([stored isKindOfClass:[NSDictionary class]]) {
+                        NSMutableDictionary *updated = [stored mutableCopy];
+                        [updated setObject:@"1" forKey:@"user_pin"];
+                        [[NSUserDefaults standardUserDefaults] setValue:updated forKey:@"userDataArray"];
+                        [[NSUserDefaults standardUserDefaults] synchronize];
+                    }
+                    leftSwipeViewController *obj = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
+                    [self.navigationController pushViewController:obj animated:YES];
+                    return;
+                }
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
             }];

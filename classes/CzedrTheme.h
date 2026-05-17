@@ -47,6 +47,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)styleRedPrimaryButton:(UIButton *)button;
 + (void)styleCharcoalButton:(UIButton *)button;
 + (void)stylePinField:(UITextField *)field;
+/** Czedr IDs use letters and digits (e.g. CZAB79D695) — not number-only keyboard. */
++ (void)styleCzedrIdField:(UITextField *)field;
++ (void)styleEmailField:(UITextField *)field;
++ (void)stylePasswordField:(UITextField *)field;
 + (void)styleNavigationHeader:(UIView *)headerView;
 + (void)styleGridTile:(UIView *)tileView;
 

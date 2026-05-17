@@ -9,13 +9,11 @@
 #import "generalViewController.h"
 #import "CzedrTheme.h"
 #import "SharedServiceController.h"
-#import <AssetsLibrary/AssetsLibrary.h>
 #import "changePasswordViewController.h"
 #import "ChangePinViewController.h"
 #import "forgotViewController.h"
+#import "CzedrAvatarHelper.h"
 @interface generalViewController ()
-@property(nonatomic,strong) ALAssetsLibrary *library;
-@property(nonatomic,strong) DemoImageEditor *imageEditor;
 @end
 
 
@@ -27,6 +25,18 @@
      _emailAddress.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"email "];
      _contactNumber.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"mobile_no"];
     [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme styleEmailField:_emailAddress];
+    [self refreshProfilePhoto];
+}
+
+- (void)refreshProfilePhoto
+{
+    [[AsyncImageLoader sharedLoader].cache removeAllObjects];
+    NSString *pic = [[NSUserDefaults standardUserDefaults] valueForKey:@"profile_pic"];
+    profilepic.imageURL = [SharedServiceController profileImageURLForStoredName:pic];
+    if (pic.length == 0) {
+        profilepic.image = [UIImage imageNamed:@"pro_icon.png"];
+    }
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -89,36 +99,7 @@
                           delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
                               self.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
                           } completion:nil];
-    
-    NSString *strGallery = NSLocalizedString(@"from gallery", Nil);
-    NSString *strCancel = NSLocalizedString(@"Cancel", Nil);
-    NSString *strOpenCamera = NSLocalizedString(@"Open Camera", Nil);
-    NSString *strSensitiveData = NSLocalizedString(@"secure sensitive data", Nil);
-    
-    UIActionSheet *popup = [[UIActionSheet alloc] initWithTitle:strSensitiveData delegate:self cancelButtonTitle:strCancel destructiveButtonTitle:nil otherButtonTitles:
-                            strGallery,
-                            strOpenCamera,nil];
-    popup.tag = 1;
-    [popup showInView:[UIApplication sharedApplication].keyWindow];
-}
-
-- (void)actionSheet:(UIActionSheet *)popup clickedButtonAtIndex:(NSInteger)buttonIndex {
-    
-    switch (popup.tag)
-    {
-        case 1: {
-            switch (buttonIndex)
-            {
-                case 0:
-                    [self galleryClick:nil];
-                    break;
-                case 1:
-                    [self camraClick:nil];
-                    break;
-            }
-            break;
-        }
-    }
+    [CzedrAvatarHelper presentFromViewController:self imageView:profilepic];
 }
 
 #pragma mark alertview
@@ -196,87 +177,18 @@
 
 -(IBAction)galleryClick:(id)sender
 {
-    [backView removeFromSuperview];
-    imagePickerView = [[UIImagePickerController alloc] init];
-    imagePickerView.delegate = self;
-    imagePickerView.sourceType =  UIImagePickerControllerSourceTypePhotoLibrary;
-    imagePickerView.title=@"Select Image";
-    [self presentViewController:imagePickerView animated:YES completion:nil];
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-    self.imageEditor = [[DemoImageEditor alloc] initWithNibName:@"DemoImageEditor" bundle:nil];
-    self.imageEditor.checkBounds = YES;
-    self.imageEditor.rotateEnabled = YES;
-    self.library = library;
-    self.imageEditor.doneCallback = ^(UIImage *editedImage, BOOL canceled)
-    {
-        if(!canceled)
-        {
-            NSData *imageData = UIImagePNGRepresentation(editedImage);
-            UIImage *image = [UIImage imageWithData:imageData];
-            profilepic.image=image;
-            [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-            imageupload_timer=[NSTimer scheduledTimerWithTimeInterval:0.2 target:self
-                                                              selector:@selector(TimeOver) userInfo:nil repeats:YES];
-        }
-        [imagePickerView dismissViewControllerAnimated:YES completion:NULL];
-        [imagePickerView setNavigationBarHidden:NO animated:YES];
-    };
-}
-
--(void)TimeOver
-{
-    [imageupload_timer invalidate];
-    [self photoUpload_service];
-}
-
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
-{
-    UIImage *image =  [info objectForKey:UIImagePickerControllerOriginalImage];
-    NSURL *assetURL = [info objectForKey:UIImagePickerControllerReferenceURL];
-    
-    [self.library assetForURL:assetURL resultBlock:^(ALAsset *asset) {
-        UIImage *preview = [UIImage imageWithCGImage:[asset aspectRatioThumbnail]];
-        
-        self.imageEditor.sourceImage = image;
-        self.imageEditor.previewImage = preview;
-        [self.imageEditor reset:NO];
-        [picker pushViewController:self.imageEditor animated:YES];
-        [picker setNavigationBarHidden:YES animated:NO];
-        
-    } failureBlock:^(NSError *error) {
-//        NSLog(@"Failed to get asset from library");
-    }];
+    if (backView) {
+        [backView removeFromSuperview];
+    }
+    [CzedrAvatarHelper presentFromViewController:self imageView:profilepic];
 }
 
 -(IBAction)camraClick:(id)sender
 {
-    [backView removeFromSuperview];
-    imagePickerView = [[UIImagePickerController alloc] init];
-    imagePickerView.delegate = self;
-    imagePickerView.sourceType =  UIImagePickerControllerSourceTypeCamera;
-  
-    [self presentViewController:imagePickerView animated:YES completion:nil];
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-    self.imageEditor = [[DemoImageEditor alloc] initWithNibName:@"DemoImageEditor" bundle:nil];
-    self.imageEditor.checkBounds = YES;
-    self.imageEditor.rotateEnabled = YES;
-    self.library = library;
-    self.imageEditor.doneCallback = ^(UIImage *editedImage, BOOL canceled)
-    {
-        if(!canceled)
-        {
-            NSData *imageData = UIImagePNGRepresentation(editedImage);
-            
-            UIImage *image = [UIImage imageWithData:imageData];
-         //[profilebtn setImage:image forState:UIControlStateNormal];
-            profilepic.image=image;
-            [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-            imageupload_timer=[NSTimer scheduledTimerWithTimeInterval:0.2 target:self
-                                                             selector:@selector(TimeOver) userInfo:nil repeats:YES];
-        }
-        [imagePickerView dismissViewControllerAnimated:YES completion:NULL];
-        [imagePickerView setNavigationBarHidden:NO animated:YES];
-    };
+    if (backView) {
+        [backView removeFromSuperview];
+    }
+    [CzedrAvatarHelper presentFromViewController:self imageView:profilepic];
 }
 
 -(IBAction)updateprofile_click:(id)sender
@@ -505,8 +417,8 @@
             [SharedServiceController uploadProfileImageData:myData success:^(NSDictionary *data) {
                 NSString *pic = [data objectForKey:@"profile_pic"] ?: [data objectForKey:@"profile_pic "];
                 if (pic.length > 0) {
-                    [[NSUserDefaults standardUserDefaults] setValue:pic forKey:@"profile_pic"];
-                    [[NSUserDefaults standardUserDefaults] synchronize];
+                    [SharedServiceController saveProfilePicFilename:pic];
+                    [self refreshProfilePhoto];
                 }
                 NSString *str = NSLocalizedString(@"User Image Uploaded", Nil);
                 NSString *strOk = NSLocalizedString(@"OK", Nil);

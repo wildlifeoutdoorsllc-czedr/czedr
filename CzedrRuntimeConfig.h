@@ -14,4 +14,7 @@ FOUNDATION_EXPORT NSString * const CzedrAPIBaseUserDefaultsKey;
 /** Compile-time default from CzedrConfig.h, or UserDefaults override when set. */
 NSString *CzedrEffectiveAPIBase(void);
 
+/** Persist API base for subsequent requests (trims whitespace; empty clears override). */
+void CzedrSetAPIBaseOverride(NSString *base);
+
 #endif

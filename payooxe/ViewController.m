@@ -14,9 +14,10 @@
 #import "AppDelegate.h"
 #import "SharedServiceController.h"
 #import "GeneratePinViewController.h"
+#import "CzedrRuntimeConfig.h"
 
 @interface ViewController () <UITextFieldDelegate>
-
+@property (nonatomic, strong) UITextField *apiBaseTextField;
 @end
 
 @implementation ViewController
@@ -55,6 +56,34 @@
         [_viewDetail addSubview:signInTitle];
     }
     signInTitle.text = NSLocalizedString(@"Sign in", Nil);
+
+    if (!self.apiBaseTextField) {
+        UITextField *apiField = [[UITextField alloc] initWithFrame:CGRectMake(20, 186, 230, 28)];
+        apiField.delegate = self;
+        apiField.textAlignment = NSTextAlignmentCenter;
+        apiField.backgroundColor = _email.backgroundColor;
+        apiField.textColor = [UIColor whiteColor];
+        apiField.font = [UIFont fontWithName:@"AVENIR" size:12.0];
+        apiField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        apiField.autocorrectionType = UITextAutocorrectionTypeNo;
+        apiField.keyboardType = UIKeyboardTypeURL;
+        apiField.returnKeyType = UIReturnKeyNext;
+        apiField.clearButtonMode = UITextFieldViewModeWhileEditing;
+        apiField.layer.cornerRadius = 3;
+        apiField.clipsToBounds = YES;
+        apiField.text = CzedrEffectiveAPIBase();
+        apiField.placeholder = @"API server (http://…:8080)";
+        [CzedrTheme applyPlaceholderAppearanceToTextField:apiField color:[UIColor whiteColor] font:apiField.font];
+        [_viewDetail addSubview:apiField];
+        self.apiBaseTextField = apiField;
+
+        const CGFloat shift = 36;
+        for (UIView *field in @[_email, _password, loginbutton, forgetbutton, signupbutton]) {
+            CGRect frame = field.frame;
+            frame.origin.y += shift;
+            field.frame = frame;
+        }
+    }
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -73,12 +102,19 @@
     UIFont *fieldFont = [UIFont fontWithName:@"AVENIR" size:14.0];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_email color:[UIColor whiteColor] font:fieldFont];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_password color:[UIColor whiteColor] font:fieldFont];
+    if (self.apiBaseTextField) {
+        self.apiBaseTextField.layer.cornerRadius = 3;
+        self.apiBaseTextField.clipsToBounds = YES;
+        [CzedrTheme applyPlaceholderAppearanceToTextField:self.apiBaseTextField color:[UIColor whiteColor] font:self.apiBaseTextField.font];
+    }
    loginbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     signupbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     forgetbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     _email.font=[UIFont fontWithName:@"AVENIR" size:14.0];
     _password.font=[UIFont fontWithName:@"AVENIR" size:14.0];
     [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme styleEmailField:_email];
+    [CzedrTheme stylePasswordField:_password];
     [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:nil];
     [CzedrTheme styleRedPrimaryButton:loginbutton];
     [CzedrTheme styleCharcoalButton:signupbutton];
@@ -87,18 +123,18 @@
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
-    if (textField == _email)
-    {
-        [UIView animateWithDuration:0.5f
-                              delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                                  self.view.frame = CGRectMake(0, -60, self.view.frame.size.width, self.view.frame.size.height);
-                              } completion:nil];
+    CGFloat offset = 0;
+    if (textField == self.apiBaseTextField) {
+        offset = -40;
+    } else if (textField == _email) {
+        offset = -80;
+    } else if (textField == _password) {
+        offset = -120;
     }
-   else if (textField == _password) {
-        
+    if (offset != 0) {
         [UIView animateWithDuration:0.5f
                               delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                                  self.view.frame = CGRectMake(0, -120, self.view.frame.size.width, self.view.frame.size.height);
+                                  self.view.frame = CGRectMake(0, offset, self.view.frame.size.width, self.view.frame.size.height);
                               } completion:nil];
     }
     return YES;
@@ -111,10 +147,11 @@
                               self.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
                           } completion:nil];
     
-    if (textField==_email) {
+    if (textField == self.apiBaseTextField) {
+        [_email becomeFirstResponder];
+    } else if (textField == _email) {
         [_password becomeFirstResponder];
-    }
-    else{
+    } else {
         [_password resignFirstResponder];
     }
     // if (textField==_password) {
@@ -183,10 +220,26 @@
 {
     [_email resignFirstResponder];
     [_password resignFirstResponder];
+    [self.apiBaseTextField resignFirstResponder];
+
+    NSString *apiBase = [self.apiBaseTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (apiBase.length == 0) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Enter the API server URL (e.g. http://192.168.x.x:8080 on a physical iPhone)." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+        return;
+    }
+    if (![apiBase hasPrefix:@"http://"] && ![apiBase hasPrefix:@"https://"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"API server must start with http:// or https://" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+        return;
+    }
+    CzedrSetAPIBaseOverride(apiBase);
+
     [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc]init];
     int reach = [reachAbilty updateInterfaceWithReachability];
     if (reach==0){
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
         NSString *strAttention = NSLocalizedString(@"Attention", Nil);
         NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
         NSString *strOk = NSLocalizedString(@"OK", Nil);

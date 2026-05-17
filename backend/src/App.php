@@ -185,6 +185,15 @@ final class App
             JsonResponse::ok(['updated' => true]);
         }));
 
+        $this->router->post('/v1/auth/pin/set', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $pin = (string) ($r->body['user_pin'] ?? $r->body['pin'] ?? '');
+            if ($this->auth->hasPinSet($uid)) {
+                throw new \InvalidArgumentException('PIN already set');
+            }
+            $this->auth->setPin($uid, $pin);
+            JsonResponse::ok(['set' => true, 'user_pin' => '1']);
+        }));
+
         $this->router->post('/v1/auth/pin/set-secure', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
             $payload = $this->decryptSecureBody($r);
             $pin = (string) ($payload['user_pin'] ?? $payload['pin'] ?? '');
@@ -192,7 +201,7 @@ final class App
                 throw new \InvalidArgumentException('PIN already set');
             }
             $this->auth->setPin($uid, $pin);
-            JsonResponse::ok(['set' => true]);
+            JsonResponse::ok(['set' => true, 'user_pin' => '1']);
         }));
 
         $this->router->post('/v1/auth/logout', function (Request $r) {

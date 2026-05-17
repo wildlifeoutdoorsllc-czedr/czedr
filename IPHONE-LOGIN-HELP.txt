@@ -1,0 +1,35 @@
+CZEDR — iPhone login (simple steps)
+=====================================
+
+1) On your PC, double-click this file:
+   
+   scripts\START-IPHONE-TESTING.cmd
+
+   • When Windows asks for permission, click YES.
+   • Leave the black window OPEN while you use the app.
+
+2) On your iPhone (same Wi‑Fi as the PC), open Safari and go to the
+   address shown in that window, for example:
+
+   http://192.168.68.51:8080/v1/health
+
+   You should see text starting with {"Status":"true"
+
+   If Safari does NOT load that page, the PC firewall or Wi‑Fi is still
+   blocking the phone — run START-IPHONE-TESTING.cmd again and click YES.
+
+3) In the Czedr app on iPhone:
+   • API server: use the same address as in step 2 but WITHOUT /v1/health
+     Example: http://192.168.68.51:8080
+   • Email:    alice@test.czedr
+   • Password: TestPass1234!
+
+   After sign-in you may be asked to create a 4-digit PIN. Enter the same
+   4 digits twice (e.g. 1234 and 1234 again), then tap the save button.
+
+4) iPhone Settings → Privacy & Security → Local Network → Czedr → ON
+
+5) Rebuild/run the app from Xcode on your Mac if you changed the project
+   recently (your developer does this once).
+
+Need help? Tell support what happens in step 2 (Safari works or not).

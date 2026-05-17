@@ -34,7 +34,8 @@ platform :ios do
       profile_uuid: profile_uuid
     )
 
-    build_number = ENV.fetch("GITHUB_RUN_NUMBER", "1")
+    build_number = ENV["BUILD_NUMBER"].to_s.strip
+    build_number = ENV.fetch("GITHUB_RUN_NUMBER", "1") if build_number.empty?
     increment_build_number(
       xcodeproj: "payooxe.xcodeproj",
       build_number: build_number

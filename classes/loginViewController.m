@@ -78,6 +78,9 @@
     [CzedrTheme applyPlaceholderAppearanceToTextField:_mobileNumber color:placeholderColor font:nil];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_confirmPassword color:placeholderColor font:nil];
     [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme styleEmailField:_emailAddress];
+    [CzedrTheme stylePasswordField:_password];
+    [CzedrTheme stylePasswordField:_confirmPassword];
     _scrollView.backgroundColor = [UIColor clearColor];
     [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:nil];
 }

@@ -15,6 +15,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "UIViewController+MMDrawerController.h"
 #import "SharedServiceController.h"
+#import "CzedrAvatarHelper.h"
 #import "MMDrawerVisualState.h"
 #import "MMDrawerBarButtonItem.h"
 //#import "MGSwipeButton.h"
@@ -36,6 +37,15 @@
 
     NSString *strLinkedCards = NSLocalizedString(@"Linked Cards", Nil);
     linkedCrds.text = strLinkedCards;
+
+    _imageView.userInteractionEnabled = YES;
+    UITapGestureRecognizer *avatarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(avatarTapped)];
+    [_imageView addGestureRecognizer:avatarTap];
+}
+
+- (void)avatarTapped
+{
+    [CzedrAvatarHelper presentFromViewController:self imageView:_imageView];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -59,6 +69,7 @@
         _imageView.image=[UIImage imageNamed:@"pro_icon.png"];
     }
     _imageView.layer.cornerRadius=_imageView.frame.size.height/2;
+    _imageView.userInteractionEnabled = YES;
     _imageView.clipsToBounds = YES;
     if ([[[NSUserDefaults standardUserDefaults] valueForKey:@"profileclick"] isEqualToString:@"profile"])
     {

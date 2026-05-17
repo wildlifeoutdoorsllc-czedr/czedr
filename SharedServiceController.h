@@ -149,4 +149,7 @@ typedef void (^CzedrAPIFailureBlock)(NSString *message);
                        success:(CzedrAPISuccessBlock)success
                        failure:(CzedrAPIFailureBlock)failure;
 
+/** Updates profile_pic in UserDefaults and userDataArray after a successful upload. */
++ (void)saveProfilePicFilename:(NSString *)filename;
+
 @end

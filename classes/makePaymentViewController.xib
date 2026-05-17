@@ -201,7 +201,7 @@
                             <color key="backgroundColor" red="0.5568627451" green="0.78823529410000004" blue="0.40000000000000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <fontDescription key="fontDescription" name="Avenir-Roman" family="Avenir" pointSize="14"/>
-                            <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                            <textInputTraits key="textInputTraits" autocapitalizationType="allCharacters" keyboardType="asciiCapable"/>
                             <connections>
                                 <outlet property="delegate" destination="-1" id="Yx7-cQ-BO8"/>
                             </connections>

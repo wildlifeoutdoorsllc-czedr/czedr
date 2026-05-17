@@ -227,6 +227,7 @@
     _selectpayment.clipsToBounds = YES;
     _enterPin.textColor = [CzedrTheme taglineRed];
     [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme styleCzedrIdField:_czedrId];
     
     payNowBool = false;
     

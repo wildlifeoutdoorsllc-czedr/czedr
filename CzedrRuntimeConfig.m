@@ -19,3 +19,15 @@ NSString *CzedrEffectiveAPIBase(void)
     return @CZEDR_LEGACY_API;
 #endif
 }
+
+void CzedrSetAPIBaseOverride(NSString *base)
+{
+    NSString *trimmed = [base stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (trimmed.length > 0) {
+        [defaults setObject:trimmed forKey:CzedrAPIBaseUserDefaultsKey];
+    } else {
+        [defaults removeObjectForKey:CzedrAPIBaseUserDefaultsKey];
+    }
+    [defaults synchronize];
+}

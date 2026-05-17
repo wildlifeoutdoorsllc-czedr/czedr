@@ -169,6 +169,36 @@
     field.keyboardType = UIKeyboardTypeNumberPad;
 }
 
++ (void)styleCzedrIdField:(UITextField *)field {
+    if (!field) {
+        return;
+    }
+    field.keyboardType = UIKeyboardTypeASCIICapable;
+    field.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
+    field.autocorrectionType = UITextAutocorrectionTypeNo;
+    field.secureTextEntry = NO;
+}
+
++ (void)styleEmailField:(UITextField *)field {
+    if (!field) {
+        return;
+    }
+    field.keyboardType = UIKeyboardTypeEmailAddress;
+    field.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    field.autocorrectionType = UITextAutocorrectionTypeNo;
+    field.secureTextEntry = NO;
+}
+
++ (void)stylePasswordField:(UITextField *)field {
+    if (!field) {
+        return;
+    }
+    field.keyboardType = UIKeyboardTypeASCIICapable;
+    field.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    field.autocorrectionType = UITextAutocorrectionTypeNo;
+    field.secureTextEntry = YES;
+}
+
 + (void)styleNavigationHeader:(UIView *)headerView {
     headerView.backgroundColor = [self orangeField];
 }
@@ -249,6 +279,11 @@
         UITextField *tf = (UITextField *)view;
         if (tf.secureTextEntry && tf.keyboardType == UIKeyboardTypeNumberPad) {
             [self stylePinField:tf];
+        } else if (!tf.secureTextEntry && tf.keyboardType == UIKeyboardTypeNumberPad) {
+            [self styleCzedrIdField:tf];
+            if ([self _isLegacyGreen:tf.backgroundColor] || [self _isLegacyBlue:tf.backgroundColor]) {
+                [self styleOrangeField:tf];
+            }
         } else if ([self _isLegacyGreen:tf.backgroundColor] || [self _isLegacyBlue:tf.backgroundColor]) {
             [self styleOrangeField:tf];
         } else if (tf.secureTextEntry && ([self _isLegacyGreen:tf.backgroundColor] || tf.backgroundColor == nil)) {

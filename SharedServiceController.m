@@ -6,6 +6,7 @@
 #import "SharedServiceController.h"
 #import "CzedrSignupCrypto.h"
 #import "CzedrRuntimeConfig.h"
+#import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
 #import <UIKit/UIKit.h>
 
@@ -125,6 +126,22 @@
                     failure:failure];
 }
 
++ (NSString *)messageFromAPIResponse:(NSString *)response fallback:(NSString *)fallback
+{
+    NSDictionary *json = [[response JSONValue] isKindOfClass:[NSDictionary class]] ? [response JSONValue] : nil;
+    if (!json) {
+        return fallback;
+    }
+    id errData = [json objectForKey:@"Data"];
+    if ([errData isKindOfClass:[NSArray class]] && [[errData firstObject] isKindOfClass:[NSDictionary class]]) {
+        NSString *result = [[errData firstObject] objectForKey:@"result"];
+        if ([result isKindOfClass:[NSString class]] && result.length > 0) {
+            return result;
+        }
+    }
+    return fallback;
+}
+
 + (void)requestJSONMethod:(NSString *)method
                       path:(NSString *)path
                 parameters:(NSDictionary *)params
@@ -135,7 +152,9 @@
     NSString *url = [NSString stringWithFormat:@"%@%@", [self apiBaseURLString], path];
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
     manager.requestSerializer = [AFJSONRequestSerializer serializer];
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    AFHTTPResponseSerializer *responseSerializer = [AFHTTPResponseSerializer serializer];
+    responseSerializer.acceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 400)];
+    manager.responseSerializer = responseSerializer;
     if (authenticated) {
         NSString *token = [self authToken];
         [manager.requestSerializer setValue:[NSString stringWithFormat:@"Bearer %@", token]
@@ -159,18 +178,24 @@
                 success(@{@"Data": data ?: @[]});
             }
         } else {
-            NSString *msg = @"Request failed";
-            id errData = [json objectForKey:@"Data"];
-            if ([errData isKindOfClass:[NSArray class]] && [[errData firstObject] isKindOfClass:[NSDictionary class]]) {
-                msg = [[errData firstObject] objectForKey:@"result"] ?: msg;
-            }
-            failure(msg);
+            failure([self messageFromAPIResponse:response fallback:@"Request failed"]);
         }
     };
     void (^fail)(AFHTTPRequestOperation *, NSError *) = ^(AFHTTPRequestOperation *operation, NSError *error) {
         NSString *base = [self apiBaseURLString];
-        NSString *detail = error.localizedDescription ?: @"Network error";
-        failure([NSString stringWithFormat:@"%@ (API: %@)", detail, base]);
+        NSString *response = operation.responseString ? [NSString stringWithFormat:@"%@", operation.responseString] : @"";
+        NSString *detail = [self messageFromAPIResponse:response fallback:(error.localizedDescription ?: @"Network error")];
+        NSInteger code = error.code;
+        if (response.length == 0 &&
+            (code == NSURLErrorNotConnectedToInternet ||
+             code == NSURLErrorCannotConnectToHost ||
+             code == NSURLErrorTimedOut ||
+             code == NSURLErrorNetworkConnectionLost)) {
+            detail = [NSString stringWithFormat:
+                @"Cannot reach the API at %@. Same Wi‑Fi as your PC; on iPhone open Safari to %@/v1/health; allow Local Network for Czedr in Settings; on PC run scripts\\allow-lan-api-firewall.cmd as Administrator.",
+                base, base];
+        }
+        failure(detail);
     };
     if ([method isEqualToString:@"GET"]) {
         [manager GET:url parameters:params success:ok failure:fail];
@@ -216,17 +241,7 @@
                         [self saveLoginPayload:legacy];
                         success(legacy);
                     }
-                    failure:^(NSString *secureErr) {
-                        [self sendSecurePOSTToPath:@"/v1/auth/login-secure"
-                                           payload:payload
-                                       authenticated:NO
-                                             success:^(NSDictionary *data) {
-                                                 NSDictionary *legacy = [self legacyUserPayloadFromV1:data];
-                                                 [self saveLoginPayload:legacy];
-                                                 success(legacy);
-                                             }
-                                             failure:failure];
-                    }];
+                    failure:failure];
 }
 
 + (void)verifyPinSecure:(NSString *)pin
@@ -265,14 +280,15 @@
              failure:(CzedrAPIFailureBlock)failure
 {
     if (![self usesV1API]) {
-        failure(@"Secure PIN set requires Czedr API");
+        failure(@"PIN set requires Czedr API");
         return;
     }
-    [self sendSecurePOSTToPath:@"/v1/auth/pin/set-secure"
-                       payload:@{@"user_pin": pin ?: @""}
-                   authenticated:YES
-                         success:success
-                         failure:failure];
+    [self requestJSONMethod:@"POST"
+                       path:@"/v1/auth/pin/set"
+                 parameters:@{@"user_pin": pin ?: @""}
+              authenticated:YES
+                    success:success
+                    failure:failure];
 }
 
 + (void)requestPasswordResetForEmail:(NSString *)email
@@ -567,7 +583,27 @@
         return nil;
     }
     NSString *encoded = [storedName stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
-    return [NSURL URLWithString:[NSString stringWithFormat:@"%s%@", CZEDR_PROFILE_CDN, encoded ?: storedName]];
+    NSString *base = [self apiBaseURLString];
+    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/v1/media/profile/%@", base, encoded ?: storedName]];
+}
+
++ (void)saveProfilePicFilename:(NSString *)filename
+{
+    if (![filename isKindOfClass:[NSString class]] || filename.length == 0) {
+        return;
+    }
+    [[NSUserDefaults standardUserDefaults] setValue:filename forKey:@"profile_pic"];
+    NSMutableDictionary *user = nil;
+    id stored = [[NSUserDefaults standardUserDefaults] objectForKey:@"userDataArray"];
+    if ([stored isKindOfClass:[NSDictionary class]]) {
+        user = [stored mutableCopy];
+    } else {
+        user = [NSMutableDictionary dictionary];
+    }
+    [user setObject:filename forKey:@"profile_pic"];
+    [user setObject:filename forKey:@"profile_pic "];
+    [[NSUserDefaults standardUserDefaults] setValue:user forKey:@"userDataArray"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 + (void)uploadProfileImageData:(NSData *)jpegData
@@ -578,27 +614,39 @@
         failure(@"No image data");
         return;
     }
-    NSString *url = [NSString stringWithFormat:@"%s/v1/profile/avatar", CZEDR_API_BASE];
+    NSString *token = [self authToken];
+    if (token.length == 0) {
+        failure(@"Please sign in again");
+        return;
+    }
+    NSString *url = [NSString stringWithFormat:@"%@/v1/profile/avatar", [self apiBaseURLString]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
     [request setHTTPMethod:@"POST"];
-    [request setValue:[NSString stringWithFormat:@"Bearer %@", [self authToken]] forHTTPHeaderField:@"Authorization"];
+    [request setValue:[NSString stringWithFormat:@"Bearer %@", token] forHTTPHeaderField:@"Authorization"];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     NSDictionary *body = @{@"image_base64": [jpegData base64EncodedStringWithOptions:0]};
-    [request setHTTPBody:[NSJSONSerialization dataWithJSONObject:body options:0 error:nil]];
+    NSError *jsonErr = nil;
+    NSData *bodyData = [NSJSONSerialization dataWithJSONObject:body options:0 error:&jsonErr];
+    if (!bodyData) {
+        failure(jsonErr.localizedDescription ?: @"Upload failed");
+        return;
+    }
+    [request setHTTPBody:bodyData];
     [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (error || !data) {
                 failure(error.localizedDescription ?: @"Upload failed");
                 return;
             }
+            NSString *raw = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             NSString *status = [NSString stringWithFormat:@"%@", json[@"Status"]];
             if ([status isEqualToString:@"true"]) {
                 NSDictionary *payload = [json[@"Data"] isKindOfClass:[NSDictionary class]] ? json[@"Data"] : @{};
                 success(payload);
-            } else {
-                failure(@"Upload failed");
+                return;
             }
+            failure([self messageFromAPIResponse:raw fallback:@"Upload failed"]);
         });
     }] resume];
 }
