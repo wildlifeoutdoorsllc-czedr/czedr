@@ -379,7 +379,6 @@
         UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:strErrorMsg delegate:nil cancelButtonTitle:strOk otherButtonTitles:nil, nil];
         [alert show];
                 }];
-        }
     }];
 }
 

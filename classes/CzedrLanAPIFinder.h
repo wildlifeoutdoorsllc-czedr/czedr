@@ -5,7 +5,7 @@
 
 #import <Foundation/Foundation.h>
 
-typedef void (^CzedrLanAPIFinderCompletion)(NSString * _Nullable baseURL, NSError * _Nullable error);
+typedef void (^CzedrLanAPIFinderCompletion)(NSString *baseURL, NSError *error);
 
 @interface CzedrLanAPIFinder : NSObject
 
