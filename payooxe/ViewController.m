@@ -68,20 +68,21 @@
             return;
         }
 
+        NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
         [self ensureUserInfoData];
         [user_infodata removeAllObjects];
         [user_infodata addObject:data];
 
-        NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
-        void (^finish)(void) = ^{
-            if ([userPin isEqualToString:@"0"]) {
-                [strongApp presentPinSetupAfterLogin];
-            } else {
-                [strongApp presentHomeAfterLogin];
-            }
-        };
-        // Defer one turn so AFNetworking / HUD teardown cannot race the drawer swap.
-        dispatch_async(dispatch_get_main_queue(), finish);
+        // Defer two turns: let HUD/network callbacks finish before swapping drawer center.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if ([userPin isEqualToString:@"0"]) {
+                    [strongApp presentPinSetupAfterLogin];
+                } else {
+                    [strongApp presentHomeAfterLogin];
+                }
+            });
+        });
     });
 }
 

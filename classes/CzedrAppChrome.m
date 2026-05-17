@@ -111,6 +111,18 @@ static NSMutableArray<UIViewController *> *CzedrForwardStack(void)
 
 @implementation CzedrAppChrome
 
+static NSDate *sSessionBarResumeAfter = nil;
+
++ (void)suspendSessionBarRefreshForSeconds:(NSTimeInterval)seconds
+{
+    sSessionBarResumeAfter = [NSDate dateWithTimeIntervalSinceNow:MAX(0.1, seconds)];
+}
+
++ (BOOL)sessionBarRefreshSuspended
+{
+    return sSessionBarResumeAfter != nil && [sSessionBarResumeAfter timeIntervalSinceNow] > 0;
+}
+
 static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 {
     static CzedrTopChromeTarget *target = nil;
@@ -250,6 +262,9 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer
 {
     if (!drawer) {
+        return;
+    }
+    if ([self sessionBarRefreshSuspended]) {
         return;
     }
     if (![self isLoggedIn]) {

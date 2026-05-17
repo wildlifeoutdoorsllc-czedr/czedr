@@ -192,15 +192,22 @@
     UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:home];
     navigation.navigationBarHidden = YES;
 
+    [CzedrAppChrome suspendSessionBarRefreshForSeconds:1.5];
+
     UIViewController *root = self.window.rootViewController;
     if ([root isKindOfClass:[MMDrawerController class]]) {
         MMDrawerController *drawer = (MMDrawerController *)root;
-        [drawer setCenterViewController:navigation withCloseAnimation:NO completion:^(BOOL finished) {
-            (void)finished;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [CzedrAppChrome refreshSessionBarForDrawer:drawer];
-            });
-        }];
+        void (^swapCenter)(void) = ^{
+            [drawer setCenterViewController:navigation withCloseAnimation:NO completion:nil];
+        };
+        if (drawer.openSide != MMDrawerSideNone) {
+            [drawer closeDrawerAnimated:NO completion:^(BOOL finished) {
+                (void)finished;
+                dispatch_async(dispatch_get_main_queue(), swapCenter);
+            }];
+        } else {
+            swapCenter();
+        }
         return;
     }
 

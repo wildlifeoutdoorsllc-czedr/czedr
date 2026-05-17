@@ -12,6 +12,10 @@
 + (BOOL)isLoggedIn;
 + (void)clearLocalSession;
 
+/** Suppress top-bar layout during drawer transitions (avoids post-login crashes). */
++ (void)suspendSessionBarRefreshForSeconds:(NSTimeInterval)seconds;
++ (BOOL)sessionBarRefreshSuspended;
+
 /** Top bar: back/forward (left), minimize / maximize (upper right). */
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer;
 
