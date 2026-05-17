@@ -168,7 +168,9 @@
         }
     };
     void (^fail)(AFHTTPRequestOperation *, NSError *) = ^(AFHTTPRequestOperation *operation, NSError *error) {
-        failure(error.localizedDescription ?: @"Network error");
+        NSString *base = [self apiBaseURLString];
+        NSString *detail = error.localizedDescription ?: @"Network error";
+        failure([NSString stringWithFormat:@"%@ (API: %@)", detail, base]);
     };
     if ([method isEqualToString:@"GET"]) {
         [manager GET:url parameters:params success:ok failure:fail];
@@ -198,21 +200,33 @@
         failure(@"Secure login requires Czedr API");
         return;
     }
+    NSString *trimmedEmail = [email stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSDictionary *payload = @{
-        @"user_email": email ?: @"",
-        @"email": email ?: @"",
+        @"user_email": trimmedEmail ?: @"",
+        @"email": trimmedEmail ?: @"",
         @"user_pwd": password ?: @"",
         @"password": password ?: @""
     };
-    [self sendSecurePOSTToPath:@"/v1/auth/login-secure"
-                       payload:payload
-                   authenticated:NO
-                         success:^(NSDictionary *data) {
-                             NSDictionary *legacy = [self legacyUserPayloadFromV1:data];
-                             [self saveLoginPayload:legacy];
-                             success(legacy);
-                         }
-                         failure:failure];
+    [self requestJSONMethod:@"POST"
+                       path:@"/v1/auth/login"
+                 parameters:payload
+              authenticated:NO
+                    success:^(NSDictionary *data) {
+                        NSDictionary *legacy = [self legacyUserPayloadFromV1:data];
+                        [self saveLoginPayload:legacy];
+                        success(legacy);
+                    }
+                    failure:^(NSString *secureErr) {
+                        [self sendSecurePOSTToPath:@"/v1/auth/login-secure"
+                                           payload:payload
+                                       authenticated:NO
+                                             success:^(NSDictionary *data) {
+                                                 NSDictionary *legacy = [self legacyUserPayloadFromV1:data];
+                                                 [self saveLoginPayload:legacy];
+                                                 success(legacy);
+                                             }
+                                             failure:failure];
+                    }];
 }
 
 + (void)verifyPinSecure:(NSString *)pin

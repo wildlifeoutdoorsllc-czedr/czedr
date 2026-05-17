@@ -8,6 +8,18 @@ if (Get-Process mysqld -ErrorAction SilentlyContinue) {
 }
 
 Start-Process -FilePath "$mysqlBin\mysqld.exe" -ArgumentList "--defaults-file=$myIni" -WindowStyle Hidden
-Start-Sleep -Seconds 4
+
+$ready = $false
+for ($i = 0; $i -lt 15; $i++) {
+    Start-Sleep -Seconds 2
+    try {
+        & "$mysqlBin\mysql.exe" -u root -e "SELECT 1" 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) { $ready = $true; break }
+    } catch { }
+}
+if (-not $ready) {
+    Write-Error "MySQL did not become ready on port 3306. Check C:\ProgramData\MySQL\MySQL Server 8.4\Data\*.err"
+    exit 1
+}
 
 & "$mysqlBin\mysql.exe" -u root -e "SELECT 'MySQL is ready' AS status, VERSION() AS version;"

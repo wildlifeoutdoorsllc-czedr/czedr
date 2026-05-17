@@ -40,17 +40,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Set API base URL (optional)
-        if: ${{ github.event.inputs.api_base_url != '' || vars.CZEDR_API_BASE != '' }}
+      - name: Set API base URL for device TestFlight builds
         env:
           INPUT_URL: ${{ github.event.inputs.api_base_url }}
           VAR_URL: ${{ vars.CZEDR_API_BASE }}
         run: |
           URL="${INPUT_URL:-$VAR_URL}"
-          if [ -n "$URL" ]; then
-            /usr/bin/sed -i '' "s|#define CZEDR_API_BASE \".*\"|#define CZEDR_API_BASE \"$URL\"|" CzedrConfig.h
-            echo "CzedrConfig.h API base set to: $URL"
+          if [ -z "$URL" ]; then
+            echo "::error::Set repository variable CZEDR_API_BASE (e.g. http://192.168.x.x:8080) or pass api_base_url when running the workflow."
+            exit 1
           fi
+          /usr/bin/sed -i '' "s|#define CZEDR_API_BASE \".*\"|#define CZEDR_API_BASE \"$URL\"|" CzedrConfig.h
+          echo "CzedrConfig.h API base set to: $URL"
+          grep CZEDR_API_BASE CzedrConfig.h
 
       - name: Select Xcode 26
         run: |

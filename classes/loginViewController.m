@@ -206,7 +206,7 @@
     }
    else if([_emailAddress.text length] > 0 )
    {
-       if (![CzedrTheme isValidEmailAddress:_emailAddress.text])
+       if (_emailAddress.text.length > 0 && ![CzedrTheme isValidEmailAddress:_emailAddress.text])
        {
            NSString *strAttention = NSLocalizedString(@"Attention", Nil);
            NSString *strAddress = NSLocalizedString(@"address is invalid", Nil);
