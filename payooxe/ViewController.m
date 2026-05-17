@@ -155,42 +155,24 @@
     }
    else if([_email.text length] > 0)
    {
-       if (![CzedrTheme isValidEmailAddress:_email.text])
+       NSString *rawString = [_email text];
+       NSString *rawString2 = [_password text];
+       NSCharacterSet *whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+       NSString *trimmed = [rawString stringByTrimmingCharactersInSet:whitespace];
+       NSString *trimmed2 = [rawString2 stringByTrimmingCharactersInSet:whitespace];
+       if ([trimmed length] == 0 || [trimmed2 length] == 0)
        {
            NSString *strAttention = NSLocalizedString(@"Attention", Nil);
-           NSString *strAddress = NSLocalizedString(@"address is invalid", Nil);
+           NSString *strCorrectValues = NSLocalizedString(@"correct values", Nil);
            NSString *strOk = NSLocalizedString(@"OK", Nil);
-           
-           UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strAttention
-                                                           message:strAddress
-                                                          delegate:nil
-                                                 cancelButtonTitle:strOk
-                                                 otherButtonTitles: nil];
+           UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strAttention message:strCorrectValues delegate:nil cancelButtonTitle:strOk otherButtonTitles: nil];
            [alert performSelectorOnMainThread:@selector(show) withObject:nil waitUntilDone:YES];
-           return;
        }
        else
        {
-           NSString *rawString = [_email text];
-           NSString *rawString2 = [_password text];
-           
-           NSCharacterSet *whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-           NSString *trimmed = [rawString stringByTrimmingCharactersInSet:whitespace];
-           NSString *trimmed2 = [rawString2 stringByTrimmingCharactersInSet:whitespace];
-          
-           if ([trimmed length] == 0 || [trimmed2 length] == 0)
-           {
-               NSString *strAttention = NSLocalizedString(@"Attention", Nil);
-               NSString *strCorrectValues = NSLocalizedString(@"correct values", Nil);
-               NSString *strOk = NSLocalizedString(@"OK", Nil);
-               
-               UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strAttention message:strCorrectValues delegate:nil cancelButtonTitle:strOk otherButtonTitles: nil];
-               [alert performSelectorOnMainThread:@selector(show) withObject:nil waitUntilDone:YES];
-           }
-           else
-           {
-               [self call_LoginService];
-           }
+           _email.text = trimmed;
+           _password.text = trimmed2;
+           [self call_LoginService];
        }
    }
 //    GeneratePinViewController *OBJ=[[GeneratePinViewController alloc]initWithNibName:@"GeneratePinViewController" bundle:nil];

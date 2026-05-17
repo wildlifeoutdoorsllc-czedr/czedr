@@ -126,7 +126,7 @@ final class PasswordResetService
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return true;
         }
-        return (bool) preg_match('/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i', $email);
+        return (bool) preg_match('/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}$/i', $email);
     }
 
     private function deliverResetToken(string $email, string $token): void

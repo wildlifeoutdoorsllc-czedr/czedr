@@ -54,9 +54,12 @@
     if (trimmed.length == 0) {
         return NO;
     }
-    NSString *pattern = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,63}";
-    NSPredicate *test = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", pattern];
-    return [test evaluateWithObject:trimmed];
+    NSRange at = [trimmed rangeOfString:@"@"];
+    if (at.location == NSNotFound || at.location == 0 || at.location >= trimmed.length - 1) {
+        return NO;
+    }
+    NSString *domain = [trimmed substringFromIndex:at.location + 1];
+    return [domain rangeOfString:@"."].location != NSNotFound;
 }
 
 + (void)applyGlobalAppearance {
