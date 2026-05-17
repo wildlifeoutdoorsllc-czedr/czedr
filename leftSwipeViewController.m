@@ -109,10 +109,7 @@
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length > 0) {
-        dispatch_queue_t backgroundQueue = dispatch_queue_create("dispatch_queue_#1", 0);
-        dispatch_async(backgroundQueue, ^{
-            [self recevied_service];
-        });
+        [self recevied_service];
     }
 }
 
@@ -437,7 +434,9 @@
             
         }
     }
-    if (fetchedObjects.count==array.count)
+    NSUInteger fetchedCount = fetchedObjects ? fetchedObjects.count : 0;
+    NSUInteger arrayCount = array ? array.count : 0;
+    if (fetchedCount == arrayCount)
     {
         if ([[[NSUserDefaults standardUserDefaults] valueForKey:@"update_value"] isEqualToString:@"store_databse"])
         {

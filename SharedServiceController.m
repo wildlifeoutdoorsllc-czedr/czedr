@@ -48,13 +48,28 @@
     return [cid isKindOfClass:[NSString class]] ? cid : @"";
 }
 
+static void CzedrDispatchMain(void (^block)(void))
+{
+    if (!block) {
+        return;
+    }
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), block);
+    }
+}
+
 + (void)saveLoginPayload:(NSDictionary *)data
 {
     if (![data isKindOfClass:[NSDictionary class]]) {
         return;
     }
     NSString *auth = [data objectForKey:@"auth_code"];
-    if (auth.length > 0) {
+    if (![auth isKindOfClass:[NSString class]] || auth.length == 0) {
+        auth = [data objectForKey:@"auth_token"];
+    }
+    if ([auth isKindOfClass:[NSString class]] && auth.length > 0) {
         [[NSUserDefaults standardUserDefaults] setValue:auth forKey:@"auth_codeSaved"];
     }
     [[NSUserDefaults standardUserDefaults] setValue:data forKey:@"userDataArray"];
@@ -70,8 +85,15 @@
     NSString *czedrId = [user objectForKey:@"czedr_id"] ?: [data objectForKey:@"id"] ?: @"";
     NSString *email = [user objectForKey:@"email"] ?: @"";
     NSString *name = [user objectForKey:@"name"] ?: [user objectForKey:@"display_name"] ?: email;
+    NSString *auth = [data objectForKey:@"auth_code"];
+    if (![auth isKindOfClass:[NSString class]] || auth.length == 0) {
+        auth = [data objectForKey:@"auth_token"];
+    }
+    if (![auth isKindOfClass:[NSString class]]) {
+        auth = @"";
+    }
     return @{
-        @"auth_code": [data objectForKey:@"auth_code"] ?: @"",
+        @"auth_code": auth,
         @"id": czedrId,
         @"czedr_id": czedrId,
         @"email": email,
@@ -184,22 +206,24 @@
         NSString *response = [NSString stringWithFormat:@"%@", operation.responseString];
         NSDictionary *json = [[response JSONValue] isKindOfClass:[NSDictionary class]] ? [response JSONValue] : nil;
         NSString *status = [NSString stringWithFormat:@"%@", [json objectForKey:@"Status"]];
-        if ([status isEqualToString:@"true"]) {
-            id data = [json objectForKey:@"Data"];
-            if ([data isKindOfClass:[NSDictionary class]]) {
-                success((NSDictionary *)data);
-            } else if ([data isKindOfClass:[NSArray class]]) {
-                NSMutableDictionary *wrap = [NSMutableDictionary dictionaryWithObject:data forKey:@"Data"];
-                if ([json objectForKey:@"Total_rows"] != nil) {
-                    [wrap setObject:[json objectForKey:@"Total_rows"] forKey:@"Total_rows"];
+        CzedrDispatchMain(^{
+            if ([status isEqualToString:@"true"]) {
+                id data = [json objectForKey:@"Data"];
+                if ([data isKindOfClass:[NSDictionary class]]) {
+                    success((NSDictionary *)data);
+                } else if ([data isKindOfClass:[NSArray class]]) {
+                    NSMutableDictionary *wrap = [NSMutableDictionary dictionaryWithObject:data forKey:@"Data"];
+                    if ([json objectForKey:@"Total_rows"] != nil) {
+                        [wrap setObject:[json objectForKey:@"Total_rows"] forKey:@"Total_rows"];
+                    }
+                    success(wrap);
+                } else {
+                    success(@{@"Data": data ?: @[]});
                 }
-                success(wrap);
             } else {
-                success(@{@"Data": data ?: @[]});
+                failure([self messageFromAPIResponse:response fallback:@"Request failed"]);
             }
-        } else {
-            failure([self messageFromAPIResponse:response fallback:@"Request failed"]);
-        }
+        });
     };
     void (^fail)(AFHTTPRequestOperation *, NSError *) = ^(AFHTTPRequestOperation *operation, NSError *error) {
         NSString *base = [self apiBaseURLString];
@@ -230,10 +254,12 @@
         }
         if (unreachable) {
             detail = [NSString stringWithFormat:
-                @"Cannot reach the API at %@. On your PC run START-IPHONE-TESTING.cmd (click Yes if Windows asks). Same Wi‑Fi as the PC. Settings → Czedr → Local Network ON.",
+                @"Cannot reach the API at %@. On your PC run START-IPHONE-TESTING.cmd (click Yes if Windows asks). Same Wi-Fi as the PC. Settings -> Czedr -> Local Network ON.",
                 base];
         }
-        failure(detail);
+        CzedrDispatchMain(^{
+            failure(detail);
+        });
     };
     if ([method isEqualToString:@"GET"]) {
         [manager GET:url parameters:params success:ok failure:fail];
@@ -745,35 +771,49 @@
 + (void)syncBankAccountsToCoreData:(void (^)(void))completion
 {
     [self fetchBankAccountsSuccess:^(NSArray *accounts) {
-        id delegate = [[UIApplication sharedApplication] delegate];
-        if (![delegate respondsToSelector:@selector(managedObjectContext)]) {
+        CzedrDispatchMain(^{
+            id delegate = [[UIApplication sharedApplication] delegate];
+            if (![delegate respondsToSelector:@selector(managedObjectContext)]) {
+                if (completion) completion();
+                return;
+            }
+            NSManagedObjectContext *context = [delegate managedObjectContext];
+            if (!context) {
+                if (completion) completion();
+                return;
+            }
+            [context performBlockAndWait:^{
+                @try {
+                    NSFetchRequest *fetch = [[NSFetchRequest alloc] initWithEntityName:@"Cards"];
+                    NSArray *existing = [context executeFetchRequest:fetch error:nil] ?: @[];
+                    for (NSManagedObject *obj in existing) {
+                        [context deleteObject:obj];
+                    }
+                    for (NSDictionary *acct in accounts) {
+                        if (![acct isKindOfClass:[NSDictionary class]]) continue;
+                        if (![NSEntityDescription entityForName:@"Cards" inManagedObjectContext:context]) {
+                            continue;
+                        }
+                        NSManagedObject *card = [NSEntityDescription insertNewObjectForEntityForName:@"Cards" inManagedObjectContext:context];
+                        [card setValue:[acct objectForKey:@"id"] forKey:@"id"];
+                        [card setValue:[acct objectForKey:@"display_name"] forKey:@"name"];
+                        [card setValue:[acct objectForKey:@"last4"] forKey:@"cardnumber"];
+                        [card setValue:@"01" forKey:@"month"];
+                        [card setValue:@"30" forKey:@"year"];
+                        [card setValue:@"0" forKey:@"card_default"];
+                    }
+                    [context save:nil];
+                } @catch (NSException *exception) {
+                    (void)exception;
+                }
+            }];
             if (completion) completion();
-            return;
-        }
-        NSManagedObjectContext *context = [delegate managedObjectContext];
-        if (!context) {
-            if (completion) completion();
-            return;
-        }
-        NSFetchRequest *fetch = [[NSFetchRequest alloc] initWithEntityName:@"Cards"];
-        NSArray *existing = [context executeFetchRequest:fetch error:nil];
-        for (NSManagedObject *obj in existing) {
-            [context deleteObject:obj];
-        }
-        for (NSDictionary *acct in accounts) {
-            if (![acct isKindOfClass:[NSDictionary class]]) continue;
-            NSManagedObject *card = [NSEntityDescription insertNewObjectForEntityForName:@"Cards" inManagedObjectContext:context];
-            [card setValue:[acct objectForKey:@"id"] forKey:@"id"];
-            [card setValue:[acct objectForKey:@"display_name"] forKey:@"name"];
-            [card setValue:[acct objectForKey:@"last4"] forKey:@"cardnumber"];
-            [card setValue:@"01" forKey:@"month"];
-            [card setValue:@"30" forKey:@"year"];
-            [card setValue:@"0" forKey:@"card_default"];
-        }
-        [context save:nil];
-        if (completion) completion();
+        });
     } failure:^(NSString *message) {
-        if (completion) completion();
+        (void)message;
+        CzedrDispatchMain(^{
+            if (completion) completion();
+        });
     }];
 }
 

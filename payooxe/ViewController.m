@@ -26,6 +26,49 @@
 
 @implementation ViewController
 
+- (void)ensureUserInfoData
+{
+    if (!user_infodata) {
+        user_infodata = [[NSMutableArray alloc] init];
+    }
+}
+
+- (void)completeLoginWithPayload:(NSDictionary *)data
+{
+    if (![data isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self ensureUserInfoData];
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        [user_infodata removeAllObjects];
+        [user_infodata addObject:data];
+
+        if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length == 0) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Sign-in succeeded but the session was not saved. Try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+            return;
+        }
+
+        [self parse_registerService];
+        NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
+        UINavigationController *nav = self.navigationController;
+        MMDrawerController *drawer = self.mm_drawerController;
+        if ([userPin isEqualToString:@"0"]) {
+            GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
+            if (nav) {
+                [nav pushViewController:pinVC animated:YES];
+            }
+            return;
+        }
+        leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
+        if (nav) {
+            [nav setViewControllers:@[home] animated:YES];
+        }
+        [CzedrAppChrome refreshSessionBarForDrawer:drawer ?: home.mm_drawerController];
+    });
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (![self isMemberOfClass:[ViewController class]]) {
@@ -302,28 +345,13 @@
             [SharedServiceController loginSecureWithEmail:strongSelf.email.text
                                                  password:strongSelf.password.text
                                                   success:^(NSDictionary *data) {
-                [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
-                [user_infodata addObject:data];
-                NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
-                [strongSelf parse_registerService];
-                if ([userPin isEqualToString:@"0"]) {
-                    GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
-                    UINavigationController *nav = strongSelf.navigationController;
-                    if (nav) {
-                        [nav pushViewController:pinVC animated:YES];
-                    }
-                } else {
-                    leftSwipeViewController *home = [[leftSwipeViewController alloc] initWithNibName:@"leftSwipeViewController" bundle:nil];
-                    UINavigationController *nav = strongSelf.navigationController;
-                    if (nav) {
-                        [nav setViewControllers:@[home] animated:YES];
-                    }
-                    [CzedrAppChrome refreshSessionBarForDrawer:strongSelf.mm_drawerController];
-                }
+                [strongSelf completeLoginWithPayload:data];
             } failure:^(NSString *message) {
-                [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
-                UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                [alert show];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
+                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                    [alert show];
+                });
             }];
             return;
         }
@@ -346,19 +374,9 @@
              {
                  NSDictionary *data=[[response JSONValue] valueForKey:@"Data"];
                  [SharedServiceController saveLoginPayload:data];
-                 [user_infodata addObject:data];
-                 NSString *userPin=[NSString stringWithFormat:@"%@",[data valueForKey:@"user_pin"]];
-                 [self parse_registerService];
-                 if ([userPin isEqualToString:@"0"])
-                 {
-                     GeneratePinViewController *OBJ=[[GeneratePinViewController alloc]initWithNibName:@"GeneratePinViewController" bundle:nil];
-                     [self.navigationController pushViewController:OBJ animated:YES];
-                 }
-                 else
-                 {
-                    leftSwipeViewController *left=[[leftSwipeViewController alloc]initWithNibName:@"leftSwipeViewController" bundle:nil];
-                    [self.navigationController pushViewController:left animated:YES];
-                 }
+                 dispatch_async(dispatch_get_main_queue(), ^{
+                     [self completeLoginWithPayload:data];
+                 });
              }
              else
              {
