@@ -15,9 +15,11 @@
 #import "SharedServiceController.h"
 #import "GeneratePinViewController.h"
 #import "CzedrRuntimeConfig.h"
+#import "CzedrLanAPIFinder.h"
 
 @interface ViewController () <UITextFieldDelegate>
 @property (nonatomic, strong) UITextField *apiBaseTextField;
+@property (nonatomic, assign) BOOL apiDiscoveryInFlight;
 @end
 
 @implementation ViewController
@@ -119,6 +121,30 @@
     [CzedrTheme styleRedPrimaryButton:loginbutton];
     [CzedrTheme styleCharcoalButton:signupbutton];
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
+    [self discoverAPIServerAutomatically];
+}
+
+- (void)discoverAPIServerAutomatically
+{
+    if (!self.apiBaseTextField || self.apiDiscoveryInFlight) {
+        return;
+    }
+    self.apiDiscoveryInFlight = YES;
+    self.apiBaseTextField.placeholder = @"Finding server on Wi‑Fi…";
+    __weak typeof(self) weakSelf = self;
+    [CzedrLanAPIFinder resolveWithCompletion:^(NSString *baseURL, NSError *error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        strongSelf.apiDiscoveryInFlight = NO;
+        if (baseURL.length > 0) {
+            strongSelf.apiBaseTextField.text = baseURL;
+            strongSelf.apiBaseTextField.placeholder = @"API server (found automatically)";
+        } else {
+            strongSelf.apiBaseTextField.placeholder = @"API server (http://…:8080)";
+        }
+    }];
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
@@ -236,22 +262,36 @@
     CzedrSetAPIBaseOverride(apiBase);
 
     [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-    ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc]init];
-    int reach = [reachAbilty updateInterfaceWithReachability];
-    if (reach==0){
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
-        NSString *strAttention = NSLocalizedString(@"Attention", Nil);
-        NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
-        NSString *strOk = NSLocalizedString(@"OK", Nil);
-        
-        UIAlertView *alertview=[[UIAlertView alloc]initWithTitle:strAttention message:strYourNetwork delegate:self cancelButtonTitle:strOk otherButtonTitles:nil, nil];
-        [alertview performSelectorOnMainThread:@selector(show) withObject:nil waitUntilDone:YES];
-    }
-    else
-    {
-        if ([SharedServiceController usesV1API]) {
-            [SharedServiceController loginSecureWithEmail:_email.text
-                                                 password:_password.text
+    __weak typeof(self) weakSelf = self;
+    [CzedrLanAPIFinder resolveWithCompletion:^(NSString *resolvedBase, NSError *resolveError) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if (resolvedBase.length > 0) {
+            strongSelf.apiBaseTextField.text = resolvedBase;
+            CzedrSetAPIBaseOverride(resolvedBase);
+        } else if (resolveError.localizedDescription.length > 0) {
+            [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:resolveError.localizedDescription delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+            return;
+        }
+
+        ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc]init];
+        int reach = [reachAbilty updateInterfaceWithReachability];
+        if (reach==0){
+            [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
+            NSString *strAttention = NSLocalizedString(@"Attention", Nil);
+            NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
+            NSString *strOk = NSLocalizedString(@"OK", Nil);
+
+            UIAlertView *alertview=[[UIAlertView alloc]initWithTitle:strAttention message:strYourNetwork delegate:strongSelf cancelButtonTitle:strOk otherButtonTitles:nil, nil];
+            [alertview performSelectorOnMainThread:@selector(show) withObject:nil waitUntilDone:YES];
+        }
+        else if ([SharedServiceController usesV1API]) {
+            [SharedServiceController loginSecureWithEmail:strongSelf.email.text
+                                                 password:strongSelf.password.text
                                                   success:^(NSDictionary *data) {
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
                 [user_infodata addObject:data];
@@ -339,7 +379,8 @@
         UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:strErrorMsg delegate:nil cancelButtonTitle:strOk otherButtonTitles:nil, nil];
         [alert show];
                 }];
-    }
+        }
+    }];
 }
 
 - (IBAction)forgotPassword:(id)sender

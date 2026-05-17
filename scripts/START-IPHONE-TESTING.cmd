@@ -7,12 +7,10 @@ echo  ============================================
 echo   Czedr - set up your PC for iPhone login
 echo  ============================================
 echo.
-echo  Step 1: Windows will ask to allow port 8080.
-echo          Click YES on the security prompt.
+echo  Step 1: Allowing your iPhone to reach this PC (port 8080).
+echo          If Windows asks, click YES.
 echo.
-pause
-
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \"\"%~dp0allow-lan-api-firewall.ps1\"\"' -Wait"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0ensure-iphone-api-ready.ps1"
 
 echo.
 echo  Step 2: Starting the Czedr server (keep this window open).

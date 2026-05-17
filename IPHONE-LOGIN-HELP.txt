@@ -15,12 +15,14 @@ CZEDR — iPhone login (simple steps)
 
    You should see text starting with {"Status":"true"
 
-   If Safari does NOT load that page, the PC firewall or Wi‑Fi is still
-   blocking the phone — run START-IPHONE-TESTING.cmd again and click YES.
+   If Safari does NOT load that page, the PC firewall is still blocking
+   the phone. Run scripts\allow-lan-api-firewall.cmd (right‑click →
+   Run as administrator) and click YES. This is required when your Wi‑Fi
+   is set to "Public" in Windows.
 
-3) In the Czedr app on iPhone:
-   • API server: use the same address as in step 2 but WITHOUT /v1/health
-     Example: http://192.168.68.51:8080
+3) In the Czedr app on iPhone (build 46+):
+   • The app finds your PC on Wi‑Fi automatically (wait for "found automatically").
+   • You can still type the API address from step 2 if needed (without /v1/health).
    • Email:    alice@test.czedr
    • Password: TestPass1234!
 

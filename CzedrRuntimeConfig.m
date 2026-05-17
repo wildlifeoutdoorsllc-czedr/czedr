@@ -6,6 +6,37 @@
 #import "CzedrConfig.h"
 
 NSString * const CzedrAPIBaseUserDefaultsKey = @"czedr_api_base";
+NSString * const CzedrLastGoodAPIBaseKey = @"czedr_last_good_api_base";
+
+static NSString *CzedrTrimmedBase(NSString *base)
+{
+    if (![base isKindOfClass:[NSString class]]) {
+        return @"";
+    }
+    NSString *trimmed = [base stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    while ([trimmed hasSuffix:@"/"]) {
+        trimmed = [trimmed substringToIndex:trimmed.length - 1];
+    }
+    return trimmed;
+}
+
+NSString *CzedrLastGoodAPIBase(void)
+{
+    NSString *saved = [[NSUserDefaults standardUserDefaults] stringForKey:CzedrLastGoodAPIBaseKey];
+    return CzedrTrimmedBase(saved);
+}
+
+void CzedrRememberLastGoodAPIBase(NSString *base)
+{
+    NSString *trimmed = CzedrTrimmedBase(base);
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (trimmed.length > 0) {
+        [defaults setObject:trimmed forKey:CzedrLastGoodAPIBaseKey];
+    } else {
+        [defaults removeObjectForKey:CzedrLastGoodAPIBaseKey];
+    }
+    [defaults synchronize];
+}
 
 NSString *CzedrEffectiveAPIBase(void)
 {
@@ -22,7 +53,7 @@ NSString *CzedrEffectiveAPIBase(void)
 
 void CzedrSetAPIBaseOverride(NSString *base)
 {
-    NSString *trimmed = [base stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString *trimmed = CzedrTrimmedBase(base);
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if (trimmed.length > 0) {
         [defaults setObject:trimmed forKey:CzedrAPIBaseUserDefaultsKey];

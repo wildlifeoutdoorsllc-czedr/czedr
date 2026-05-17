@@ -6,6 +6,7 @@
 #import "SharedServiceController.h"
 #import "CzedrSignupCrypto.h"
 #import "CzedrRuntimeConfig.h"
+#import "CzedrLanAPIFinder.h"
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
 #import <UIKit/UIKit.h>
@@ -149,6 +150,23 @@
                    success:(CzedrAPISuccessBlock)success
                    failure:(CzedrAPIFailureBlock)failure
 {
+    [self requestJSONMethod:method
+                       path:path
+                 parameters:params
+              authenticated:authenticated
+         retryAfterDiscovery:YES
+                    success:success
+                    failure:failure];
+}
+
++ (void)requestJSONMethod:(NSString *)method
+                      path:(NSString *)path
+                parameters:(NSDictionary *)params
+             authenticated:(BOOL)authenticated
+         retryAfterDiscovery:(BOOL)retryAfterDiscovery
+                   success:(CzedrAPISuccessBlock)success
+                   failure:(CzedrAPIFailureBlock)failure
+{
     NSString *url = [NSString stringWithFormat:@"%@%@", [self apiBaseURLString], path];
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
     manager.requestSerializer = [AFJSONRequestSerializer serializer];
@@ -186,14 +204,32 @@
         NSString *response = operation.responseString ? [NSString stringWithFormat:@"%@", operation.responseString] : @"";
         NSString *detail = [self messageFromAPIResponse:response fallback:(error.localizedDescription ?: @"Network error")];
         NSInteger code = error.code;
-        if (response.length == 0 &&
+        BOOL unreachable = (response.length == 0 &&
             (code == NSURLErrorNotConnectedToInternet ||
              code == NSURLErrorCannotConnectToHost ||
              code == NSURLErrorTimedOut ||
-             code == NSURLErrorNetworkConnectionLost)) {
+             code == NSURLErrorNetworkConnectionLost));
+        if (unreachable && retryAfterDiscovery) {
+            [CzedrLanAPIFinder resolveWithCompletion:^(NSString *resolvedBase, NSError *resolveError) {
+                if (resolvedBase.length > 0) {
+                    [self requestJSONMethod:method
+                                       path:path
+                                 parameters:params
+                              authenticated:authenticated
+                         retryAfterDiscovery:NO
+                                    success:success
+                                    failure:failure];
+                } else {
+                    NSString *hint = resolveError.localizedDescription ?: detail;
+                    failure(hint);
+                }
+            }];
+            return;
+        }
+        if (unreachable) {
             detail = [NSString stringWithFormat:
-                @"Cannot reach the API at %@. Same Wi‑Fi as your PC; on iPhone open Safari to %@/v1/health; allow Local Network for Czedr in Settings; on PC run scripts\\allow-lan-api-firewall.cmd as Administrator.",
-                base, base];
+                @"Cannot reach the API at %@. On your PC run START-IPHONE-TESTING.cmd (click Yes if Windows asks). Same Wi‑Fi as the PC. Settings → Czedr → Local Network ON.",
+                base];
         }
         failure(detail);
     };

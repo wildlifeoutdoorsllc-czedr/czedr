@@ -38,23 +38,10 @@ Write-Host ""
 Write-Host "Keep this window open while testing." -ForegroundColor DarkGray
 Write-Host ""
 
-$ruleName = 'Czedr API 8080'
-$fwRule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue | Where-Object { $_.Enabled -eq 'True' }
-if (-not $fwRule) {
-    Write-Host ""
-    Write-Host "WARNING: Windows Firewall is not open for port 8080." -ForegroundColor Red
-    Write-Host "  iPhone login will fail until you run (as Administrator):" -ForegroundColor Yellow
-    Write-Host "    scripts\allow-lan-api-firewall.cmd" -ForegroundColor Yellow
-    Write-Host ""
-    try {
-        if (-not (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue)) {
-            New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8080 -Profile Private,Domain -ErrorAction Stop | Out-Null
-            Write-Host "Added firewall rule: $ruleName" -ForegroundColor Green
-        }
-    } catch {
-        Write-Host "  (Could not auto-add rule — elevation required.)" -ForegroundColor DarkYellow
-    }
-}
+& (Join-Path $PSScriptRoot 'ensure-iphone-api-ready.ps1')
+
+$apiUrlFile = Join-Path $root 'scripts\iphone-api-url.txt'
+"http://${lanIp}:8080" | Set-Content -Path $apiUrlFile -Encoding UTF8
 
 Set-Location $docRoot
 Write-Host "Document root: $docRoot" -ForegroundColor DarkGray

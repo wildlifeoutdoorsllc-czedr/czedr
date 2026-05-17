@@ -14,10 +14,10 @@ New-NetFirewallRule `
     -Action Allow `
     -Protocol TCP `
     -LocalPort 8080 `
-    -Profile Private, Domain
+    -Profile Any
 
 Write-Host ""
-Write-Host "Firewall rule added: $ruleName (TCP 8080, Private + Domain profiles)" -ForegroundColor Green
+Write-Host "Firewall rule added: $ruleName (TCP 8080, all network profiles)" -ForegroundColor Green
 Write-Host "Restart the API if it is already running: scripts\start-php-server.ps1" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "On iPhone Safari, open: http://YOUR_PC_LAN_IP:8080/v1/health" -ForegroundColor Yellow
