@@ -14,7 +14,7 @@ on:
       build_number:
         description: "iOS build number (CFBundleVersion), e.g. 50"
         required: false
-        default: "69"
+        default: "70"
   push:
     branches: [main, master, czedrmaster]
     paths:

@@ -105,15 +105,9 @@
     signupbutton.titleLabel.adjustsFontSizeToFitWidth = YES;
 
     UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
-    if (!signInTitle) {
-        signInTitle = [[UILabel alloc] initWithFrame:CGRectMake(20, 168, 230, 22)];
-        signInTitle.tag = 8801;
-        signInTitle.textAlignment = NSTextAlignmentCenter;
-        signInTitle.font = [CzedrTheme avenir:15.0 weight:@"heavy"];
-        signInTitle.textColor = [CzedrTheme lightText];
-        [_viewDetail addSubview:signInTitle];
+    if (signInTitle) {
+        signInTitle.hidden = YES;
     }
-    signInTitle.text = NSLocalizedString(@"Sign in", Nil);
 
     _viewDetail.autoresizingMask = UIViewAutoresizingNone;
     _viewDetail.translatesAutoresizingMaskIntoConstraints = YES;
@@ -146,8 +140,14 @@
    loginbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     signupbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     forgetbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
-    _email.font=[UIFont fontWithName:@"AVENIR" size:14.0];
-    _password.font=[UIFont fontWithName:@"AVENIR" size:14.0];
+    _email.font = [CzedrTheme avenir:16.0 weight:@"roman"];
+    _password.font = [CzedrTheme avenir:16.0 weight:@"roman"];
+    _email.textAlignment = NSTextAlignmentLeft;
+    _password.textAlignment = NSTextAlignmentLeft;
+    _email.leftView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 14, 1)];
+    _email.leftViewMode = UITextFieldViewModeAlways;
+    _password.leftView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 14, 1)];
+    _password.leftViewMode = UITextFieldViewModeAlways;
     [CzedrTheme applyDeckLookToView:self.view];
     [CzedrTheme styleEmailField:_email];
     [CzedrTheme stylePasswordField:_password];
@@ -157,6 +157,43 @@
     [CzedrTheme styleRedPrimaryButton:loginbutton];
     [CzedrTheme styleCharcoalButton:signupbutton];
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
+}
+
+- (UIView *)czedr_authDividerView
+{
+    for (UIView *sub in _viewDetail.subviews) {
+        if (sub.frame.size.height <= 2 && sub.frame.size.width > 100) {
+            return sub;
+        }
+    }
+    return nil;
+}
+
+- (void)czedr_bringAuthControlsToFront
+{
+    UIImageView *logo = [self czedr_brandLogoView];
+    if (logo) {
+        [_viewDetail bringSubviewToFront:logo];
+    }
+    if (_email) {
+        [_viewDetail bringSubviewToFront:_email];
+    }
+    if (_password) {
+        [_viewDetail bringSubviewToFront:_password];
+    }
+    if (loginbutton) {
+        [_viewDetail bringSubviewToFront:loginbutton];
+    }
+    if (forgetbutton) {
+        [_viewDetail bringSubviewToFront:forgetbutton];
+    }
+    UIView *divider = [self czedr_authDividerView];
+    if (divider) {
+        [_viewDetail bringSubviewToFront:divider];
+    }
+    if (signupbutton) {
+        [_viewDetail bringSubviewToFront:signupbutton];
+    }
 }
 
 - (void)czedr_layoutFullScreenSignIn
@@ -177,67 +214,71 @@
 
     CGFloat panelW = CGRectGetWidth(host);
     CGFloat panelH = CGRectGetHeight(host);
-    CGFloat side = 28.0;
+    CGFloat side = 24.0;
     CGFloat fieldW = panelW - side * 2.0;
     CGFloat fieldX = side;
-    const CGFloat fieldH = 48.0;
-    const CGFloat btnH = 48.0;
-    const CGFloat bottomPad = 28.0;
-
-    if (signupbutton) {
-        signupbutton.frame = CGRectMake(fieldX, panelH - bottomPad - btnH, fieldW, btnH);
-    }
-
-    UIView *divider = nil;
-    for (UIView *sub in _viewDetail.subviews) {
-        if (sub.frame.size.height <= 2 && sub.frame.size.width > 100) {
-            divider = sub;
-            break;
-        }
-    }
-    CGFloat y = panelH - bottomPad - btnH - 22.0;
-    if (divider) {
-        divider.frame = CGRectMake(fieldX, y - 1.0, fieldW, 1.0);
-        y -= 20.0;
-    }
-    if (forgetbutton) {
-        forgetbutton.frame = CGRectMake(fieldX, y - 30.0, fieldW, 30.0);
-        y -= 42.0;
-    }
-    if (loginbutton) {
-        loginbutton.frame = CGRectMake(fieldX, y - btnH, fieldW, btnH);
-        y -= 16.0;
-    }
-    if (_password) {
-        _password.frame = CGRectMake(fieldX, y - fieldH, fieldW, fieldH);
-        y -= 16.0;
-    }
-    if (_email) {
-        _email.frame = CGRectMake(fieldX, y - fieldH, fieldW, fieldH);
-        y -= 18.0;
-    }
+    const CGFloat fieldH = 52.0;
+    const CGFloat btnH = 52.0;
+    const CGFloat rowGap = 20.0;
+    const CGFloat bottomPad = 32.0;
+    const CGFloat topPad = 16.0;
 
     UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
     if (signInTitle) {
-        signInTitle.frame = CGRectMake(fieldX, y - 24.0, fieldW, 24.0);
-        y -= 20.0;
+        signInTitle.hidden = YES;
     }
 
-    CGFloat logoMaxH = MIN(180.0, y - 24.0);
+    CGFloat y = topPad;
     UIImageView *logo = [self czedr_brandLogoView];
     if (logo) {
         UIImage *img = logo.image ?: [CzedrTheme brandAuthLogoImage];
         if (img) {
-            CGFloat maxW = panelW - 48.0;
+            CGFloat maxW = panelW - 40.0;
+            CGFloat maxLogoH = panelH * 0.26;
             CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
-            CGFloat height = MIN(logoMaxH, maxW / MAX(aspect, 0.5));
+            CGFloat height = MIN(maxLogoH, maxW / MAX(aspect, 0.5));
             CGFloat width = height * aspect;
-            logo.frame = CGRectMake((panelW - width) / 2.0, 20.0, width, height);
+            logo.frame = CGRectMake((panelW - width) / 2.0, y, width, height);
             logo.contentMode = UIViewContentModeScaleAspectFit;
             logo.backgroundColor = [UIColor clearColor];
             logo.hidden = NO;
+            y = CGRectGetMaxY(logo.frame);
         }
     }
+
+    CGFloat registerY = panelH - bottomPad - btnH;
+    const CGFloat formH = fieldH + rowGap + fieldH + rowGap + btnH + rowGap + 32.0 + rowGap + 1.0 + rowGap;
+    CGFloat formStartY = y + MAX(36.0, (registerY - y - formH - 24.0) * 0.45);
+    y = formStartY;
+
+    if (_email) {
+        _email.frame = CGRectMake(fieldX, y, fieldW, fieldH);
+        _email.textAlignment = NSTextAlignmentLeft;
+        y += fieldH + rowGap;
+    }
+    if (_password) {
+        _password.frame = CGRectMake(fieldX, y, fieldW, fieldH);
+        _password.textAlignment = NSTextAlignmentLeft;
+        y += fieldH + rowGap;
+    }
+    if (loginbutton) {
+        loginbutton.frame = CGRectMake(fieldX, y, fieldW, btnH);
+        y += btnH + rowGap;
+    }
+    if (forgetbutton) {
+        forgetbutton.frame = CGRectMake(fieldX, y, fieldW, 32.0);
+        y += 32.0 + rowGap;
+    }
+    UIView *divider = [self czedr_authDividerView];
+    if (divider) {
+        divider.frame = CGRectMake(fieldX, y, fieldW, 1.0);
+        y += 1.0 + rowGap;
+    }
+    if (signupbutton) {
+        signupbutton.frame = CGRectMake(fieldX, registerY, fieldW, btnH);
+    }
+
+    [self czedr_bringAuthControlsToFront];
 }
 
 - (void)viewDidLayoutSubviews
