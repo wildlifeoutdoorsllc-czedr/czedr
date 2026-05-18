@@ -24,6 +24,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *myProfileLbl;
 @property (weak, nonatomic) IBOutlet UIButton *referralEarningsBtn;
 @property (weak, nonatomic) IBOutlet UIImageView *homeLogoImageView;
+@property (weak, nonatomic) IBOutlet UILabel *homeBalanceCaptionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *homeBalanceLabel;
 @property (weak, nonatomic) IBOutlet UIView *legacyHeaderView;
 @property (weak, nonatomic) IBOutlet UIView *homeTilesContainer;

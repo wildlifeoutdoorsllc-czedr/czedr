@@ -20,6 +20,7 @@
                 <outlet property="pndingInvoicsLbl" destination="viC-Ro-Jve" id="gV1-sf-sot"/>
                 <outlet property="titleLbl" destination="TKc-eo-0EH" id="QTB-Yo-yfa"/>
                 <outlet property="homeLogoImageView" destination="fXw-sr-rq7" id="CZr-Lg-Out"/>
+                <outlet property="homeBalanceCaptionLabel" destination="CZr-Bal-Cap" id="CZr-Cap-Out"/>
                 <outlet property="homeBalanceLabel" destination="CZr-Bal-Lbl" id="CZr-Bal-Out"/>
                 <outlet property="legacyHeaderView" destination="UwN-Lt-ZUf" id="CZr-Hd-Out"/>
                 <outlet property="homeTilesContainer" destination="Ts5-9s-Lg2" id="CZr-Tl-Out"/>
@@ -192,8 +193,15 @@
                         <action selector="referralEarningsButton:" destination="-1" eventType="touchUpInside" id="CZr-AC-Btn"/>
                     </connections>
                 </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Available balance" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="CZr-Bal-Cap">
+                    <rect key="frame" x="0.0" y="280" width="375" height="20"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                    <fontDescription key="fontDescription" name="Avenir-Roman" family="Avenir" pointSize="14"/>
+                    <color key="textColor" red="0.3843137254901961" green="0.39215686274509803" blue="0.40784313725490196" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="YES" minimumScaleFactor="0.7" id="CZr-Bal-Lbl">
-                    <rect key="frame" x="0.0" y="288" width="375" height="32"/>
+                    <rect key="frame" x="0.0" y="300" width="375" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                     <fontDescription key="fontDescription" name="Avenir-Heavy" family="Avenir" pointSize="24"/>
                     <color key="textColor" red="0.8901960784313725" green="0.11764705882352941" blue="0.1411764705882353" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

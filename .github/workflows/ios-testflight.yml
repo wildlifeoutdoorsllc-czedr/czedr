@@ -14,7 +14,7 @@ on:
       build_number:
         description: "iOS build number (CFBundleVersion), e.g. 50"
         required: false
-        default: "65"
+        default: "66"
   push:
     branches: [main, master, czedrmaster]
     paths:
@@ -26,6 +26,7 @@ on:
       - "Czedr*.h"
       - "Czedr*.m"
       - "SharedServiceController.*"
+      - "leftSwipeViewController.*"
       - "ios/**"
 
 concurrency:

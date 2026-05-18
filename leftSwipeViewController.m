@@ -96,6 +96,13 @@
         self.homeLogoImageView.contentMode = UIViewContentModeScaleAspectFit;
         self.homeLogoImageView.backgroundColor = [UIColor clearColor];
     }
+    if (self.homeBalanceCaptionLabel) {
+        self.homeBalanceCaptionLabel.text = NSLocalizedString(@"Available balance", nil);
+        self.homeBalanceCaptionLabel.textAlignment = NSTextAlignmentCenter;
+        self.homeBalanceCaptionLabel.textColor = [CzedrTheme mutedText];
+        self.homeBalanceCaptionLabel.font = [CzedrTheme avenir:14.0 weight:@"roman"];
+        self.homeBalanceCaptionLabel.backgroundColor = [UIColor clearColor];
+    }
     if (self.homeBalanceLabel) {
         self.homeBalanceLabel.text = @"";
         self.homeBalanceLabel.textAlignment = NSTextAlignmentCenter;
@@ -151,6 +158,7 @@
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    [self czedr_layoutHomeHeader];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -190,7 +198,7 @@
 
 - (void)czedr_layoutHomeHeader
 {
-    if (!self.isViewLoaded || !self.view.window) {
+    if (!self.isViewLoaded || self.view.bounds.size.width < 1.0) {
         return;
     }
     CGFloat width = self.view.bounds.size.width;
@@ -204,6 +212,11 @@
         CGFloat logoW = logoH * aspect;
         self.homeLogoImageView.frame = CGRectMake((width - logoW) / 2.0, y, logoW, logoH);
         y = CGRectGetMaxY(self.homeLogoImageView.frame) + 2.0;
+    }
+
+    if (self.homeBalanceCaptionLabel) {
+        self.homeBalanceCaptionLabel.frame = CGRectMake(16.0, y, width - 32.0, 20.0);
+        y = CGRectGetMaxY(self.homeBalanceCaptionLabel.frame) + 2.0;
     }
 
     if (self.homeBalanceLabel) {
