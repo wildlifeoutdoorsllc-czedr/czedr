@@ -83,6 +83,11 @@
     }
 
     table.hidden = YES;
+    if ([SharedServiceController usesV1API]) {
+        _selectpayment.hidden = YES;
+        table.hidden = YES;
+        _valueLabel.hidden = YES;
+    }
    
     NSString *strMkPymntLbl = NSLocalizedString(@"MAKE PAYMENT", Nil);
     _titleLbl.text = strMkPymntLbl;
@@ -230,6 +235,11 @@
     _enterPin.textColor = [CzedrTheme taglineRed];
     [CzedrTheme applyDeckLookToView:self.view];
     [CzedrTheme styleCzedrIdField:_czedrId];
+    if ([SharedServiceController usesV1API]) {
+        _selectpayment.hidden = YES;
+        table.hidden = YES;
+        _valueLabel.hidden = YES;
+    }
     
     payNowBool = false;
     
@@ -826,13 +836,23 @@
     else
     {
         if ([SharedServiceController usesV1API]) {
-            [SharedServiceController validateCzedrRecipient:_czedrId.text
+            NSString *enteredId = [_czedrId.text copy];
+            [SharedServiceController validateCzedrRecipient:enteredId
                 success:^(NSString *displayName) {
                     [MBProgressHUD hideHUDForView:self.view animated:YES];
                     [[NSUserDefaults standardUserDefaults] setValue:@"ok" forKey:@"makevalidID"];
                     [[NSUserDefaults standardUserDefaults] synchronize];
-                    czedrRecipientIdSave = _czedrId.text;
+                    czedrRecipientIdSave = enteredId;
                     _czedrId.text = displayName;
+                    if (displayName.length > 0) {
+                        NSString *msg = [NSString stringWithFormat:@"Recipient: %@", displayName];
+                        UIAlertView *okAlert = [[UIAlertView alloc] initWithTitle:@""
+                                                                           message:msg
+                                                                          delegate:nil
+                                                                 cancelButtonTitle:@"OK"
+                                                                 otherButtonTitles:nil];
+                        [okAlert show];
+                    }
                 } failure:^(NSString *message) {
                     [MBProgressHUD hideHUDForView:self.view animated:YES];
                     UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];

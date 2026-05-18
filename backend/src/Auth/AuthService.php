@@ -342,13 +342,42 @@ final class AuthService
         if (!$row) {
             throw new \InvalidArgumentException('Invalid Czedr Id');
         }
-        $label = $staff ? (string) $row['email'] : self::maskedRecipientLabel((string) $row['czedr_id']);
+        $email = (string) $row['email'];
+        $cid = (string) $row['czedr_id'];
+        $friendly = self::friendlyNameFromEmail($email);
+        $label = $staff
+            ? sprintf('%s (%s)', $friendly, $email)
+            : sprintf('%s · %s', $friendly, $cid);
 
         return [
-            'czedr_id' => (string) $row['czedr_id'],
+            'czedr_id' => $cid,
             'display_name' => $label,
+            'recipient_name' => $friendly,
             'result' => $label,
         ];
+    }
+
+    /**
+     * Derive a short display name from an email local part (e.g. bob@test.czedr → Bob).
+     */
+    public static function friendlyNameFromEmail(string $email): string
+    {
+        $email = trim($email);
+        $local = $email;
+        if (str_contains($email, '@')) {
+            $local = (string) explode('@', $email, 2)[0];
+        }
+        $parts = preg_split('/[._+-]+/', $local) ?: [$local];
+        $words = [];
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if ($part === '') {
+                continue;
+            }
+            $words[] = ucfirst(strtolower($part));
+        }
+
+        return $words !== [] ? implode(' ', $words) : $email;
     }
 
     public static function maskedRecipientLabel(string $czedrId): string
