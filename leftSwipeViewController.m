@@ -26,6 +26,7 @@
      NSManagedObjectContext *managedObjectContext;
      BOOL _referralBalanceTapAdded;
      BOOL _homeDataLoaded;
+     BOOL _balanceLabelReparented;
 }
 @end
 
@@ -78,6 +79,31 @@
     
     [self.referralEarningsBtn setTitle:NSLocalizedString(@"Referral earnings", nil) forState:UIControlStateNormal];
     [self syncReferralEarningsUIWithAuthToken:autcode ?: @""];
+
+    if (self.legacyHeaderView) {
+        self.legacyHeaderView.hidden = YES;
+    }
+    if (self.homeLogoImageView) {
+        UIImage *logo = [CzedrTheme brandAuthLogoImage];
+        if (logo) {
+            self.homeLogoImageView.image = logo;
+        }
+        self.homeLogoImageView.contentMode = UIViewContentModeScaleAspectFit;
+        self.homeLogoImageView.backgroundColor = [UIColor clearColor];
+    }
+    if (countlable && !_balanceLabelReparented) {
+        countlable.hidden = NO;
+        countlable.text = @"";
+        countlable.textAlignment = NSTextAlignmentCenter;
+        countlable.textColor = [CzedrTheme redPrimary];
+        countlable.font = [CzedrTheme avenir:24.0 weight:@"heavy"];
+        countlable.adjustsFontSizeToFitWidth = YES;
+        countlable.minimumScaleFactor = 0.7;
+        countlable.backgroundColor = [UIColor clearColor];
+        [countlable removeFromSuperview];
+        [self.view addSubview:countlable];
+        _balanceLabelReparented = YES;
+    }
     
     if (autcode.length==0)
     {
@@ -106,6 +132,7 @@
         }
         [strongSelf syncReferralEarningsUIWithAuthToken:tok];
         [strongSelf call_loadCardsService];
+        [CzedrAppChrome refreshSessionBarForDrawer:strongSelf.mm_drawerController];
     });
 }
 
@@ -122,6 +149,7 @@
     [self syncReferralEarningsUIWithAuthToken:tok];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -143,9 +171,81 @@
     });
 }
 
+- (CGFloat)czedr_topChromeBottomY
+{
+    CGFloat top = 0;
+    if (@available(iOS 11.0, *)) {
+        top = self.view.safeAreaInsets.top;
+    }
+    MMDrawerController *drawer = self.mm_drawerController;
+    if (drawer) {
+        UIView *bar = [drawer.view viewWithTag:88040];
+        if (bar && !bar.hidden && bar.superview) {
+            top = CGRectGetMaxY(bar.frame);
+        }
+    }
+    return top;
+}
+
+- (void)czedr_layoutHomeHeader
+{
+    CGFloat width = self.view.bounds.size.width;
+    CGFloat y = [self czedr_topChromeBottomY] + 6.0;
+
+    if (self.homeLogoImageView) {
+        UIImage *logo = self.homeLogoImageView.image;
+        CGFloat maxW = width - 48.0;
+        CGFloat aspect = logo.size.width / MAX(logo.size.height, 1.0);
+        CGFloat logoH = MIN(108.0, maxW / MAX(aspect, 0.5));
+        CGFloat logoW = logoH * aspect;
+        self.homeLogoImageView.frame = CGRectMake((width - logoW) / 2.0, y, logoW, logoH);
+        [self.view bringSubviewToFront:self.homeLogoImageView];
+        y = CGRectGetMaxY(self.homeLogoImageView.frame) + 8.0;
+    }
+
+    if (countlable) {
+        countlable.frame = CGRectMake(20.0, y, width - 40.0, 34.0);
+        [self.view bringSubviewToFront:countlable];
+        y = CGRectGetMaxY(countlable.frame) + 4.0;
+    }
+
+    if (czedrIdLabel) {
+        czedrIdLabel.frame = CGRectMake(16.0, y, width - 32.0, 26.0);
+        czedrIdLabel.textAlignment = NSTextAlignmentCenter;
+        [self.view bringSubviewToFront:czedrIdLabel];
+        y = CGRectGetMaxY(czedrIdLabel.frame) + 10.0;
+    }
+
+    if (self.homeTilesContainer) {
+        CGFloat bottomReserve = 56.0;
+        if (@available(iOS 11.0, *)) {
+            bottomReserve += self.view.safeAreaInsets.bottom;
+        }
+        if (!self.referralEarningsBtn.hidden) {
+            bottomReserve = MAX(bottomReserve, CGRectGetHeight(self.referralEarningsBtn.frame) + 8.0);
+        }
+        CGFloat tilesH = MAX(220.0, self.view.bounds.size.height - y - bottomReserve);
+        self.homeTilesContainer.frame = CGRectMake(0, y, width, tilesH);
+        [self.view bringSubviewToFront:self.homeTilesContainer];
+    }
+
+    if (self.referralEarningsBtn) {
+        CGFloat btnH = 48.0;
+        CGFloat btnY = self.view.bounds.size.height - btnH;
+        if (@available(iOS 11.0, *)) {
+            btnY -= self.view.safeAreaInsets.bottom;
+        }
+        self.referralEarningsBtn.frame = CGRectMake(0, btnY, width, btnH);
+        [CzedrTheme styleRedPrimaryButton:self.referralEarningsBtn];
+        [self.view bringSubviewToFront:self.referralEarningsBtn];
+    }
+}
+
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
+    [self czedr_layoutHomeHeader];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
 }
 
 - (void)didReceiveMemoryWarning
@@ -229,12 +329,16 @@
         [SharedServiceController fetchReceivedInvoicesOffset:0 limit:8
             success:^(NSArray *rows, NSInteger total) {
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
-                countlable.text = [NSString stringWithFormat:@"%ld", (long)total];
+                if (countlable) {
+                    countlable.text = [NSString stringWithFormat:@"%ld pending", (long)total];
+                }
             }
             failure:^(NSString *message) {
                 (void)message;
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
-                countlable.text = @"0";
+                if (countlable) {
+                    countlable.text = @"";
+                }
             }];
     }
     else
@@ -349,8 +453,9 @@
             NSInteger cents = [[data objectForKey:@"balance_cents"] integerValue];
             float dollars = cents / 100.0f;
             if (strongSelf->countlable) {
-                strongSelf->countlable.text = [NSString stringWithFormat:@"$%.2f · tap for referral earnings", dollars];
+                strongSelf->countlable.text = [NSString stringWithFormat:@"$%.2f", dollars];
             }
+            [strongSelf czedr_layoutHomeHeader];
             [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
         } failure:^(NSString *message) {
             __strong typeof(weakSelf) strongSelf = weakSelf;

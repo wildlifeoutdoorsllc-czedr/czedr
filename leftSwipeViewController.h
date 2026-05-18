@@ -23,6 +23,9 @@
 @property (weak, nonatomic) IBOutlet UILabel *histryLbl;
 @property (weak, nonatomic) IBOutlet UILabel *myProfileLbl;
 @property (weak, nonatomic) IBOutlet UIButton *referralEarningsBtn;
+@property (weak, nonatomic) IBOutlet UIImageView *homeLogoImageView;
+@property (weak, nonatomic) IBOutlet UIView *legacyHeaderView;
+@property (weak, nonatomic) IBOutlet UIView *homeTilesContainer;
 @property (strong) NSManagedObject *device;
 
 - (IBAction)pendingButton:(id)sender;

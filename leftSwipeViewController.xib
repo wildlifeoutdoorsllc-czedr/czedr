@@ -19,6 +19,9 @@
                 <outlet property="czedrIdLabel" destination="ex6-nO-GI5" id="2f2-vY-ATd"/>
                 <outlet property="pndingInvoicsLbl" destination="viC-Ro-Jve" id="gV1-sf-sot"/>
                 <outlet property="titleLbl" destination="TKc-eo-0EH" id="QTB-Yo-yfa"/>
+                <outlet property="homeLogoImageView" destination="fXw-sr-rq7" id="CZr-Lg-Out"/>
+                <outlet property="legacyHeaderView" destination="UwN-Lt-ZUf" id="CZr-Hd-Out"/>
+                <outlet property="homeTilesContainer" destination="Ts5-9s-Lg2" id="CZr-Tl-Out"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="mB2-LJ-Z16"/>
             </connections>
         </placeholder>
@@ -98,7 +101,7 @@
                                     <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="f7D-k7-b8k">
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="f7D-k7-b8k" hidden="YES">
                                     <rect key="frame" x="107" y="33" width="38" height="30"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                     <fontDescription key="fontDescription" name="Avenir-Roman" family="Avenir" pointSize="14"/>
@@ -195,7 +198,7 @@
                     <color key="textColor" red="0.31102451682090759" green="0.31433805823326111" blue="0.32580095529556274" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="Czedr@3x.png" id="fXw-sr-rq7">
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Czedr-auth-logo.png" id="fXw-sr-rq7">
                     <rect key="frame" x="0.0" y="127" width="375" height="170"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                 </imageView>
@@ -205,7 +208,7 @@
         </view>
     </objects>
     <resources>
-        <image name="Czedr@3x.png" width="16" height="16"/>
+        <image name="Czedr-auth-logo.png" width="647" height="583"/>
         <image name="history.png" width="97" height="84"/>
         <image name="makepayment.png" width="97" height="84"/>
         <image name="menu2.png" width="28" height="22"/>
