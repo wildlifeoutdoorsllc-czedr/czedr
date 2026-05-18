@@ -19,8 +19,11 @@ FOUNDATION_EXPORT NSString * const CzedrUserDidLoginNotification;
 + (void)suspendSessionBarRefreshForSeconds:(NSTimeInterval)seconds;
 + (BOOL)sessionBarRefreshSuspended;
 
-/** Top bar: back/forward (left), minimize / maximize (upper right). */
+/** Top bar: menu, back/forward, centered logo, minimize / maximize. */
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer;
+
++ (CGFloat)topChromeBottomYForView:(UIView *)view;
++ (void)hideLegacyPageHeadersInView:(UIView *)rootView;
 
 + (UIView *)installSessionBarInViewController:(UIViewController *)host;
 

@@ -15,6 +15,9 @@ static const NSInteger kChromeBackButtonTag = 88041;
 static const NSInteger kChromeForwardButtonTag = 88042;
 static const NSInteger kChromeMinimizeButtonTag = 88043;
 static const NSInteger kChromeMaximizeButtonTag = 88044;
+static const NSInteger kChromeMenuButtonTag = 88045;
+static const NSInteger kChromeLogoImageTag = 88046;
+static const CGFloat kCzedrTopChromeHeight = 50.0;
 
 static NSMutableArray<UIViewController *> *CzedrForwardStack(void)
 {
@@ -28,6 +31,7 @@ static NSMutableArray<UIViewController *> *CzedrForwardStack(void)
 
 @interface CzedrTopChromeTarget : NSObject
 @property (nonatomic, weak) MMDrawerController *drawer;
+- (void)chromeMenu:(id)sender;
 - (void)chromeBack:(id)sender;
 - (void)chromeForward:(id)sender;
 - (void)chromeMinimize:(id)sender;
@@ -107,6 +111,14 @@ static NSMutableArray<UIViewController *> *CzedrForwardStack(void)
     }
 }
 
+- (void)chromeMenu:(id)sender
+{
+    (void)sender;
+    if (self.drawer) {
+        [self.drawer toggleDrawerSide:MMDrawerSideLeft animated:YES completion:nil];
+    }
+}
+
 @end
 
 NSString * const CzedrUserDidLoginNotification = @"CzedrUserDidLogin";
@@ -167,7 +179,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     if (!bar || !containerView) {
         return;
     }
-    CGFloat barHeight = 44.0;
+    CGFloat barHeight = kCzedrTopChromeHeight;
     CGFloat topInset = 0.0;
     if (@available(iOS 11.0, *)) {
         topInset = containerView.safeAreaInsets.top;
@@ -175,23 +187,31 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     CGFloat width = containerView.bounds.size.width;
     bar.frame = CGRectMake(0, topInset, width, barHeight);
 
+    UIButton *menu = (UIButton *)[bar viewWithTag:kChromeMenuButtonTag];
     UIButton *back = (UIButton *)[bar viewWithTag:kChromeBackButtonTag];
     UIButton *forward = (UIButton *)[bar viewWithTag:kChromeForwardButtonTag];
     UIButton *minimize = (UIButton *)[bar viewWithTag:kChromeMinimizeButtonTag];
     UIButton *maximize = (UIButton *)[bar viewWithTag:kChromeMaximizeButtonTag];
+    UIImageView *logo = (UIImageView *)[bar viewWithTag:kChromeLogoImageTag];
 
-    CGFloat pad = 10.0;
-    CGFloat navW = 40.0;
+    CGFloat pad = 8.0;
+    CGFloat navW = 36.0;
     CGFloat navH = 32.0;
     CGFloat navY = (barHeight - navH) / 2.0;
+    CGFloat x = pad;
+    if (menu) {
+        menu.frame = CGRectMake(x, navY, navW, navH);
+        x += navW + 4.0;
+    }
     if (back) {
-        back.frame = CGRectMake(pad, navY, navW, navH);
+        back.frame = CGRectMake(x, navY, navW, navH);
+        x += navW + 4.0;
     }
     if (forward) {
-        forward.frame = CGRectMake(pad + navW + 6.0, navY, navW, navH);
+        forward.frame = CGRectMake(x, navY, navW, navH);
     }
 
-    CGFloat winW = 40.0;
+    CGFloat winW = 36.0;
     CGFloat winH = 32.0;
     CGFloat winGap = 4.0;
     CGFloat winY = (barHeight - winH) / 2.0;
@@ -200,6 +220,17 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     }
     if (minimize) {
         minimize.frame = CGRectMake(width - pad - winW * 2.0 - winGap, winY, winW, winH);
+    }
+
+    if (logo) {
+        UIImage *img = logo.image ?: [CzedrTheme brandAuthLogoImage];
+        if (img) {
+            CGFloat maxLogoH = barHeight - 8.0;
+            CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
+            CGFloat logoH = MIN(maxLogoH, 72.0 / MAX(aspect, 0.5));
+            CGFloat logoW = logoH * aspect;
+            logo.frame = CGRectMake((width - logoW) / 2.0, (barHeight - logoH) / 2.0, logoW, logoH);
+        }
     }
 
     UINavigationController *nav = nil;
@@ -216,7 +247,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 
 + (UIView *)buildTopChromeWithTarget:(CzedrTopChromeTarget *)target
 {
-    UIView *bar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+    UIView *bar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, kCzedrTopChromeHeight)];
     bar.tag = kCzedrTopChromeTag;
     bar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     bar.backgroundColor = [[CzedrTheme darkSurface] colorWithAlphaComponent:0.94];
@@ -226,6 +257,23 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     bar.layer.shadowOpacity = 0.25;
     bar.layer.shadowRadius = 3.0;
     bar.layer.shadowOffset = CGSizeMake(0, 2);
+
+    UIButton *menu = [UIButton buttonWithType:UIButtonTypeCustom];
+    menu.tag = kChromeMenuButtonTag;
+    menu.accessibilityLabel = @"Menu";
+    [menu setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];
+    menu.imageView.contentMode = UIViewContentModeScaleAspectFit;
+    menu.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.15];
+    menu.layer.cornerRadius = 4.0;
+    menu.clipsToBounds = YES;
+    [menu addTarget:target action:@selector(chromeMenu:) forControlEvents:UIControlEventTouchUpInside];
+    [bar addSubview:menu];
+
+    UIImageView *logo = [[UIImageView alloc] initWithImage:[CzedrTheme brandAuthLogoImage]];
+    logo.tag = kChromeLogoImageTag;
+    logo.contentMode = UIViewContentModeScaleAspectFit;
+    logo.backgroundColor = [UIColor clearColor];
+    [bar addSubview:logo];
 
     UIButton *back = [self chromeButtonWithTitle:@"\u2190" target:target action:@selector(chromeBack:)];
     back.tag = kChromeBackButtonTag;
@@ -320,6 +368,44 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         return [drawer.view viewWithTag:kCzedrTopChromeTag];
     }
     return nil;
+}
+
++ (CGFloat)topChromeBottomYForView:(UIView *)view
+{
+    if (!view) {
+        return 0;
+    }
+    CGFloat top = 0;
+    if (@available(iOS 11.0, *)) {
+        top = view.safeAreaInsets.top;
+    }
+    UIView *bar = [view viewWithTag:kCzedrTopChromeTag];
+    if (bar && !bar.hidden && bar.superview) {
+        return CGRectGetMaxY(bar.frame);
+    }
+    return top;
+}
+
++ (void)hideLegacyPageHeadersInView:(UIView *)rootView
+{
+    if (!rootView) {
+        return;
+    }
+    for (UIView *sub in rootView.subviews) {
+        if (sub.hidden) {
+            continue;
+        }
+        UIColor *bg = sub.backgroundColor;
+        if (sub.frame.size.height > 0 && sub.frame.size.height <= 90 && CGRectGetMinY(sub.frame) < 120) {
+            const CGFloat *c = CGColorGetComponents(bg.CGColor);
+            if (CGColorGetNumberOfComponents(bg.CGColor) >= 3) {
+                if (c[0] > 0.45 && c[0] < 0.65 && c[1] > 0.72 && c[1] < 0.85 && c[2] > 0.32 && c[2] < 0.48) {
+                    sub.hidden = YES;
+                }
+            }
+        }
+        [self hideLegacyPageHeadersInView:sub];
+    }
 }
 
 + (void)clearLocalSession

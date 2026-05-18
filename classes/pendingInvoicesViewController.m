@@ -27,6 +27,7 @@ static int sent_totalcount;
 -(void)viewWillAppear:(BOOL)animated
 {
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    [CzedrAppChrome hideLegacyPageHeadersInView:self.view];
     if ([[[NSUserDefaults standardUserDefaults] valueForKey:@"pendingclick"] isEqualToString:@"pending"])
     {
         [back setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];

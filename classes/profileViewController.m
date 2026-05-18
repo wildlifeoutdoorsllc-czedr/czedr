@@ -10,7 +10,6 @@
 #import "CzedrTheme.h"
 #import "AsyncImageView.h"
 #import "leftSwipeViewController.h"
-#import "LinkedViewController.h"
 #import "generalViewController.h"
 #import <QuartzCore/QuartzCore.h>
 #import "UIViewController+MMDrawerController.h"
@@ -36,8 +35,9 @@
     NSString *strGeneralInfo = NSLocalizedString(@"General info & Settings", Nil);
     generalInfo.text = strGeneralInfo;
 
-    NSString *strLinkedCards = NSLocalizedString(@"Linked Cards", Nil);
-    linkedCrds.text = strLinkedCards;
+    if (linkedCrds && linkedCrds.superview) {
+        linkedCrds.superview.hidden = YES;
+    }
 
     _imageView.userInteractionEnabled = YES;
     UITapGestureRecognizer *avatarTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(avatarTapped)];
@@ -56,6 +56,8 @@
 -(void)viewWillAppear:(BOOL)animated
 {
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    [CzedrAppChrome hideLegacyPageHeadersInView:self.view];
+    [self czedr_layoutProfileTiles];
     //load the image
     
     namelbl.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"name"];
@@ -106,10 +108,38 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+- (void)czedr_layoutProfileTiles
+{
+    UIView *tilesHost = nil;
+    for (UIView *sub in self.view.subviews) {
+        if (sub.subviews.count >= 1 && CGRectGetMinY(sub.frame) > 200) {
+            const CGFloat *c = CGColorGetComponents(sub.backgroundColor.CGColor);
+            if (CGColorGetNumberOfComponents(sub.backgroundColor.CGColor) >= 3
+                && c[0] > 0.45 && c[0] < 0.65 && c[1] > 0.72) {
+                tilesHost = sub;
+                break;
+            }
+        }
+    }
+    if (!tilesHost) {
+        return;
+    }
+    CGFloat top = [CzedrAppChrome topChromeBottomYForView:self.mm_drawerController.view] + 8.0;
+    CGFloat width = self.view.bounds.size.width;
+    CGFloat height = self.view.bounds.size.height - top - 16.0;
+    tilesHost.frame = CGRectMake(0, top + 250.0, width, MAX(160.0, height - 250.0));
+    for (UIView *tile in tilesHost.subviews) {
+        if (!tile.hidden) {
+            tile.frame = CGRectMake(8, 8, width - 16, CGRectGetHeight(tilesHost.frame) - 16);
+            tile.autoresizingMask = UIViewAutoresizingNone;
+            break;
+        }
+    }
+}
+
 -(IBAction)linkedCard:(id)sender
 {
-    LinkedViewController *linked=[[LinkedViewController alloc]initWithNibName:@"LinkedViewController" bundle:nil];
-    [self.navigationController pushViewController:linked animated:YES];
+    (void)sender;
 }
 
 - (IBAction)generalButton:(id)sender

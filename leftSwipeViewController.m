@@ -124,6 +124,9 @@
         countlable.hidden = YES;
         countlable.text = @"";
     }
+    if (self.homeTilesContainer) {
+        self.homeTilesContainer.autoresizingMask = UIViewAutoresizingNone;
+    }
     if (self.homeLogoImageView) {
         UIImage *logo = [UIImage imageNamed:@"Czedr@3x.png"];
         if (!logo) {
@@ -194,6 +197,7 @@
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    [CzedrAppChrome hideLegacyPageHeadersInView:self.view];
     [self czedr_layoutHomeHeader];
 }
 
@@ -218,18 +222,43 @@
 
 - (CGFloat)czedr_topChromeBottomY
 {
-    CGFloat top = 0;
-    if (@available(iOS 11.0, *)) {
-        top = self.view.safeAreaInsets.top;
-    }
     MMDrawerController *drawer = self.mm_drawerController;
     if (drawer) {
-        UIView *bar = [drawer.view viewWithTag:88040];
-        if (bar && !bar.hidden && bar.superview) {
-            top = CGRectGetMaxY(bar.frame);
-        }
+        return [CzedrAppChrome topChromeBottomYForView:drawer.view];
     }
-    return top;
+    if (@available(iOS 11.0, *)) {
+        return self.view.safeAreaInsets.top;
+    }
+    return 0;
+}
+
+- (void)czedr_layoutHomeTilesAtY:(CGFloat)y width:(CGFloat)width
+{
+    if (!self.homeTilesContainer) {
+        return;
+    }
+    const CGFloat gap = 8.0;
+    const CGFloat tileH = 124.0;
+    CGFloat tileW = floor((width - gap * 3.0) / 2.0);
+    CGFloat tilesH = gap + tileH + gap + tileH + gap;
+    self.homeTilesContainer.frame = CGRectMake(0, y, width, tilesH);
+    self.homeTilesContainer.autoresizingMask = UIViewAutoresizingNone;
+
+    NSArray<UIView *> *tiles = self.homeTilesContainer.subviews;
+    if (tiles.count < 4) {
+        return;
+    }
+    UIView *tl = tiles[0];
+    UIView *tr = tiles[1];
+    UIView *bl = tiles[2];
+    UIView *br = tiles[3];
+    tl.frame = CGRectMake(gap, gap, tileW, tileH);
+    tr.frame = CGRectMake(gap + tileW + gap, gap, tileW, tileH);
+    bl.frame = CGRectMake(gap, gap + tileH + gap, tileW, tileH);
+    br.frame = CGRectMake(gap + tileW + gap, gap + tileH + gap, tileW, tileH);
+    for (UIView *tile in tiles) {
+        tile.autoresizingMask = UIViewAutoresizingNone;
+    }
 }
 
 - (void)czedr_layoutHomeHeader
@@ -244,7 +273,7 @@
         UIImage *logo = self.homeLogoImageView.image;
         CGFloat maxW = width - 40.0;
         CGFloat aspect = (logo.size.width > 1.0) ? (logo.size.width / logo.size.height) : 1.1;
-        CGFloat logoH = MIN(200.0, maxW / MAX(aspect, 0.5));
+        CGFloat logoH = MIN(120.0, maxW / MAX(aspect, 0.5));
         CGFloat logoW = logoH * aspect;
         self.homeLogoImageView.frame = CGRectMake((width - logoW) / 2.0, y, logoW, logoH);
         y = CGRectGetMaxY(self.homeLogoImageView.frame) + 2.0;
@@ -266,13 +295,16 @@
         y = CGRectGetMaxY(czedrIdLabel.frame) + 8.0;
     }
 
-    if (self.homeTilesContainer) {
-        CGFloat bottom = CGRectGetMinY(self.referralEarningsBtn.frame);
-        if (bottom < 1.0) {
-            bottom = self.view.bounds.size.height - 53.0;
+    [self czedr_layoutHomeTilesAtY:y width:width];
+
+    if (self.referralEarningsBtn) {
+        CGFloat btnH = 48.0;
+        CGFloat btnY = self.view.bounds.size.height - btnH;
+        if (@available(iOS 11.0, *)) {
+            btnY -= self.view.safeAreaInsets.bottom;
         }
-        CGFloat tilesH = MAX(200.0, bottom - y);
-        self.homeTilesContainer.frame = CGRectMake(0, y, width, tilesH);
+        self.referralEarningsBtn.frame = CGRectMake(0, btnY, width, btnH);
+        [CzedrTheme styleRedPrimaryButton:self.referralEarningsBtn];
     }
     [self czedr_bringHomeContentToFront];
 }
