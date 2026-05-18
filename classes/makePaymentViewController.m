@@ -14,22 +14,8 @@
 #import "SharedServiceController.h"
 #import "CzedrAppChrome.h"
 #import "pendingInvoicesViewController.h"
-#import <CoreData/CoreData.h>
-@interface makePaymentViewController ()
-{
-    NSManagedObjectContext *managedObjectContext;
-}
-@end
 
 @implementation makePaymentViewController
-- (NSManagedObjectContext *)managedObjectContext {
-    NSManagedObjectContext *context = nil;
-    id delegate = [[UIApplication sharedApplication] delegate];
-    if ([delegate performSelector:@selector(managedObjectContext)]) {
-        context = [delegate managedObjectContext];
-    }
-    return context;
-}
 
 -(void)viewWillDisappear:(BOOL)animated
 {
@@ -59,36 +45,7 @@
     _pin4.inputAccessoryView = keyboardDoneButtonView;
     _czedrId.inputAccessoryView = keyboardDoneButtonView;
     _amount.inputAccessoryView = keyboardDoneButtonView;
-    NSManagedObjectContext *context = [self managedObjectContext];
-    if (context != nil)
-    {
-        NSError *error;
-        NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-        NSEntityDescription *entity = [NSEntityDescription entityForName:@"Cards" inManagedObjectContext:context];
-        [fetchRequest setEntity:entity];
-        array = [context executeFetchRequest:fetchRequest error:&error];
-        if (array.count==0) {
-            
-        }
-        else
-        {
-            for (int i=0; i<array.count; i++)
-            {
-//                NSLog(@"%@",[array objectAtIndex:i]);
-            }
-            table.dataSource=self;
-            table.delegate=self;
-            [table reloadData];
-        }
-    }
 
-    table.hidden = YES;
-    if ([SharedServiceController usesV1API]) {
-        _selectpayment.hidden = YES;
-        table.hidden = YES;
-        _valueLabel.hidden = YES;
-    }
-   
     NSString *strMkPymntLbl = NSLocalizedString(@"MAKE PAYMENT", Nil);
     _titleLbl.text = strMkPymntLbl;
     
@@ -108,90 +65,6 @@
     NSString *strMkPymntBtn = NSLocalizedString(@"MAKE PAYMENT", Nil);
     [_mkPymntBtn setTitle: strMkPymntBtn forState: UIControlStateNormal];
     _mkPymntBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
-}
-
--(void)call_loadCardsService
-{
-    ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc]init];
-    int reach = [reachAbilty updateInterfaceWithReachability];
-    if (reach==0)
-    {
-        NSString *strAttention = NSLocalizedString(@"Attention", Nil);
-        NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
-        NSString *strOk = NSLocalizedString(@"OK", Nil);
-        
-        UIAlertView *alertview=[[UIAlertView alloc]initWithTitle:strAttention message:strYourNetwork delegate:self cancelButtonTitle:strOk otherButtonTitles:nil, nil];
-        [alertview performSelectorOnMainThread:@selector(show) withObject:nil waitUntilDone:YES];
-    }
-    else if ([SharedServiceController usesV1API])
-    {
-        [SharedServiceController loadLinkedCardsForPickerSuccess:^(NSArray *cards) {
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
-            array = [NSMutableArray arrayWithArray:cards];
-            [table reloadData];
-        } failure:^(NSString *message) {
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
-        }];
-    }
-    else
-    {
-        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-        NSMutableDictionary *params = [[NSMutableDictionary alloc]init];
-        NSString *autcode = [NSString stringWithFormat:@"%@",[[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"]];
-        [params setValue:autcode forKey:@"auth_code"];
-        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-        [manager POST:[NSString stringWithFormat:@"%s/%s",base_url,"creditcarddetail"] parameters:params success:^(AFHTTPRequestOperation *operation, id responseObject)
-         {
-             NSString *response;
-             [MBProgressHUD hideHUDForView:self.view animated:YES];
-             response = [NSString stringWithFormat:@"%@",operation.responseString];
-             NSString *status=[NSString stringWithFormat:@"%@",[[response JSONValue] valueForKey:@"Status"]];
-             if ([status isEqualToString:@"true"])
-             {
-                 array=[[response JSONValue] valueForKey:@"Data"];
-                 [table reloadData];
-             }
-             else
-             {
-                 NSString *Alertstatus=[NSString stringWithFormat:@"%@",[[[[response JSONValue] valueForKey:@"Data"] objectAtIndex:0]valueForKey:@"result"]];
-                 
-                 if ([Alertstatus isEqualToString:@"authcode expired"])
-                 {
-                     NSString *language = [[[NSBundle mainBundle] preferredLocalizations] objectAtIndex:0];
-
-                     if([language isEqual:@"fr"])
-                     {
-                         if ([Alertstatus isEqual:@"authcode expired"])
-                         {
-                             Alertstatus = @"code d'autorisation expiré";
-                         }
-                         else if ([Alertstatus isEqual:@"No Card Detail"])
-                         {
-                             Alertstatus = @"Pas de carte détaillée";
-                         }
-                     }
-                 }
-                 else
-                 {
-                     NSString *strAlert = NSLocalizedString(@"Alert", Nil);
-                     NSString *strNotLinkedCards = NSLocalizedString(@"not linked any cards", Nil);
-                     NSString *strOk = NSLocalizedString(@"OK", Nil);
-                     
-                     UIAlertView *alert = [[UIAlertView alloc]initWithTitle:strAlert message:strNotLinkedCards delegate:self cancelButtonTitle:strOk otherButtonTitles:nil, nil];
-                     [alert show];
-                 }
-             }
-         }
-              failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                  [MBProgressHUD hideHUDForView:self.view animated:YES];
-                 
-                  NSString *strErrorMsg = NSLocalizedString(@"error", Nil);
-                  NSString *strOk = NSLocalizedString(@"OK", Nil);
-                  
-                  UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:strErrorMsg delegate:nil cancelButtonTitle:strOk otherButtonTitles:nil, nil];
-                  [alert show];
-              }];
-    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -230,16 +103,9 @@
     _pin4.clipsToBounds = YES;
     _sendInvoice.layer.cornerRadius=3;
     _sendInvoice.clipsToBounds = YES;
-    _selectpayment.layer.cornerRadius=3;
-    _selectpayment.clipsToBounds = YES;
     _enterPin.textColor = [CzedrTheme taglineRed];
     [CzedrTheme applyDeckLookToView:self.view];
     [CzedrTheme styleCzedrIdField:_czedrId];
-    if ([SharedServiceController usesV1API]) {
-        _selectpayment.hidden = YES;
-        table.hidden = YES;
-        _valueLabel.hidden = YES;
-    }
     
     payNowBool = false;
     
@@ -306,64 +172,6 @@
 - (IBAction)backButton:(id)sender
 {
 }
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return [array count];
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-   
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:nil];
-    if (cell == nil)
-    {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    }
-    if ([[[array objectAtIndex:indexPath.row] valueForKey:@"card_default"] isEqualToString:@"1"]) {
-        _valueLabel.text=[[array objectAtIndex:indexPath.row] valueForKey:@"name"];
-        _valueLabel.text=[_valueLabel.text stringByAppendingString:@" - "];
-        _valueLabel.text=[_valueLabel.text stringByAppendingString:[[array objectAtIndex:indexPath.row] valueForKey:@"cardnumber"]];
-        values = [[array objectAtIndex:indexPath.row] valueForKey:@"id"];
-    }
-    cell.backgroundColor = [CzedrTheme gridTile];
-    
-   
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    UILabel *namelbl=[[UILabel alloc]initWithFrame:CGRectMake(tableView.frame.origin.x, 5, tableView.frame.size.width, 20)];
-    namelbl.text=[NSString stringWithFormat:@"%@ - %@",[[array objectAtIndex:indexPath.row] valueForKey:@"name"],[[array objectAtIndex:indexPath.row] valueForKey:@"cardnumber"]];
-    namelbl.font = [UIFont fontWithName:@"Avenir-Roman" size:14.0];
-    namelbl.numberOfLines = 0;
-    namelbl.baselineAdjustment = YES;
-    namelbl.textAlignment = NSTextAlignmentCenter;
-    namelbl.textColor=[UIColor whiteColor];
-    namelbl.backgroundColor = [UIColor clearColor];
-    [cell.contentView addSubview:namelbl];
-    
-    return cell;
-}
-
-- (IBAction)select_Payment:(id)sender
-{
-    [_makePayment resignFirstResponder];
-    [_czedrId resignFirstResponder];
-    [_amount resignFirstResponder];
-    [UIView animateWithDuration:0.5f
-                          delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                              self.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-                          } completion:nil];
-      int tag=(int)_selectpayment.tag;
-       if (tag==0)
-    {
-        table.hidden = NO;
-        _selectpayment.tag=1;
-    }
-    else
-    {
-        _selectpayment.tag=0;
-        table.hidden = YES;
-    }
- }
 
 -(BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
@@ -617,16 +425,6 @@
                               self.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
                           } completion:nil];
 }
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    _valueLabel.text=[[array objectAtIndex:indexPath.row] valueForKey:@"name"];
-    _valueLabel.text=[_valueLabel.text stringByAppendingString:@" - "];
-    _valueLabel.text=[_valueLabel.text stringByAppendingString:[[array objectAtIndex:indexPath.row] valueForKey:@"cardnumber"]];
-    values = [[array objectAtIndex:indexPath.row] valueForKey:@"id"];
-    table.hidden=YES;
-    _selectpayment.tag=0;
- }
 
 -(void)makepayment_service
 {

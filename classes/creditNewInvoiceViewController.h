@@ -38,14 +38,11 @@
 @property (strong, nonatomic) IBOutlet UITextField *pin3;
 @property (strong, nonatomic) IBOutlet UITextField *pin4;
 @property (strong, nonatomic) IBOutlet UIButton *sendInvoice;
-@property (strong, nonatomic) IBOutlet UIButton *selectpayment;
-@property (strong,nonatomic) IBOutlet UILabel *valueLabel;
 @property (strong, nonatomic) IBOutlet PlaceholderTextView *makePayment;
 @property (weak, nonatomic) IBOutlet UILabel *titleLbl;
 @property (weak, nonatomic) IBOutlet UIButton *sendInvoiceBtn;
 @property (weak, nonatomic) IBOutlet UILabel *enterPin;
 
-- (IBAction)select_Payment:(id)sender;
 - (IBAction)sendInvoice:(id)sender;
 - (IBAction)backButton:(id)sender;
 @end

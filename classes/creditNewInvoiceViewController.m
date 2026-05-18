@@ -385,27 +385,10 @@
     return cell;
 }
 
-- (IBAction)select_Payment:(id)sender
-{
-    [_selectpayment resignFirstResponder];
-    int tag=(int)_selectpayment.tag;
-    if (tag==0)
-    {
-        table.hidden = NO;
-        _selectpayment.tag=1;
-    }
-    else
-    {
-        _selectpayment.tag=0;
-    }
-}
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     values = [array objectAtIndex:indexPath.row];
-    _valueLabel.text=values;
     table.hidden=YES;
-    _selectpayment.tag=0;
 }
 
 -(IBAction)validate_idclick:(id)sender

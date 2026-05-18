@@ -9,10 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "PlaceholderTextView.h"
 
-@interface makePaymentViewController : UIViewController<UITextFieldDelegate,UITableViewDataSource,UITableViewDelegate>
+@interface makePaymentViewController : UIViewController<UITextFieldDelegate>
 {
-    NSArray *array;
-    IBOutlet UITableView *table;
     NSString *values;
     IBOutlet UIScrollView *scroll;
     UITextField *_pin5;
@@ -40,15 +38,11 @@
 @property (strong, nonatomic) IBOutlet UIButton *sendInvoice;
 - (IBAction)sendInvoice:(id)sender;
 - (IBAction)backButton:(id)sender;
-@property (strong, nonatomic) IBOutlet UIButton *selectpayment;
-@property(strong,nonatomic)IBOutlet UILabel *valueLabel;
 @property(strong,nonatomic) NSString *paytoId;
 @property (strong, nonatomic) IBOutlet PlaceholderTextView *makePayment;
 @property (weak, nonatomic) IBOutlet UILabel *titleLbl;
 @property (weak, nonatomic) IBOutlet UIButton *mkPymntBtn;
 @property (weak, nonatomic) IBOutlet UILabel *enterPin;
-
-- (IBAction)select_Payment:(id)sender;
 
 - (IBAction)make_Payment:(id)sender;
 

@@ -80,6 +80,7 @@
 		34F9CB081E387E05001E0B55 /* Icon180.png in Resources */ = {isa = PBXBuildFile; fileRef = 34F9CB041E387E05001E0B55 /* Icon180.png */; };
 		34FA99B01DF81D3C00E91E33 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34FA99B21DF81D3C00E91E33 /* Localizable.strings */; };
 		4246C9001F4800B30059920D /* Czedr@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4246C8FF1F4800B30059920D /* Czedr@3x.png */; };
+		CZEDRSP021F600100CZEDR /* Czedr-splash-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = CZEDRSP011F600100CZEDR /* Czedr-splash-dark.png */; };
 		42E2FCDC1F4AC0E6002EC310 /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E2FCD91F4AC0E6002EC310 /* splash.png */; };
 		42E2FCDD1F4AC0E6002EC310 /* splash@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E2FCDA1F4AC0E6002EC310 /* splash@2x.png */; };
 		42E2FCDE1F4AC0E6002EC310 /* splash@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E2FCDB1F4AC0E6002EC310 /* splash@3x.png */; };
@@ -309,6 +310,7 @@
 		34FA99B11DF81D3C00E91E33 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		34FA99B31DF81D4100E91E33 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4246C8FF1F4800B30059920D /* Czedr@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Czedr@3x.png"; sourceTree = "<group>"; };
+		CZEDRSP011F600100CZEDR /* Czedr-splash-dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Czedr-splash-dark.png"; sourceTree = "<group>"; };
 		42E2FCD91F4AC0E6002EC310 /* splash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = splash.png; sourceTree = "<group>"; };
 		42E2FCDA1F4AC0E6002EC310 /* splash@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "splash@2x.png"; sourceTree = "<group>"; };
 		42E2FCDB1F4AC0E6002EC310 /* splash@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "splash@3x.png"; sourceTree = "<group>"; };
@@ -819,6 +821,7 @@
 			children = (
 				34F9CB031E387E05001E0B55 /* Icon120.png */,
 				4246C8FF1F4800B30059920D /* Czedr@3x.png */,
+				CZEDRSP011F600100CZEDR /* Czedr-splash-dark.png */,
 				34F9CB041E387E05001E0B55 /* Icon180.png */,
 				34F120501D3F58E9002C49CC /* bg@2x.png */,
 				06F4EBD71B22BD95002AD8C1 /* chasebankcard_1.png */,
@@ -1013,6 +1016,7 @@
 				42E2FCDC1F4AC0E6002EC310 /* splash.png in Resources */,
 				06F4EBDD1B22CBA6002AD8C1 /* arrowgrey.png in Resources */,
 				4246C9001F4800B30059920D /* Czedr@3x.png in Resources */,
+				CZEDRSP021F600100CZEDR /* Czedr-splash-dark.png in Resources */,
 				AF2EDA420F0C522F0020ECBA /* arrow@2x.png in Resources */,
 				AF2EDA0E0F0C4D330020ECBA /* creditNewInvoiceViewController.xib in Resources */,
 				34FA99B01DF81D3C00E91E33 /* Localizable.strings in Resources */,

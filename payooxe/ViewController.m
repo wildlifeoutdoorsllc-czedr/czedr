@@ -15,20 +15,17 @@
 #import "SharedServiceController.h"
 #import "GeneratePinViewController.h"
 #import "CzedrRuntimeConfig.h"
-#import "CzedrLanAPIFinder.h"
 #import "CzedrAppChrome.h"
 #import "UIViewController+MMDrawerController.h"
 
 @interface ViewController () <UITextFieldDelegate>
-@property (nonatomic, strong) UITextField *apiBaseTextField;
-@property (nonatomic, assign) BOOL apiDiscoveryInFlight;
+@property (nonatomic, weak) UIImageView *brandLogoView;
 @end
 
 @implementation ViewController
 
 - (UIView *)hudHostView
 {
-    // Keep HUD on the login view only (window/keyWindow HUD + drawer swaps caused crashes on device).
     return self.view;
 }
 
@@ -66,6 +63,20 @@
     });
 }
 
+- (UIImageView *)czedr_brandLogoView
+{
+    if (self.brandLogoView) {
+        return self.brandLogoView;
+    }
+    for (UIView *sub in _viewDetail.subviews) {
+        if ([sub isKindOfClass:[UIImageView class]]) {
+            self.brandLogoView = (UIImageView *)sub;
+            return self.brandLogoView;
+        }
+    }
+    return nil;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (![self isMemberOfClass:[ViewController class]]) {
@@ -95,7 +106,7 @@
 
     UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
     if (!signInTitle) {
-        signInTitle = [[UILabel alloc] initWithFrame:CGRectMake(20, 198, 230, 22)];
+        signInTitle = [[UILabel alloc] initWithFrame:CGRectMake(20, 168, 230, 22)];
         signInTitle.tag = 8801;
         signInTitle.textAlignment = NSTextAlignmentCenter;
         signInTitle.font = [CzedrTheme avenir:15.0 weight:@"heavy"];
@@ -103,34 +114,6 @@
         [_viewDetail addSubview:signInTitle];
     }
     signInTitle.text = NSLocalizedString(@"Sign in", Nil);
-
-    if (!self.apiBaseTextField) {
-        UITextField *apiField = [[UITextField alloc] initWithFrame:CGRectMake(20, 186, 230, 28)];
-        apiField.delegate = self;
-        apiField.textAlignment = NSTextAlignmentCenter;
-        apiField.backgroundColor = _email.backgroundColor;
-        apiField.textColor = [UIColor whiteColor];
-        apiField.font = [UIFont fontWithName:@"AVENIR" size:12.0];
-        apiField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        apiField.autocorrectionType = UITextAutocorrectionTypeNo;
-        apiField.keyboardType = UIKeyboardTypeURL;
-        apiField.returnKeyType = UIReturnKeyNext;
-        apiField.clearButtonMode = UITextFieldViewModeWhileEditing;
-        apiField.layer.cornerRadius = 3;
-        apiField.clipsToBounds = YES;
-        apiField.text = CzedrEffectiveAPIBase();
-        apiField.placeholder = @"API server (http://…:8080)";
-        [CzedrTheme applyPlaceholderAppearanceToTextField:apiField color:[UIColor whiteColor] font:apiField.font];
-        [_viewDetail addSubview:apiField];
-        self.apiBaseTextField = apiField;
-
-        const CGFloat shift = 36;
-        for (UIView *field in @[_email, _password, loginbutton, forgetbutton, signupbutton]) {
-            CGRect frame = field.frame;
-            frame.origin.y += shift;
-            field.frame = frame;
-        }
-    }
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -153,11 +136,6 @@
     UIFont *fieldFont = [UIFont fontWithName:@"AVENIR" size:14.0];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_email color:[UIColor whiteColor] font:fieldFont];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_password color:[UIColor whiteColor] font:fieldFont];
-    if (self.apiBaseTextField) {
-        self.apiBaseTextField.layer.cornerRadius = 3;
-        self.apiBaseTextField.clipsToBounds = YES;
-        [CzedrTheme applyPlaceholderAppearanceToTextField:self.apiBaseTextField color:[UIColor whiteColor] font:self.apiBaseTextField.font];
-    }
    loginbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     signupbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
     forgetbutton.titleLabel.font = [UIFont fontWithName:@"AVENIR" size:12.0];
@@ -166,17 +144,21 @@
     [CzedrTheme applyDeckLookToView:self.view];
     [CzedrTheme styleEmailField:_email];
     [CzedrTheme stylePasswordField:_password];
-    [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:nil];
+    [CzedrTheme styleOrangeField:_email];
+    [CzedrTheme styleOrangeField:_password];
+    [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:[self czedr_brandLogoView]];
     [CzedrTheme styleRedPrimaryButton:loginbutton];
     [CzedrTheme styleCharcoalButton:signupbutton];
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
-    if (self.apiBaseTextField) {
-        NSString *base = CzedrEffectiveAPIBase();
-        if (base.length > 0) {
-            self.apiBaseTextField.text = base;
-        }
-        self.apiBaseTextField.placeholder = @"API server (http://…:8080)";
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    if (![self isMemberOfClass:[ViewController class]]) {
+        return;
     }
+    [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:[self czedr_brandLogoView]];
 }
 
 - (void)czedr_showAlert:(NSString *)message
@@ -197,54 +179,18 @@
     }
 }
 
-- (void)discoverAPIServerAutomatically
-{
-    if (!self.apiBaseTextField || self.apiDiscoveryInFlight) {
-        return;
-    }
-    self.apiDiscoveryInFlight = YES;
-    self.apiBaseTextField.placeholder = @"Finding server on Wi‑Fi…";
-    __weak typeof(self) weakSelf = self;
-    [CzedrLanAPIFinder resolveWithCompletion:^(NSString *baseURL, NSError *error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        strongSelf.apiDiscoveryInFlight = NO;
-        if (baseURL.length > 0) {
-            strongSelf.apiBaseTextField.text = baseURL;
-            strongSelf.apiBaseTextField.placeholder = @"API server (found automatically)";
-        } else {
-            strongSelf.apiBaseTextField.placeholder = @"API server (http://…:8080)";
-        }
-    }];
-}
-
-- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
-{
-    (void)textField;
-    return YES;
-}
-    
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    if (textField == self.apiBaseTextField) {
-        [_email becomeFirstResponder];
-    } else if (textField == _email) {
+    if (textField == _email) {
         [_password becomeFirstResponder];
     } else {
         [_password resignFirstResponder];
     }
-    // if (textField==_password) {
-    //    [_password resignFirstResponder];
-    //    [self loginButton:nil];
-    // }
     return YES;
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (IBAction)loginButton:(id)sender
@@ -253,8 +199,6 @@
     if (_email.text.length==0)
     {
         NSString *strEnterEmail = NSLocalizedString(@"enter email", Nil);
-        NSString *strOk = NSLocalizedString(@"OK", Nil);
-        
         [self czedr_showAlert:strEnterEmail];
         return;
     }
@@ -273,9 +217,7 @@
        NSString *trimmed2 = [rawString2 stringByTrimmingCharactersInSet:whitespace];
        if ([trimmed length] == 0 || [trimmed2 length] == 0)
        {
-           NSString *strAttention = NSLocalizedString(@"Attention", Nil);
            NSString *strCorrectValues = NSLocalizedString(@"correct values", Nil);
-           NSString *strOk = NSLocalizedString(@"OK", Nil);
            [self czedr_showAlert:strCorrectValues];
        }
        else
@@ -285,8 +227,6 @@
            [self call_LoginService];
        }
    }
-//    GeneratePinViewController *OBJ=[[GeneratePinViewController alloc]initWithNibName:@"GeneratePinViewController" bundle:nil];
-//    [self.navigationController pushViewController:OBJ animated:YES];
 }
 
 -(void)call_LoginService
@@ -297,23 +237,10 @@
     if (_password) {
         [_password resignFirstResponder];
     }
-    if (self.apiBaseTextField && self.apiBaseTextField.superview) {
-        [self.apiBaseTextField resignFirstResponder];
-    }
 
-    NSString *apiBase = @"";
-    if (self.apiBaseTextField) {
-        apiBase = [self.apiBaseTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    }
+    NSString *apiBase = [CzedrEffectiveAPIBase() stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     if (apiBase.length == 0) {
-        apiBase = [CzedrEffectiveAPIBase() stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    }
-    if (apiBase.length == 0) {
-        [self czedr_showAlert:@"Enter the API server URL (e.g. http://192.168.x.x:8080 on a physical iPhone)."];
-        return;
-    }
-    if (![apiBase hasPrefix:@"http://"] && ![apiBase hasPrefix:@"https://"]) {
-        [self czedr_showAlert:@"API server must start with http:// or https://"];
+        [self czedr_showAlert:@"This build has no API server configured. Reinstall from TestFlight or contact support."];
         return;
     }
     CzedrSetAPIBaseOverride(apiBase);
@@ -406,9 +333,6 @@
                                          animated:YES];
 }
 
-//Login registter:-(for paser notification register device on server)
-// Push token registration uses Czedr API via SharedServiceController
-
 -(void)parse_registerService
 {
     ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc]init];
@@ -434,26 +358,13 @@
         [params setValue:[[NSUserDefaults standardUserDefaults] valueForKey:@"objectId"] forKey:@"obj_token"];
         [params setValue:@"ios" forKey:@"type"];
         
-        //[[NSUserDefaults standardUserDefaults] valueForKey:@"objectId"]
         manager.responseSerializer = [AFHTTPResponseSerializer serializer];
         [manager POST:[NSString stringWithFormat:@"%s/%s",base_url,"registeredtoken"] parameters:params success:^(AFHTTPRequestOperation *operation, id responseObject)
          {
-             NSString *response;
              [MBProgressHUD hideHUDForView:self.view animated:YES];
-             response = [NSString stringWithFormat:@"%@",operation.responseString];
-             NSString *status=[NSString stringWithFormat:@"%@",[[response JSONValue] valueForKey:@"Status"]];
-             if ([status isEqualToString:@"true"])
-             {
-                 
-             }
-             else
-             {
-                 
-             }
          }
               failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                   [MBProgressHUD hideHUDForView:self.view animated:YES];
-                 
               }];
     }
 }

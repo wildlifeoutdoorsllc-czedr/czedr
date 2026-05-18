@@ -207,6 +207,20 @@
     tileView.backgroundColor = [self gridTile];
 }
 
++ (UIImage *)brandSplashImage {
+    UIImage *splash = [UIImage imageNamed:@"Czedr-splash-dark.png"];
+    if (!splash) {
+        splash = [UIImage imageNamed:@"Czedr-splash-dark"];
+    }
+    if (!splash) {
+        splash = [UIImage imageNamed:@"Czedr-logo-tagline.png"];
+    }
+    if (!splash) {
+        splash = [UIImage imageNamed:@"Czedr-mark@3x.png"];
+    }
+    return splash;
+}
+
 + (UIImageView *)_logoImageViewInView:(UIView *)view {
     for (UIView *sub in view.subviews) {
         if ([sub isKindOfClass:[UIImageView class]]) {
@@ -253,19 +267,31 @@
         }
     }
     if (detailPanel) {
-        detailPanel.backgroundColor = [UIColor clearColor];
+        detailPanel.backgroundColor = [[self darkSurface] colorWithAlphaComponent:0.55];
+        detailPanel.layer.cornerRadius = 14.0;
+        detailPanel.layer.borderWidth = 1.0;
+        detailPanel.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.08].CGColor;
+        detailPanel.layer.shadowColor = [UIColor blackColor].CGColor;
+        detailPanel.layer.shadowOpacity = 0.35;
+        detailPanel.layer.shadowRadius = 12.0;
+        detailPanel.layer.shadowOffset = CGSizeMake(0, 6);
         if (!logoView) {
             logoView = [self _logoImageViewInView:detailPanel];
         }
         [self _styleLabelsForDarkInView:detailPanel];
     }
-    UIImage *mark = [UIImage imageNamed:@"Czedr-mark@3x.png"];
-    if (!mark) {
-        mark = [UIImage imageNamed:@"Czedr-mark@2x.png"];
-    }
-    if (logoView && mark) {
-        logoView.image = mark;
+    UIImage *splash = [self brandSplashImage];
+    if (logoView && splash) {
+        logoView.image = splash;
         logoView.contentMode = UIViewContentModeScaleAspectFit;
+        logoView.backgroundColor = [UIColor clearColor];
+        logoView.layer.cornerRadius = 8.0;
+        logoView.clipsToBounds = YES;
+        CGRect panelBounds = detailPanel ? detailPanel.bounds : rootView.bounds;
+        CGFloat width = MIN(panelBounds.size.width - 24.0, 260.0);
+        CGFloat height = MIN(width * 0.42, 120.0);
+        CGFloat x = (panelBounds.size.width - width) / 2.0;
+        logoView.frame = CGRectMake(x, 12.0, width, height);
     }
     [self _styleLabelsForDarkInView:rootView];
 }
