@@ -154,6 +154,59 @@
     [CzedrAppChrome refreshSessionBarForDrawer:drawerController];
 }
 
+- (UINavigationController *)czedr_centerNavigationController
+{
+    UIViewController *root = self.window.rootViewController;
+    if (![root isKindOfClass:[MMDrawerController class]]) {
+        return nil;
+    }
+    UIViewController *center = [(MMDrawerController *)root centerViewController];
+    if ([center isKindOfClass:[UINavigationController class]]) {
+        return (UINavigationController *)center;
+    }
+    return nil;
+}
+
+- (void)handleLoginSuccessWithPayload:(NSDictionary *)data
+{
+    if (![data isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length == 0) {
+        return;
+    }
+
+    NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
+    [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"Avalue"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [CzedrAppChrome suspendSessionBarRefreshForSeconds:2.0];
+
+    __weak AppDelegate *weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __strong AppDelegate *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        UINavigationController *nav = [strongSelf czedr_centerNavigationController];
+        if ([userPin isEqualToString:@"0"]) {
+            if (nav) {
+                GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
+                [nav pushViewController:pinVC animated:YES];
+            }
+            return;
+        }
+        if (nav && nav.viewControllers.count > 1) {
+            [nav popToRootViewControllerAnimated:NO];
+        } else if (!nav) {
+            [strongSelf presentHomeAfterLogin];
+            return;
+        }
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.35 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:CzedrUserDidLoginNotification object:nil];
+        });
+    });
+}
+
 - (void)presentPinSetupAfterLogin
 {
     if (!self.window) {

@@ -44,14 +44,15 @@
     if (![data isKindOfClass:[NSDictionary class]]) {
         return;
     }
-    __weak typeof(self) weakSelf = self;
-    __weak UINavigationController *weakNav = self.navigationController;
+    [self ensureUserInfoData];
+    [user_infodata removeAllObjects];
+    [user_infodata addObject:data];
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
+        if (loginbutton) {
+            loginbutton.enabled = YES;
+            [loginbutton setTitle:NSLocalizedString(@"Sign in", Nil) forState:UIControlStateNormal];
         }
-        [MBProgressHUD hideHUDForView:strongSelf.view animated:NO];
 
         if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length == 0) {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Sign-in succeeded but the session was not saved. Try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -59,33 +60,9 @@
             return;
         }
 
-        NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
-        [strongSelf ensureUserInfoData];
-        [user_infodata removeAllObjects];
-        [user_infodata addObject:data];
-
-        UINavigationController *nav = weakNav;
-        if ([userPin isEqualToString:@"0"]) {
-            if (nav) {
-                GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
-                [nav pushViewController:pinVC animated:YES];
-            }
-            return;
-        }
-
-        [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"Avalue"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-
-        // Prefer pop back to home already under this nav stack (no drawer/window rebuild).
-        if (nav && nav.viewControllers.count > 1) {
-            [nav popToRootViewControllerAnimated:NO];
-            [[NSNotificationCenter defaultCenter] postNotificationName:CzedrUserDidLoginNotification object:nil];
-            return;
-        }
-
         AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
         if ([app isKindOfClass:[AppDelegate class]]) {
-            [app presentHomeAfterLogin];
+            [app handleLoginSuccessWithPayload:data];
         }
     });
 }
@@ -267,10 +244,7 @@
 
 - (IBAction)loginButton:(id)sender
 {
-    [UIView animateWithDuration:0.5f
-                          delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                              self.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-                          } completion:nil];
+    (void)sender;
     if (_email.text.length==0)
     {
         NSString *strEnterEmail = NSLocalizedString(@"enter email", Nil);
@@ -317,11 +291,20 @@
 
 -(void)call_LoginService
 {
-    [_email resignFirstResponder];
-    [_password resignFirstResponder];
-    [self.apiBaseTextField resignFirstResponder];
+    if (_email) {
+        [_email resignFirstResponder];
+    }
+    if (_password) {
+        [_password resignFirstResponder];
+    }
+    if (self.apiBaseTextField && self.apiBaseTextField.superview) {
+        [self.apiBaseTextField resignFirstResponder];
+    }
 
-    NSString *apiBase = [self.apiBaseTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString *apiBase = @"";
+    if (self.apiBaseTextField) {
+        apiBase = [self.apiBaseTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    }
     if (apiBase.length == 0) {
         apiBase = [CzedrEffectiveAPIBase() stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     }
@@ -337,7 +320,10 @@
     }
     CzedrSetAPIBaseOverride(apiBase);
 
-    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    if (loginbutton) {
+        loginbutton.enabled = NO;
+        [loginbutton setTitle:@"Signing in…" forState:UIControlStateNormal];
+    }
     [self performLoginRequest];
 }
 
@@ -359,7 +345,10 @@
                 if (!strongSelf) {
                     return;
                 }
-                [MBProgressHUD hideHUDForView:strongSelf.view animated:NO];
+                if (loginbutton) {
+                    loginbutton.enabled = YES;
+                    [loginbutton setTitle:NSLocalizedString(@"Sign in", Nil) forState:UIControlStateNormal];
+                }
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
             });

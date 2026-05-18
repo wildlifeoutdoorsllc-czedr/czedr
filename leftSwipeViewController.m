@@ -92,15 +92,24 @@
 {
     (void)notification;
     _homeDataLoaded = NO;
-    NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
-    NSString *myCzedrId = [SharedServiceController savedCzedrUserId];
-    NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
-    if (czedrIdLabel) {
-        czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, myCzedrId ?: @""];
-    }
-    [self syncReferralEarningsUIWithAuthToken:tok];
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
-    [self call_loadCardsService];
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.75 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf.isViewLoaded) {
+            return;
+        }
+        NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
+        NSString *myCzedrId = [SharedServiceController savedCzedrUserId];
+        NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
+        if (strongSelf->czedrIdLabel) {
+            strongSelf->czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, myCzedrId ?: @""];
+        }
+        [strongSelf syncReferralEarningsUIWithAuthToken:tok];
+        [strongSelf call_loadCardsService];
+        if (![CzedrAppChrome sessionBarRefreshSuspended]) {
+            [CzedrAppChrome refreshSessionBarForDrawer:strongSelf.mm_drawerController];
+        }
+    });
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -114,7 +123,6 @@
     [CzedrTheme applyDeckLookToView:self.view];
     NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
     [self syncReferralEarningsUIWithAuthToken:tok];
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -141,10 +149,6 @@
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    if ([CzedrAppChrome sessionBarRefreshSuspended]) {
-        return;
-    }
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
 }
 
 - (void)didReceiveMemoryWarning

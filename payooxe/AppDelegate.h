@@ -25,4 +25,7 @@
 /** Shows first-time PIN setup as drawer center when user_pin is 0. */
 - (void)presentPinSetupAfterLogin;
 
+/** Navigate to home after login without touching the login view controller. */
+- (void)handleLoginSuccessWithPayload:(NSDictionary *)data;
+
 @end

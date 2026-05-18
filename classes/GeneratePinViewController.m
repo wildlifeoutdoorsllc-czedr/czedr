@@ -390,17 +390,14 @@
 - (void)navigateToHomeAfterPin
 {
     [MBProgressHUD hideHUDForView:self.view animated:NO];
-    UINavigationController *nav = self.navigationController;
-    if (nav && nav.viewControllers.count > 1) {
-        [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"Avalue"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-        [nav popToRootViewControllerAnimated:NO];
-        [[NSNotificationCenter defaultCenter] postNotificationName:CzedrUserDidLoginNotification object:nil];
-        return;
-    }
-    AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    if ([app isKindOfClass:[AppDelegate class]]) {
-        [app presentHomeAfterLogin];
+    NSMutableDictionary *stored = [[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] mutableCopy];
+    if ([stored isKindOfClass:[NSDictionary class]]) {
+        NSMutableDictionary *updated = [stored mutableCopy];
+        [updated setObject:@"1" forKey:@"user_pin"];
+        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        if ([app isKindOfClass:[AppDelegate class]]) {
+            [app handleLoginSuccessWithPayload:updated];
+        }
     }
 }
 
