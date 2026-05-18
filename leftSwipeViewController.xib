@@ -20,6 +20,7 @@
                 <outlet property="pndingInvoicsLbl" destination="viC-Ro-Jve" id="gV1-sf-sot"/>
                 <outlet property="titleLbl" destination="TKc-eo-0EH" id="QTB-Yo-yfa"/>
                 <outlet property="homeLogoImageView" destination="fXw-sr-rq7" id="CZr-Lg-Out"/>
+                <outlet property="homeBalanceLabel" destination="CZr-Bal-Lbl" id="CZr-Bal-Out"/>
                 <outlet property="legacyHeaderView" destination="UwN-Lt-ZUf" id="CZr-Hd-Out"/>
                 <outlet property="homeTilesContainer" destination="Ts5-9s-Lg2" id="CZr-Tl-Out"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="mB2-LJ-Z16"/>
@@ -191,15 +192,22 @@
                         <action selector="referralEarningsButton:" destination="-1" eventType="touchUpInside" id="CZr-AC-Btn"/>
                     </connections>
                 </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="YES" minimumScaleFactor="0.7" id="CZr-Bal-Lbl">
+                    <rect key="frame" x="0.0" y="288" width="375" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                    <fontDescription key="fontDescription" name="Avenir-Heavy" family="Avenir" pointSize="24"/>
+                    <color key="textColor" red="0.8901960784313725" green="0.11764705882352941" blue="0.1411764705882353" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ex6-nO-GI5">
-                    <rect key="frame" x="0.0" y="305" width="375" height="30"/>
+                    <rect key="frame" x="0.0" y="322" width="375" height="30"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                     <fontDescription key="fontDescription" name="Avenir-Roman" family="Avenir" pointSize="16"/>
                     <color key="textColor" red="0.31102451682090759" green="0.31433805823326111" blue="0.32580095529556274" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Czedr-auth-logo.png" id="fXw-sr-rq7">
-                    <rect key="frame" x="0.0" y="127" width="375" height="170"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Czedr@3x.png" id="fXw-sr-rq7">
+                    <rect key="frame" x="0.0" y="70" width="375" height="210"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                 </imageView>
             </subviews>
@@ -208,7 +216,7 @@
         </view>
     </objects>
     <resources>
-        <image name="Czedr-auth-logo.png" width="647" height="583"/>
+        <image name="Czedr@3x.png" width="16" height="16"/>
         <image name="history.png" width="97" height="84"/>
         <image name="makepayment.png" width="97" height="84"/>
         <image name="menu2.png" width="28" height="22"/>

@@ -24,9 +24,7 @@
 @interface leftSwipeViewController ()
 {
      NSManagedObjectContext *managedObjectContext;
-     BOOL _referralBalanceTapAdded;
      BOOL _homeDataLoaded;
-     BOOL _balanceLabelReparented;
 }
 @end
 
@@ -83,26 +81,29 @@
     if (self.legacyHeaderView) {
         self.legacyHeaderView.hidden = YES;
     }
+    if (countlable) {
+        countlable.hidden = YES;
+        countlable.text = @"";
+    }
     if (self.homeLogoImageView) {
-        UIImage *logo = [CzedrTheme brandAuthLogoImage];
+        UIImage *logo = [UIImage imageNamed:@"Czedr@3x.png"];
+        if (!logo) {
+            logo = [UIImage imageNamed:@"Czedr@3x"];
+        }
         if (logo) {
             self.homeLogoImageView.image = logo;
         }
         self.homeLogoImageView.contentMode = UIViewContentModeScaleAspectFit;
         self.homeLogoImageView.backgroundColor = [UIColor clearColor];
     }
-    if (countlable && !_balanceLabelReparented) {
-        countlable.hidden = NO;
-        countlable.text = @"";
-        countlable.textAlignment = NSTextAlignmentCenter;
-        countlable.textColor = [CzedrTheme redPrimary];
-        countlable.font = [CzedrTheme avenir:24.0 weight:@"heavy"];
-        countlable.adjustsFontSizeToFitWidth = YES;
-        countlable.minimumScaleFactor = 0.7;
-        countlable.backgroundColor = [UIColor clearColor];
-        [countlable removeFromSuperview];
-        [self.view addSubview:countlable];
-        _balanceLabelReparented = YES;
+    if (self.homeBalanceLabel) {
+        self.homeBalanceLabel.text = @"";
+        self.homeBalanceLabel.textAlignment = NSTextAlignmentCenter;
+        self.homeBalanceLabel.textColor = [CzedrTheme redPrimary];
+        self.homeBalanceLabel.font = [CzedrTheme avenir:24.0 weight:@"heavy"];
+        self.homeBalanceLabel.adjustsFontSizeToFitWidth = YES;
+        self.homeBalanceLabel.minimumScaleFactor = 0.7;
+        self.homeBalanceLabel.backgroundColor = [UIColor clearColor];
     }
     
     if (autcode.length==0)
@@ -189,55 +190,40 @@
 
 - (void)czedr_layoutHomeHeader
 {
+    if (!self.isViewLoaded || !self.view.window) {
+        return;
+    }
     CGFloat width = self.view.bounds.size.width;
-    CGFloat y = [self czedr_topChromeBottomY] + 6.0;
+    CGFloat y = [self czedr_topChromeBottomY] + 4.0;
 
     if (self.homeLogoImageView) {
         UIImage *logo = self.homeLogoImageView.image;
-        CGFloat maxW = width - 48.0;
-        CGFloat aspect = logo.size.width / MAX(logo.size.height, 1.0);
-        CGFloat logoH = MIN(108.0, maxW / MAX(aspect, 0.5));
+        CGFloat maxW = width - 40.0;
+        CGFloat aspect = (logo.size.width > 1.0) ? (logo.size.width / logo.size.height) : 1.1;
+        CGFloat logoH = MIN(200.0, maxW / MAX(aspect, 0.5));
         CGFloat logoW = logoH * aspect;
         self.homeLogoImageView.frame = CGRectMake((width - logoW) / 2.0, y, logoW, logoH);
-        [self.view bringSubviewToFront:self.homeLogoImageView];
-        y = CGRectGetMaxY(self.homeLogoImageView.frame) + 8.0;
+        y = CGRectGetMaxY(self.homeLogoImageView.frame) + 2.0;
     }
 
-    if (countlable) {
-        countlable.frame = CGRectMake(20.0, y, width - 40.0, 34.0);
-        [self.view bringSubviewToFront:countlable];
-        y = CGRectGetMaxY(countlable.frame) + 4.0;
+    if (self.homeBalanceLabel) {
+        self.homeBalanceLabel.frame = CGRectMake(16.0, y, width - 32.0, 32.0);
+        y = CGRectGetMaxY(self.homeBalanceLabel.frame) + 2.0;
     }
 
     if (czedrIdLabel) {
         czedrIdLabel.frame = CGRectMake(16.0, y, width - 32.0, 26.0);
         czedrIdLabel.textAlignment = NSTextAlignmentCenter;
-        [self.view bringSubviewToFront:czedrIdLabel];
-        y = CGRectGetMaxY(czedrIdLabel.frame) + 10.0;
+        y = CGRectGetMaxY(czedrIdLabel.frame) + 8.0;
     }
 
     if (self.homeTilesContainer) {
-        CGFloat bottomReserve = 56.0;
-        if (@available(iOS 11.0, *)) {
-            bottomReserve += self.view.safeAreaInsets.bottom;
+        CGFloat bottom = CGRectGetMinY(self.referralEarningsBtn.frame);
+        if (bottom < 1.0) {
+            bottom = self.view.bounds.size.height - 53.0;
         }
-        if (!self.referralEarningsBtn.hidden) {
-            bottomReserve = MAX(bottomReserve, CGRectGetHeight(self.referralEarningsBtn.frame) + 8.0);
-        }
-        CGFloat tilesH = MAX(220.0, self.view.bounds.size.height - y - bottomReserve);
+        CGFloat tilesH = MAX(200.0, bottom - y);
         self.homeTilesContainer.frame = CGRectMake(0, y, width, tilesH);
-        [self.view bringSubviewToFront:self.homeTilesContainer];
-    }
-
-    if (self.referralEarningsBtn) {
-        CGFloat btnH = 48.0;
-        CGFloat btnY = self.view.bounds.size.height - btnH;
-        if (@available(iOS 11.0, *)) {
-            btnY -= self.view.safeAreaInsets.bottom;
-        }
-        self.referralEarningsBtn.frame = CGRectMake(0, btnY, width, btnH);
-        [CzedrTheme styleRedPrimaryButton:self.referralEarningsBtn];
-        [self.view bringSubviewToFront:self.referralEarningsBtn];
     }
 }
 
@@ -245,7 +231,6 @@
 {
     [super viewDidLayoutSubviews];
     [self czedr_layoutHomeHeader];
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
 }
 
 - (void)didReceiveMemoryWarning
@@ -297,13 +282,8 @@
     BOOL v1 = [SharedServiceController usesV1API];
     BOOL authed = token.length > 0;
     self.referralEarningsBtn.hidden = !(v1 && authed);
-    if (v1 && authed && !_referralBalanceTapAdded) {
-        countlable.userInteractionEnabled = YES;
-        UITapGestureRecognizer *refTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showReferralEarnings)];
-        [countlable addGestureRecognizer:refTap];
-        _referralBalanceTapAdded = YES;
-    } else if (!v1 || !authed) {
-        countlable.userInteractionEnabled = NO;
+    if (self.referralEarningsBtn && v1 && authed) {
+        [CzedrTheme styleRedPrimaryButton:self.referralEarningsBtn];
     }
 }
 
@@ -452,8 +432,8 @@
             }
             NSInteger cents = [[data objectForKey:@"balance_cents"] integerValue];
             float dollars = cents / 100.0f;
-            if (strongSelf->countlable) {
-                strongSelf->countlable.text = [NSString stringWithFormat:@"$%.2f", dollars];
+            if (strongSelf.homeBalanceLabel) {
+                strongSelf.homeBalanceLabel.text = [NSString stringWithFormat:@"$%.2f", dollars];
             }
             [strongSelf czedr_layoutHomeHeader];
             [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];
