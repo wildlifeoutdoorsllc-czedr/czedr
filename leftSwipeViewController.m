@@ -29,6 +29,49 @@
 @end
 
 @implementation leftSwipeViewController
+
+- (NSString *)czedr_formattedCzedrIdLine
+{
+    NSString *czedrId = [SharedServiceController savedCzedrUserId] ?: @"";
+    NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
+    NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"] ?: @"?";
+    return [NSString stringWithFormat:@"%@ - %@  ·  Build %@", strYourId, czedrId, build];
+}
+
+- (void)czedr_refreshCzedrIdLabel
+{
+    if (czedrIdLabel) {
+        czedrIdLabel.text = [self czedr_formattedCzedrIdLine];
+        czedrIdLabel.textColor = [CzedrTheme mutedText];
+        czedrIdLabel.textAlignment = NSTextAlignmentCenter;
+    }
+}
+
+- (void)czedr_bringHomeContentToFront
+{
+    if (self.homeLogoImageView) {
+        [self.view sendSubviewToBack:self.homeLogoImageView];
+    }
+    if (self.homeTilesContainer) {
+        [self.view sendSubviewToBack:self.homeTilesContainer];
+    }
+    if (self.legacyHeaderView) {
+        [self.view sendSubviewToBack:self.legacyHeaderView];
+    }
+    if (self.homeBalanceCaptionLabel) {
+        [self.view bringSubviewToFront:self.homeBalanceCaptionLabel];
+    }
+    if (self.homeBalanceLabel) {
+        [self.view bringSubviewToFront:self.homeBalanceLabel];
+    }
+    if (czedrIdLabel) {
+        [self.view bringSubviewToFront:czedrIdLabel];
+    }
+    if (self.referralEarningsBtn) {
+        [self.view bringSubviewToFront:self.referralEarningsBtn];
+    }
+}
+
 - (NSManagedObjectContext *)managedObjectContext {
     NSManagedObjectContext *context = nil;
     id delegate = [[UIApplication sharedApplication] delegate];
@@ -67,13 +110,9 @@
                                                  name:CzedrUserDidLoginNotification
                                                object:nil];
     NSString *autcode=[[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"];
-    NSString *myCzedrId = [SharedServiceController savedCzedrUserId];
-    czedrIdLabel.text = myCzedrId;
     [[NSUserDefaults standardUserDefaults] setValue:@"store_databse" forKey:@"update_value"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    NSString *strYourId = NSLocalizedString(@"Czedr ID", Nil);
-     czedrIdLabel.text=[NSString stringWithFormat:@"%@ - %@",strYourId,czedrIdLabel.text];
+    [self czedr_refreshCzedrIdLabel];
     
     [self.referralEarningsBtn setTitle:NSLocalizedString(@"Referral earnings", nil) forState:UIControlStateNormal];
     [self syncReferralEarningsUIWithAuthToken:autcode ?: @""];
@@ -100,8 +139,9 @@
         self.homeBalanceCaptionLabel.text = NSLocalizedString(@"Available balance", nil);
         self.homeBalanceCaptionLabel.textAlignment = NSTextAlignmentCenter;
         self.homeBalanceCaptionLabel.textColor = [CzedrTheme mutedText];
-        self.homeBalanceCaptionLabel.font = [CzedrTheme avenir:14.0 weight:@"roman"];
+        self.homeBalanceCaptionLabel.font = [CzedrTheme avenir:15.0 weight:@"heavy"];
         self.homeBalanceCaptionLabel.backgroundColor = [UIColor clearColor];
+        self.homeBalanceCaptionLabel.hidden = NO;
     }
     if (self.homeBalanceLabel) {
         self.homeBalanceLabel.text = @"";
@@ -133,11 +173,7 @@
             return;
         }
         NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
-        NSString *myCzedrId = [SharedServiceController savedCzedrUserId];
-        NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
-        if (strongSelf->czedrIdLabel) {
-            strongSelf->czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, myCzedrId ?: @""];
-        }
+        [strongSelf czedr_refreshCzedrIdLabel];
         [strongSelf syncReferralEarningsUIWithAuthToken:tok];
         [strongSelf call_loadCardsService];
         [CzedrAppChrome refreshSessionBarForDrawer:strongSelf.mm_drawerController];
@@ -238,6 +274,7 @@
         CGFloat tilesH = MAX(200.0, bottom - y);
         self.homeTilesContainer.frame = CGRectMake(0, y, width, tilesH);
     }
+    [self czedr_bringHomeContentToFront];
 }
 
 - (void)viewDidLayoutSubviews
@@ -432,11 +469,7 @@
 -(void)call_loadCardsService
 {
     if ([SharedServiceController usesV1API]) {
-        NSString *czedrId = [SharedServiceController savedCzedrUserId];
-        NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
-        if (czedrIdLabel) {
-            czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, czedrId ?: @""];
-        }
+        [self czedr_refreshCzedrIdLabel];
         __weak typeof(self) weakSelf = self;
         [SharedServiceController fetchLedgerBalanceSuccess:^(NSDictionary *data) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
