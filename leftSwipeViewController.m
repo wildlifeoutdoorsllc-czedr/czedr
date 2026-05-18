@@ -63,6 +63,10 @@
                                              selector:@selector(call_loadCardsService)
                                                  name:@"call_cardcount"
                                                object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(czedr_userDidLogin:)
+                                                 name:CzedrUserDidLoginNotification
+                                               object:nil];
     NSString *autcode=[[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"];
     NSString *myCzedrId = [SharedServiceController savedCzedrUserId];
     czedrIdLabel.text = myCzedrId;
@@ -82,6 +86,21 @@
         [self.mm_drawerController setOpenDrawerGestureModeMask:(MMOpenDrawerGestureModeNone)];
         [self.navigationController pushViewController:ViewController_O animated:NO];
     }
+}
+
+- (void)czedr_userDidLogin:(NSNotification *)notification
+{
+    (void)notification;
+    _homeDataLoaded = NO;
+    NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
+    NSString *myCzedrId = [SharedServiceController savedCzedrUserId];
+    NSString *strYourId = NSLocalizedString(@"Your Czedr ID", Nil);
+    if (czedrIdLabel) {
+        czedrIdLabel.text = [NSString stringWithFormat:@"%@ - %@", strYourId, myCzedrId ?: @""];
+    }
+    [self syncReferralEarningsUIWithAuthToken:tok];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    [self call_loadCardsService];
 }
 
 -(void)viewWillAppear:(BOOL)animated

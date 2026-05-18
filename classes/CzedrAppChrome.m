@@ -109,6 +109,8 @@ static NSMutableArray<UIViewController *> *CzedrForwardStack(void)
 
 @end
 
+NSString * const CzedrUserDidLoginNotification = @"CzedrUserDidLogin";
+
 @implementation CzedrAppChrome
 
 static NSDate *sSessionBarResumeAfter = nil;

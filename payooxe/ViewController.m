@@ -28,14 +28,8 @@
 
 - (UIView *)hudHostView
 {
-    if (self.view.window) {
-        return self.view.window;
-    }
-    if (self.view.superview) {
-        return self.view;
-    }
-    UIWindow *key = UIApplication.sharedApplication.keyWindow;
-    return key ?: self.view;
+    // Keep HUD on the login view only (window/keyWindow HUD + drawer swaps caused crashes on device).
+    return self.view;
 }
 
 - (void)ensureUserInfoData
@@ -50,17 +44,14 @@
     if (![data isKindOfClass:[NSDictionary class]]) {
         return;
     }
-    AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    if (![app isKindOfClass:[AppDelegate class]]) {
-        return;
-    }
-    __weak AppDelegate *weakApp = app;
+    __weak typeof(self) weakSelf = self;
+    __weak UINavigationController *weakNav = self.navigationController;
     dispatch_async(dispatch_get_main_queue(), ^{
-        __strong AppDelegate *strongApp = weakApp;
-        if (!strongApp || !strongApp.window) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
             return;
         }
-        [MBProgressHUD hideAllHUDsForView:strongApp.window animated:NO];
+        [MBProgressHUD hideHUDForView:strongSelf.view animated:NO];
 
         if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length == 0) {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Sign-in succeeded but the session was not saved. Try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
@@ -69,20 +60,33 @@
         }
 
         NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
-        [self ensureUserInfoData];
+        [strongSelf ensureUserInfoData];
         [user_infodata removeAllObjects];
         [user_infodata addObject:data];
 
-        // Defer two turns: let HUD/network callbacks finish before swapping drawer center.
-        dispatch_async(dispatch_get_main_queue(), ^{
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([userPin isEqualToString:@"0"]) {
-                    [strongApp presentPinSetupAfterLogin];
-                } else {
-                    [strongApp presentHomeAfterLogin];
-                }
-            });
-        });
+        UINavigationController *nav = weakNav;
+        if ([userPin isEqualToString:@"0"]) {
+            if (nav) {
+                GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
+                [nav pushViewController:pinVC animated:YES];
+            }
+            return;
+        }
+
+        [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"Avalue"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+
+        // Prefer pop back to home already under this nav stack (no drawer/window rebuild).
+        if (nav && nav.viewControllers.count > 1) {
+            [nav popToRootViewControllerAnimated:NO];
+            [[NSNotificationCenter defaultCenter] postNotificationName:CzedrUserDidLoginNotification object:nil];
+            return;
+        }
+
+        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        if ([app isKindOfClass:[AppDelegate class]]) {
+            [app presentHomeAfterLogin];
+        }
     });
 }
 
@@ -319,6 +323,9 @@
 
     NSString *apiBase = [self.apiBaseTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     if (apiBase.length == 0) {
+        apiBase = [CzedrEffectiveAPIBase() stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    }
+    if (apiBase.length == 0) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Enter the API server URL (e.g. http://192.168.x.x:8080 on a physical iPhone)." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
         return;
@@ -330,44 +337,12 @@
     }
     CzedrSetAPIBaseOverride(apiBase);
 
-    [MBProgressHUD showHUDAddedTo:[self hudHostView] animated:YES];
-    __weak typeof(self) weakSelf = self;
-    // Sign-in uses the URL in the field only (no full subnet scan — that ran on screen open).
-    [CzedrLanAPIFinder testBaseURL:apiBase completion:^(BOOL reachable) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            if (!reachable) {
-                [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@""
-                                                                message:@"Cannot reach the Czedr server. On your PC run START-IPHONE-TESTING.cmd, keep it open, and confirm iPhone and PC are on the same Wi-Fi."
-                                                               delegate:nil
-                                                      cancelButtonTitle:@"OK"
-                                                      otherButtonTitles:nil];
-                [alert show];
-                return;
-            }
-            [strongSelf performLoginRequest];
-        });
-    }];
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    [self performLoginRequest];
 }
 
 - (void)performLoginRequest
 {
-    ReachabiltyTest *reachAbilty = [[ReachabiltyTest alloc] init];
-    int reach = [reachAbilty updateInterfaceWithReachability];
-    if (reach == 0) {
-        [MBProgressHUD hideHUDForView:[self hudHostView] animated:NO];
-        NSString *strAttention = NSLocalizedString(@"Attention", Nil);
-        NSString *strYourNetwork = NSLocalizedString(@"Your network", Nil);
-        NSString *strOk = NSLocalizedString(@"OK", Nil);
-        UIAlertView *alertview = [[UIAlertView alloc] initWithTitle:strAttention message:strYourNetwork delegate:self cancelButtonTitle:strOk otherButtonTitles:nil, nil];
-        [alertview show];
-        return;
-    }
-
     __weak typeof(self) weakSelf = self;
     if ([SharedServiceController usesV1API]) {
         [SharedServiceController loginSecureWithEmail:self.email.text
@@ -384,7 +359,7 @@
                 if (!strongSelf) {
                     return;
                 }
-                [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
+                [MBProgressHUD hideHUDForView:strongSelf.view animated:NO];
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
             });
@@ -402,7 +377,7 @@
         if (!strongSelf) {
             return;
         }
-        [MBProgressHUD hideHUDForView:[strongSelf hudHostView] animated:NO];
+        [MBProgressHUD hideHUDForView:strongSelf.view animated:NO];
         NSString *response = [NSString stringWithFormat:@"%@", operation.responseString];
         NSString *status = [NSString stringWithFormat:@"%@", [[response JSONValue] valueForKey:@"Status"]];
         if ([status isEqualToString:@"true"]) {

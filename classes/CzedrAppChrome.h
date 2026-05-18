@@ -7,6 +7,9 @@
 
 @class MMDrawerController;
 
+/** Posted after sign-in when returning to the home screen (pop navigation, no drawer rebuild). */
+FOUNDATION_EXPORT NSString * const CzedrUserDidLoginNotification;
+
 @interface CzedrAppChrome : NSObject
 
 + (BOOL)isLoggedIn;
