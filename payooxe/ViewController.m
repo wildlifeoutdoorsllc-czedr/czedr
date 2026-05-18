@@ -123,7 +123,7 @@
         return;
     }
     [self.navigationController setNavigationBarHidden:YES animated:YES];
-    _viewDetail.layer.cornerRadius =10;
+    _viewDetail.layer.cornerRadius = 0;
     _viewDetail.clipsToBounds = YES;
     loginbutton.layer.cornerRadius=3;
     loginbutton.clipsToBounds=YES;
@@ -152,56 +152,117 @@
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
 }
 
-- (void)czedr_layoutSignInFormBelowLogo
+- (CGFloat)czedr_placeAuthLogoAtY:(CGFloat)topY panelWidth:(CGFloat)panelW
 {
     UIImageView *logo = [self czedr_brandLogoView];
-    if (!logo || !_viewDetail) {
+    if (!logo) {
+        return topY;
+    }
+    UIImage *img = logo.image ?: [CzedrTheme brandAuthLogoImage];
+    if (!img) {
+        return topY;
+    }
+    CGFloat maxW = panelW - 56.0;
+    CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
+    CGFloat height = MIN(150.0, maxW / MAX(aspect, 0.5));
+    CGFloat width = height * aspect;
+    CGFloat x = (panelW - width) / 2.0;
+    logo.frame = CGRectMake(x, topY, width, height);
+    logo.contentMode = UIViewContentModeScaleAspectFit;
+    logo.backgroundColor = [UIColor clearColor];
+    logo.hidden = NO;
+    return CGRectGetMaxY(logo.frame);
+}
+
+- (CGFloat)czedr_estimatedSignInStackHeight
+{
+    const CGFloat fieldH = 44.0;
+    const CGFloat btnH = 44.0;
+    CGFloat h = 22.0 + 14.0; // title + gap
+    h += fieldH + 14.0;      // email
+    h += fieldH + 14.0;      // password
+    h += btnH + 14.0;        // sign in
+    h += 30.0 + 20.0;        // forgot
+    h += 1.0 + 18.0;         // divider
+    h += btnH;               // register
+    return h;
+}
+
+- (CGFloat)czedr_estimatedLogoHeightForPanelWidth:(CGFloat)panelW
+{
+    UIImage *img = [self czedr_brandLogoView].image ?: [CzedrTheme brandAuthLogoImage];
+    if (!img) {
+        return 100.0;
+    }
+    CGFloat maxW = panelW - 56.0;
+    CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
+    return MIN(150.0, maxW / MAX(aspect, 0.5));
+}
+
+- (void)czedr_layoutFullScreenSignIn
+{
+    if (!_viewDetail) {
         return;
     }
-    CGFloat y = [CzedrTheme layoutAuthLogoInPanel:_viewDetail logoView:logo] + 10.0;
+    CGFloat rootW = self.view.bounds.size.width;
+    CGFloat rootH = self.view.bounds.size.height;
+    CGFloat top = 0.0;
+    CGFloat bottom = 0.0;
+    if (@available(iOS 11.0, *)) {
+        top = self.view.safeAreaInsets.top;
+        bottom = self.view.safeAreaInsets.bottom;
+    }
+    _viewDetail.frame = CGRectMake(0, top, rootW, rootH - top - bottom);
+    _viewDetail.layer.cornerRadius = 0;
+    _viewDetail.layer.borderWidth = 0;
+    _viewDetail.layer.shadowOpacity = 0;
+
+    CGFloat panelW = _viewDetail.bounds.size.width;
+    CGFloat panelH = _viewDetail.bounds.size.height;
+    CGFloat side = MAX(28.0, (panelW - 320.0) / 2.0);
+    CGFloat fieldW = panelW - side * 2.0;
+    CGFloat fieldX = side;
+
+    CGFloat logoH = [self czedr_estimatedLogoHeightForPanelWidth:panelW];
+    CGFloat stackH = [self czedr_estimatedSignInStackHeight];
+    CGFloat blockH = logoH + 16.0 + stackH;
+    CGFloat startY = MAX(12.0, (panelH - blockH) / 2.0);
+
+    CGFloat y = [self czedr_placeAuthLogoAtY:startY panelWidth:panelW] + 16.0;
 
     UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
     if (signInTitle) {
-        CGRect f = signInTitle.frame;
-        f.origin.y = y;
-        f.size.width = _viewDetail.bounds.size.width - 40.0;
-        f.origin.x = 20.0;
-        signInTitle.frame = f;
-        y = CGRectGetMaxY(f) + 12.0;
+        signInTitle.frame = CGRectMake(side, y, fieldW, 22.0);
+        y = CGRectGetMaxY(signInTitle.frame) + 14.0;
     }
 
-    const CGFloat fieldH = 31.0;
-    const CGFloat fieldW = 230.0;
-    const CGFloat fieldX = 20.0;
+    const CGFloat fieldH = 44.0;
+    const CGFloat btnH = 44.0;
     if (_email) {
         _email.frame = CGRectMake(fieldX, y, fieldW, fieldH);
-        y += fieldH + 13.0;
+        y += fieldH + 14.0;
     }
     if (_password) {
         _password.frame = CGRectMake(fieldX, y, fieldW, fieldH);
-        y += fieldH + 13.0;
+        y += fieldH + 14.0;
     }
     if (loginbutton) {
-        loginbutton.frame = CGRectMake(fieldX, y, fieldW, 34.0);
-        y += 34.0 + 13.0;
+        loginbutton.frame = CGRectMake(fieldX, y, fieldW, btnH);
+        y += btnH + 14.0;
     }
     if (forgetbutton) {
-        forgetbutton.frame = CGRectMake(0, y, _viewDetail.bounds.size.width, 30.0);
-        y += 38.0;
+        forgetbutton.frame = CGRectMake(side, y, fieldW, 30.0);
+        y += 30.0 + 20.0;
     }
     for (UIView *sub in _viewDetail.subviews) {
         if (sub.frame.size.height <= 2 && sub.frame.size.width > 100) {
-            CGRect f = sub.frame;
-            f.origin.y = y;
-            f.origin.x = 18.0;
-            f.size.width = 234.0;
-            sub.frame = f;
-            y += 16.0;
+            sub.frame = CGRectMake(fieldX, y, fieldW, 1.0);
+            y += 18.0;
             break;
         }
     }
     if (signupbutton) {
-        signupbutton.frame = CGRectMake(fieldX, y, fieldW, 34.0);
+        signupbutton.frame = CGRectMake(fieldX, y, fieldW, btnH);
     }
 }
 
@@ -212,7 +273,10 @@
         return;
     }
     [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:[self czedr_brandLogoView]];
-    [self czedr_layoutSignInFormBelowLogo];
+    _viewDetail.layer.cornerRadius = 0;
+    _viewDetail.layer.borderWidth = 0;
+    _viewDetail.layer.shadowOpacity = 0;
+    [self czedr_layoutFullScreenSignIn];
 }
 
 - (void)czedr_showAlert:(NSString *)message
