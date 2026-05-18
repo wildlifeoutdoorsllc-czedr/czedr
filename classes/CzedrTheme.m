@@ -212,13 +212,43 @@
     if (!splash) {
         splash = [UIImage imageNamed:@"Czedr-splash-dark"];
     }
-    if (!splash) {
-        splash = [UIImage imageNamed:@"Czedr-logo-tagline.png"];
-    }
-    if (!splash) {
-        splash = [UIImage imageNamed:@"Czedr-mark@3x.png"];
-    }
     return splash;
+}
+
++ (UIImage *)brandAuthLogoImage {
+    UIImage *logo = [UIImage imageNamed:@"Czedr-auth-logo.png"];
+    if (!logo) {
+        logo = [UIImage imageNamed:@"Czedr-auth-logo"];
+    }
+    if (!logo) {
+        logo = [UIImage imageNamed:@"Czedr-logo-tagline.png"];
+    }
+    if (!logo) {
+        logo = [self brandSplashImage];
+    }
+    return logo;
+}
+
++ (CGFloat)layoutAuthLogoInPanel:(UIView *)detailPanel logoView:(UIImageView *)logoView {
+    if (!detailPanel || !logoView) {
+        return 0;
+    }
+    UIImage *logo = logoView.image;
+    if (!logo) {
+        return 0;
+    }
+    CGFloat panelW = detailPanel.bounds.size.width;
+    CGFloat maxW = MAX(panelW - 36.0, 180.0);
+    CGFloat aspect = logo.size.width / MAX(logo.size.height, 1.0);
+    CGFloat height = MIN(118.0, maxW / MAX(aspect, 0.5));
+    CGFloat width = height * aspect;
+    CGFloat x = (panelW - width) / 2.0;
+    logoView.frame = CGRectMake(x, 14.0, width, height);
+    logoView.contentMode = UIViewContentModeScaleAspectFit;
+    logoView.backgroundColor = [UIColor clearColor];
+    logoView.layer.cornerRadius = 0;
+    logoView.clipsToBounds = NO;
+    return CGRectGetMaxY(logoView.frame);
 }
 
 + (UIImageView *)_logoImageViewInView:(UIView *)view {
@@ -267,10 +297,10 @@
         }
     }
     if (detailPanel) {
-        detailPanel.backgroundColor = [[self darkSurface] colorWithAlphaComponent:0.55];
+        detailPanel.backgroundColor = [self darkBackground];
         detailPanel.layer.cornerRadius = 14.0;
         detailPanel.layer.borderWidth = 1.0;
-        detailPanel.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.08].CGColor;
+        detailPanel.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.06].CGColor;
         detailPanel.layer.shadowColor = [UIColor blackColor].CGColor;
         detailPanel.layer.shadowOpacity = 0.35;
         detailPanel.layer.shadowRadius = 12.0;
@@ -280,18 +310,13 @@
         }
         [self _styleLabelsForDarkInView:detailPanel];
     }
-    UIImage *splash = [self brandSplashImage];
-    if (logoView && splash) {
-        logoView.image = splash;
-        logoView.contentMode = UIViewContentModeScaleAspectFit;
-        logoView.backgroundColor = [UIColor clearColor];
-        logoView.layer.cornerRadius = 8.0;
-        logoView.clipsToBounds = YES;
-        CGRect panelBounds = detailPanel ? detailPanel.bounds : rootView.bounds;
-        CGFloat width = MIN(panelBounds.size.width - 24.0, 260.0);
-        CGFloat height = MIN(width * 0.42, 120.0);
-        CGFloat x = (panelBounds.size.width - width) / 2.0;
-        logoView.frame = CGRectMake(x, 12.0, width, height);
+    UIImage *logo = [self brandAuthLogoImage];
+    if (logoView && logo) {
+        logoView.image = logo;
+        logoView.hidden = NO;
+        if (detailPanel) {
+            [self layoutAuthLogoInPanel:detailPanel logoView:logoView];
+        }
     }
     [self _styleLabelsForDarkInView:rootView];
 }

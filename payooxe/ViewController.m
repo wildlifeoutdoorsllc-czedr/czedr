@@ -152,6 +152,59 @@
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
 }
 
+- (void)czedr_layoutSignInFormBelowLogo
+{
+    UIImageView *logo = [self czedr_brandLogoView];
+    if (!logo || !_viewDetail) {
+        return;
+    }
+    CGFloat y = [CzedrTheme layoutAuthLogoInPanel:_viewDetail logoView:logo] + 10.0;
+
+    UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
+    if (signInTitle) {
+        CGRect f = signInTitle.frame;
+        f.origin.y = y;
+        f.size.width = _viewDetail.bounds.size.width - 40.0;
+        f.origin.x = 20.0;
+        signInTitle.frame = f;
+        y = CGRectGetMaxY(f) + 12.0;
+    }
+
+    const CGFloat fieldH = 31.0;
+    const CGFloat fieldW = 230.0;
+    const CGFloat fieldX = 20.0;
+    if (_email) {
+        _email.frame = CGRectMake(fieldX, y, fieldW, fieldH);
+        y += fieldH + 13.0;
+    }
+    if (_password) {
+        _password.frame = CGRectMake(fieldX, y, fieldW, fieldH);
+        y += fieldH + 13.0;
+    }
+    if (loginbutton) {
+        loginbutton.frame = CGRectMake(fieldX, y, fieldW, 34.0);
+        y += 34.0 + 13.0;
+    }
+    if (forgetbutton) {
+        forgetbutton.frame = CGRectMake(0, y, _viewDetail.bounds.size.width, 30.0);
+        y += 38.0;
+    }
+    for (UIView *sub in _viewDetail.subviews) {
+        if (sub.frame.size.height <= 2 && sub.frame.size.width > 100) {
+            CGRect f = sub.frame;
+            f.origin.y = y;
+            f.origin.x = 18.0;
+            f.size.width = 234.0;
+            sub.frame = f;
+            y += 16.0;
+            break;
+        }
+    }
+    if (signupbutton) {
+        signupbutton.frame = CGRectMake(fieldX, y, fieldW, 34.0);
+    }
+}
+
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
@@ -159,6 +212,7 @@
         return;
     }
     [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_viewDetail logoView:[self czedr_brandLogoView]];
+    [self czedr_layoutSignInFormBelowLogo];
 }
 
 - (void)czedr_showAlert:(NSString *)message

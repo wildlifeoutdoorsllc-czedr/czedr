@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** Dark auth screens: charcoal background, clear card, light labels. */
 + (UIImage *)brandSplashImage;
++ (UIImage *)brandAuthLogoImage;
++ (CGFloat)layoutAuthLogoInPanel:(UIView *)detailPanel logoView:(UIImageView *)logoView;
 + (void)applyAuthDarkScreen:(UIView *)rootView detailPanel:(nullable UIView *)detailPanel logoView:(nullable UIImageView *)logoView;
 
 @end

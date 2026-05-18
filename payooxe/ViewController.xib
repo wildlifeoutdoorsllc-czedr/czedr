@@ -97,8 +97,8 @@
                                 <action selector="loginButton:" destination="-1" eventType="touchUpInside" id="q6o-o9-MVu"/>
                             </connections>
                         </button>
-                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="Czedr-splash-dark.png" id="0ff-fM-Zz3">
-                            <rect key="frame" x="0.0" y="21" width="270" height="170"/>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Czedr-auth-logo.png" id="0ff-fM-Zz3">
+                            <rect key="frame" x="15" y="14" width="240" height="110"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                         </imageView>
                     </subviews>
@@ -111,7 +111,7 @@
         </view>
     </objects>
     <resources>
-        <image name="Czedr-splash-dark.png" width="320" height="135"/>
+        <image name="Czedr-auth-logo.png" width="647" height="583"/>
         <image name="bg.png" width="320" height="568"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
