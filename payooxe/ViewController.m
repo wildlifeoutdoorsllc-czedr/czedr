@@ -55,8 +55,7 @@
         }
 
         if ([[NSUserDefaults standardUserDefaults] stringForKey:@"auth_codeSaved"].length == 0) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Sign-in succeeded but the session was not saved. Try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            [alert show];
+            [self czedr_showAlert:@"Sign-in succeeded but the session was not saved. Try again."];
             return;
         }
 
@@ -171,7 +170,31 @@
     [CzedrTheme styleRedPrimaryButton:loginbutton];
     [CzedrTheme styleCharcoalButton:signupbutton];
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
-    [self discoverAPIServerAutomatically];
+    if (self.apiBaseTextField) {
+        NSString *base = CzedrEffectiveAPIBase();
+        if (base.length > 0) {
+            self.apiBaseTextField.text = base;
+        }
+        self.apiBaseTextField.placeholder = @"API server (http://…:8080)";
+    }
+}
+
+- (void)czedr_showAlert:(NSString *)message
+{
+    if (message.length == 0) {
+        return;
+    }
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@""
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+    UIViewController *presenter = self;
+    if (!presenter.view.window) {
+        presenter = self.navigationController ?: (UIViewController *)[UIApplication sharedApplication].delegate;
+    }
+    if (presenter) {
+        [presenter presentViewController:alert animated:YES completion:nil];
+    }
 }
 
 - (void)discoverAPIServerAutomatically
@@ -199,30 +222,12 @@
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
-    CGFloat offset = 0;
-    if (textField == self.apiBaseTextField) {
-        offset = -40;
-    } else if (textField == _email) {
-        offset = -80;
-    } else if (textField == _password) {
-        offset = -120;
-    }
-    if (offset != 0) {
-        [UIView animateWithDuration:0.5f
-                              delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                                  self.view.frame = CGRectMake(0, offset, self.view.frame.size.width, self.view.frame.size.height);
-                              } completion:nil];
-    }
+    (void)textField;
     return YES;
 }
     
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    [UIView animateWithDuration:0.5f
-                          delay:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                              self.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-                          } completion:nil];
-    
     if (textField == self.apiBaseTextField) {
         [_email becomeFirstResponder];
     } else if (textField == _email) {
@@ -250,17 +255,13 @@
         NSString *strEnterEmail = NSLocalizedString(@"enter email", Nil);
         NSString *strOk = NSLocalizedString(@"OK", Nil);
         
-        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:strEnterEmail delegate:nil cancelButtonTitle:strOk otherButtonTitles:nil];
-        [alert show];
+        [self czedr_showAlert:strEnterEmail];
         return;
     }
     else if (_password.text.length==0)
     {
         NSString *strEntrPwd = NSLocalizedString(@"enter password", Nil);
-        NSString *strOk = NSLocalizedString(@"OK", Nil);
-
-        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:strEntrPwd delegate:nil cancelButtonTitle:strOk otherButtonTitles:nil];
-        [alert show];
+        [self czedr_showAlert:strEntrPwd];
         return;
     }
    else if([_email.text length] > 0)
@@ -275,8 +276,7 @@
            NSString *strAttention = NSLocalizedString(@"Attention", Nil);
            NSString *strCorrectValues = NSLocalizedString(@"correct values", Nil);
            NSString *strOk = NSLocalizedString(@"OK", Nil);
-           UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strAttention message:strCorrectValues delegate:nil cancelButtonTitle:strOk otherButtonTitles: nil];
-           [alert performSelectorOnMainThread:@selector(show) withObject:nil waitUntilDone:YES];
+           [self czedr_showAlert:strCorrectValues];
        }
        else
        {
@@ -309,13 +309,11 @@
         apiBase = [CzedrEffectiveAPIBase() stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     }
     if (apiBase.length == 0) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Enter the API server URL (e.g. http://192.168.x.x:8080 on a physical iPhone)." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alert show];
+        [self czedr_showAlert:@"Enter the API server URL (e.g. http://192.168.x.x:8080 on a physical iPhone)."];
         return;
     }
     if (![apiBase hasPrefix:@"http://"] && ![apiBase hasPrefix:@"https://"]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"API server must start with http:// or https://" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alert show];
+        [self czedr_showAlert:@"API server must start with http:// or https://"];
         return;
     }
     CzedrSetAPIBaseOverride(apiBase);
@@ -349,8 +347,7 @@
                     loginbutton.enabled = YES;
                     [loginbutton setTitle:NSLocalizedString(@"Sign in", Nil) forState:UIControlStateNormal];
                 }
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                [alert show];
+                [strongSelf czedr_showAlert:message];
             });
         }];
         return;

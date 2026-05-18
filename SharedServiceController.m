@@ -280,32 +280,105 @@ static void CzedrDispatchMain(void (^block)(void))
     [self loginSecureWithEmail:email password:password success:success failure:failure];
 }
 
++ (NSString *)normalizedAPIBaseURL
+{
+    NSString *base = [[self apiBaseURLString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    while ([base hasSuffix:@"/"]) {
+        base = [base substringToIndex:base.length - 1];
+    }
+    return base ?: @"";
+}
+
 + (void)loginSecureWithEmail:(NSString *)email
                     password:(NSString *)password
                      success:(CzedrAPISuccessBlock)success
                      failure:(CzedrAPIFailureBlock)failure
 {
     if (![self usesV1API]) {
-        failure(@"Secure login requires Czedr API");
+        CzedrDispatchMain(^{
+            failure(@"Secure login requires Czedr API");
+        });
         return;
     }
     NSString *trimmedEmail = [email stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSDictionary *payload = @{
+    NSString *base = [self normalizedAPIBaseURL];
+    if (base.length == 0) {
+        CzedrDispatchMain(^{
+            failure(@"Enter the API server URL (e.g. http://192.168.x.x:8080).");
+        });
+        return;
+    }
+    NSString *urlString = [NSString stringWithFormat:@"%@/v1/auth/login", base];
+    NSURL *url = [NSURL URLWithString:urlString];
+    if (!url) {
+        CzedrDispatchMain(^{
+            failure(@"Invalid API server URL.");
+        });
+        return;
+    }
+
+    NSDictionary *body = @{
         @"user_email": trimmedEmail ?: @"",
         @"email": trimmedEmail ?: @"",
         @"user_pwd": password ?: @"",
         @"password": password ?: @""
     };
-    [self requestJSONMethod:@"POST"
-                       path:@"/v1/auth/login"
-                 parameters:payload
-              authenticated:NO
-                    success:^(NSDictionary *data) {
-                        NSDictionary *legacy = [self legacyUserPayloadFromV1:data];
-                        [self saveLoginPayload:legacy];
-                        success(legacy);
-                    }
-                    failure:failure];
+    NSError *jsonError = nil;
+    NSData *bodyData = [NSJSONSerialization dataWithJSONObject:body options:0 error:&jsonError];
+    if (!bodyData) {
+        CzedrDispatchMain(^{
+            failure(jsonError.localizedDescription ?: @"Could not encode login request.");
+        });
+        return;
+    }
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    request.HTTPBody = bodyData;
+    request.timeoutInterval = 25.0;
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+
+    [[[NSURLSession sharedSession] dataTaskWithRequest:request
+                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        CzedrDispatchMain(^{
+            if (error) {
+                NSString *detail = error.localizedDescription ?: @"Network error";
+                if ([error.domain isEqualToString:NSURLErrorDomain]) {
+                    detail = [NSString stringWithFormat:
+                        @"Cannot reach %@. Run START-IPHONE-TESTING.cmd on your PC, same Wi-Fi, Settings → Czedr → Local Network ON.",
+                        base];
+                }
+                failure(detail);
+                return;
+            }
+            NSString *raw = data.length > 0 ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : @"";
+            NSDictionary *json = nil;
+            if (raw.length > 0) {
+                id parsed = [raw JSONValue];
+                if ([parsed isKindOfClass:[NSDictionary class]]) {
+                    json = (NSDictionary *)parsed;
+                }
+            }
+            if (!json) {
+                failure(@"Invalid response from server.");
+                return;
+            }
+            NSString *status = [NSString stringWithFormat:@"%@", [json objectForKey:@"Status"]];
+            if ([status isEqualToString:@"true"]) {
+                id dataObj = [json objectForKey:@"Data"];
+                if ([dataObj isKindOfClass:[NSDictionary class]]) {
+                    NSDictionary *legacy = [self legacyUserPayloadFromV1:(NSDictionary *)dataObj];
+                    [self saveLoginPayload:legacy];
+                    success(legacy);
+                    return;
+                }
+                failure(@"Invalid login response.");
+                return;
+            }
+            failure([self messageFromAPIResponse:raw fallback:@"Sign-in failed"]);
+        });
+    }] resume];
 }
 
 + (void)verifyPinSecure:(NSString *)pin
