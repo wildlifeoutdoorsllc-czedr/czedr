@@ -106,9 +106,6 @@
         }
         [strongSelf syncReferralEarningsUIWithAuthToken:tok];
         [strongSelf call_loadCardsService];
-        if (![CzedrAppChrome sessionBarRefreshSuspended]) {
-            [CzedrAppChrome refreshSessionBarForDrawer:strongSelf.mm_drawerController];
-        }
     });
 }
 

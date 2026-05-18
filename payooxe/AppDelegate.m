@@ -15,6 +15,7 @@
 #import "leftViewController.h"
 #import "CzedrAppChrome.h"
 #import "GeneratePinViewController.h"
+#import "ViewController.h"
 #import "MBProgressHUD.h"
 #import <CoreData/CoreData.h>
 
@@ -179,31 +180,30 @@
     NSString *userPin = [NSString stringWithFormat:@"%@", [data valueForKey:@"user_pin"]];
     [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"Avalue"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [CzedrAppChrome suspendSessionBarRefreshForSeconds:2.0];
+    [CzedrAppChrome suspendSessionBarRefreshForSeconds:5.0];
+
+    UINavigationController *nav = [self czedr_centerNavigationController];
+    if (!nav) {
+        [self presentHomeAfterLogin];
+        return;
+    }
+    if ([userPin isEqualToString:@"0"]) {
+        GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
+        [nav pushViewController:pinVC animated:YES];
+        return;
+    }
+
+    UIViewController *top = nav.topViewController;
+    if ([top isKindOfClass:[ViewController class]]) {
+        [nav popViewControllerAnimated:YES];
+    } else if (nav.viewControllers.count > 1) {
+        [nav popToRootViewControllerAnimated:NO];
+    }
 
     __weak AppDelegate *weakSelf = self;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        __strong AppDelegate *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        UINavigationController *nav = [strongSelf czedr_centerNavigationController];
-        if ([userPin isEqualToString:@"0"]) {
-            if (nav) {
-                GeneratePinViewController *pinVC = [[GeneratePinViewController alloc] initWithNibName:@"GeneratePinViewController" bundle:nil];
-                [nav pushViewController:pinVC animated:YES];
-            }
-            return;
-        }
-        if (nav && nav.viewControllers.count > 1) {
-            [nav popToRootViewControllerAnimated:NO];
-        } else if (!nav) {
-            [strongSelf presentHomeAfterLogin];
-            return;
-        }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.35 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:CzedrUserDidLoginNotification object:nil];
-        });
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        (void)weakSelf;
+        [[NSNotificationCenter defaultCenter] postNotificationName:CzedrUserDidLoginNotification object:nil];
     });
 }
 

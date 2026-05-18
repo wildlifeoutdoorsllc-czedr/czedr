@@ -60,19 +60,61 @@ static void CzedrDispatchMain(void (^block)(void))
     }
 }
 
++ (id)plistSafeObject:(id)obj
+{
+    if (obj == nil || obj == [NSNull null]) {
+        return nil;
+    }
+    if ([obj isKindOfClass:[NSString class]] ||
+        [obj isKindOfClass:[NSNumber class]] ||
+        [obj isKindOfClass:[NSData class]] ||
+        [obj isKindOfClass:[NSDate class]]) {
+        return obj;
+    }
+    if ([obj isKindOfClass:[NSDictionary class]]) {
+        NSMutableDictionary *out = [NSMutableDictionary dictionary];
+        [(NSDictionary *)obj enumerateKeysAndObjectsUsingBlock:^(id key, id val, BOOL *stop) {
+            (void)stop;
+            if (![key isKindOfClass:[NSString class]]) {
+                return;
+            }
+            id safe = [self plistSafeObject:val];
+            if (safe != nil) {
+                out[key] = safe;
+            }
+        }];
+        return [out copy];
+    }
+    if ([obj isKindOfClass:[NSArray class]]) {
+        NSMutableArray *out = [NSMutableArray array];
+        for (id item in (NSArray *)obj) {
+            id safe = [self plistSafeObject:item];
+            if (safe != nil) {
+                [out addObject:safe];
+            }
+        }
+        return [out copy];
+    }
+    return [NSString stringWithFormat:@"%@", obj];
+}
+
 + (void)saveLoginPayload:(NSDictionary *)data
 {
     if (![data isKindOfClass:[NSDictionary class]]) {
         return;
     }
-    NSString *auth = [data objectForKey:@"auth_code"];
+    NSDictionary *safeData = [self plistSafeObject:data];
+    if (![safeData isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+    NSString *auth = [safeData objectForKey:@"auth_code"];
     if (![auth isKindOfClass:[NSString class]] || auth.length == 0) {
-        auth = [data objectForKey:@"auth_token"];
+        auth = [safeData objectForKey:@"auth_token"];
     }
     if ([auth isKindOfClass:[NSString class]] && auth.length > 0) {
         [[NSUserDefaults standardUserDefaults] setValue:auth forKey:@"auth_codeSaved"];
     }
-    [[NSUserDefaults standardUserDefaults] setValue:data forKey:@"userDataArray"];
+    [[NSUserDefaults standardUserDefaults] setValue:safeData forKey:@"userDataArray"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -92,7 +134,7 @@ static void CzedrDispatchMain(void (^block)(void))
     if (![auth isKindOfClass:[NSString class]]) {
         auth = @"";
     }
-    return @{
+    NSDictionary *payload = @{
         @"auth_code": auth,
         @"id": czedrId,
         @"czedr_id": czedrId,
@@ -103,6 +145,8 @@ static void CzedrDispatchMain(void (^block)(void))
         @"profile_pic ": @"",
         @"user": user ?: @{}
     };
+    id safe = [self plistSafeObject:payload];
+    return [safe isKindOfClass:[NSDictionary class]] ? safe : payload;
 }
 
 + (void)sendSecurePOSTToPath:(NSString *)path
