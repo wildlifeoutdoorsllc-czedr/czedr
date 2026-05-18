@@ -114,6 +114,13 @@
         [_viewDetail addSubview:signInTitle];
     }
     signInTitle.text = NSLocalizedString(@"Sign in", Nil);
+
+    _viewDetail.autoresizingMask = UIViewAutoresizingNone;
+    _viewDetail.translatesAutoresizingMaskIntoConstraints = YES;
+    for (UIView *sub in _viewDetail.subviews) {
+        sub.autoresizingMask = UIViewAutoresizingNone;
+        sub.translatesAutoresizingMaskIntoConstraints = YES;
+    }
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -152,117 +159,84 @@
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
 }
 
-- (CGFloat)czedr_placeAuthLogoAtY:(CGFloat)topY panelWidth:(CGFloat)panelW
-{
-    UIImageView *logo = [self czedr_brandLogoView];
-    if (!logo) {
-        return topY;
-    }
-    UIImage *img = logo.image ?: [CzedrTheme brandAuthLogoImage];
-    if (!img) {
-        return topY;
-    }
-    CGFloat maxW = panelW - 56.0;
-    CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
-    CGFloat height = MIN(150.0, maxW / MAX(aspect, 0.5));
-    CGFloat width = height * aspect;
-    CGFloat x = (panelW - width) / 2.0;
-    logo.frame = CGRectMake(x, topY, width, height);
-    logo.contentMode = UIViewContentModeScaleAspectFit;
-    logo.backgroundColor = [UIColor clearColor];
-    logo.hidden = NO;
-    return CGRectGetMaxY(logo.frame);
-}
-
-- (CGFloat)czedr_estimatedSignInStackHeight
-{
-    const CGFloat fieldH = 44.0;
-    const CGFloat btnH = 44.0;
-    CGFloat h = 22.0 + 14.0; // title + gap
-    h += fieldH + 14.0;      // email
-    h += fieldH + 14.0;      // password
-    h += btnH + 14.0;        // sign in
-    h += 30.0 + 20.0;        // forgot
-    h += 1.0 + 18.0;         // divider
-    h += btnH;               // register
-    return h;
-}
-
-- (CGFloat)czedr_estimatedLogoHeightForPanelWidth:(CGFloat)panelW
-{
-    UIImage *img = [self czedr_brandLogoView].image ?: [CzedrTheme brandAuthLogoImage];
-    if (!img) {
-        return 100.0;
-    }
-    CGFloat maxW = panelW - 56.0;
-    CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
-    return MIN(150.0, maxW / MAX(aspect, 0.5));
-}
-
 - (void)czedr_layoutFullScreenSignIn
 {
     if (!_viewDetail) {
         return;
     }
-    CGFloat rootW = self.view.bounds.size.width;
-    CGFloat rootH = self.view.bounds.size.height;
-    CGFloat top = 0.0;
-    CGFloat bottom = 0.0;
+    _viewDetail.autoresizingMask = UIViewAutoresizingNone;
+
+    CGRect host = self.view.bounds;
     if (@available(iOS 11.0, *)) {
-        top = self.view.safeAreaInsets.top;
-        bottom = self.view.safeAreaInsets.bottom;
+        host = UIEdgeInsetsInsetRect(host, self.view.safeAreaInsets);
     }
-    _viewDetail.frame = CGRectMake(0, top, rootW, rootH - top - bottom);
+    _viewDetail.frame = host;
     _viewDetail.layer.cornerRadius = 0;
     _viewDetail.layer.borderWidth = 0;
     _viewDetail.layer.shadowOpacity = 0;
 
-    CGFloat panelW = _viewDetail.bounds.size.width;
-    CGFloat panelH = _viewDetail.bounds.size.height;
-    CGFloat side = MAX(28.0, (panelW - 320.0) / 2.0);
+    CGFloat panelW = CGRectGetWidth(host);
+    CGFloat panelH = CGRectGetHeight(host);
+    CGFloat side = 28.0;
     CGFloat fieldW = panelW - side * 2.0;
     CGFloat fieldX = side;
+    const CGFloat fieldH = 48.0;
+    const CGFloat btnH = 48.0;
+    const CGFloat bottomPad = 28.0;
 
-    CGFloat logoH = [self czedr_estimatedLogoHeightForPanelWidth:panelW];
-    CGFloat stackH = [self czedr_estimatedSignInStackHeight];
-    CGFloat blockH = logoH + 16.0 + stackH;
-    CGFloat startY = MAX(12.0, (panelH - blockH) / 2.0);
-
-    CGFloat y = [self czedr_placeAuthLogoAtY:startY panelWidth:panelW] + 16.0;
-
-    UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
-    if (signInTitle) {
-        signInTitle.frame = CGRectMake(side, y, fieldW, 22.0);
-        y = CGRectGetMaxY(signInTitle.frame) + 14.0;
+    if (signupbutton) {
+        signupbutton.frame = CGRectMake(fieldX, panelH - bottomPad - btnH, fieldW, btnH);
     }
 
-    const CGFloat fieldH = 44.0;
-    const CGFloat btnH = 44.0;
-    if (_email) {
-        _email.frame = CGRectMake(fieldX, y, fieldW, fieldH);
-        y += fieldH + 14.0;
-    }
-    if (_password) {
-        _password.frame = CGRectMake(fieldX, y, fieldW, fieldH);
-        y += fieldH + 14.0;
-    }
-    if (loginbutton) {
-        loginbutton.frame = CGRectMake(fieldX, y, fieldW, btnH);
-        y += btnH + 14.0;
-    }
-    if (forgetbutton) {
-        forgetbutton.frame = CGRectMake(side, y, fieldW, 30.0);
-        y += 30.0 + 20.0;
-    }
+    UIView *divider = nil;
     for (UIView *sub in _viewDetail.subviews) {
         if (sub.frame.size.height <= 2 && sub.frame.size.width > 100) {
-            sub.frame = CGRectMake(fieldX, y, fieldW, 1.0);
-            y += 18.0;
+            divider = sub;
             break;
         }
     }
-    if (signupbutton) {
-        signupbutton.frame = CGRectMake(fieldX, y, fieldW, btnH);
+    CGFloat y = panelH - bottomPad - btnH - 22.0;
+    if (divider) {
+        divider.frame = CGRectMake(fieldX, y - 1.0, fieldW, 1.0);
+        y -= 20.0;
+    }
+    if (forgetbutton) {
+        forgetbutton.frame = CGRectMake(fieldX, y - 30.0, fieldW, 30.0);
+        y -= 42.0;
+    }
+    if (loginbutton) {
+        loginbutton.frame = CGRectMake(fieldX, y - btnH, fieldW, btnH);
+        y -= 16.0;
+    }
+    if (_password) {
+        _password.frame = CGRectMake(fieldX, y - fieldH, fieldW, fieldH);
+        y -= 16.0;
+    }
+    if (_email) {
+        _email.frame = CGRectMake(fieldX, y - fieldH, fieldW, fieldH);
+        y -= 18.0;
+    }
+
+    UILabel *signInTitle = (UILabel *)[_viewDetail viewWithTag:8801];
+    if (signInTitle) {
+        signInTitle.frame = CGRectMake(fieldX, y - 24.0, fieldW, 24.0);
+        y -= 20.0;
+    }
+
+    CGFloat logoMaxH = MIN(180.0, y - 24.0);
+    UIImageView *logo = [self czedr_brandLogoView];
+    if (logo) {
+        UIImage *img = logo.image ?: [CzedrTheme brandAuthLogoImage];
+        if (img) {
+            CGFloat maxW = panelW - 48.0;
+            CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
+            CGFloat height = MIN(logoMaxH, maxW / MAX(aspect, 0.5));
+            CGFloat width = height * aspect;
+            logo.frame = CGRectMake((panelW - width) / 2.0, 20.0, width, height);
+            logo.contentMode = UIViewContentModeScaleAspectFit;
+            logo.backgroundColor = [UIColor clearColor];
+            logo.hidden = NO;
+        }
     }
 }
 
