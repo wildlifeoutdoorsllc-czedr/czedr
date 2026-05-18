@@ -197,7 +197,6 @@
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
-    [CzedrAppChrome hideLegacyPageHeadersInView:self.view];
     [self czedr_layoutHomeHeader];
 }
 

@@ -23,7 +23,7 @@ FOUNDATION_EXPORT NSString * const CzedrUserDidLoginNotification;
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer;
 
 + (CGFloat)topChromeBottomYForView:(UIView *)view;
-+ (void)hideLegacyPageHeadersInView:(UIView *)rootView;
++ (void)applyChromeContentInsetsForDrawer:(MMDrawerController *)drawer;
 
 + (UIView *)installSessionBarInViewController:(UIViewController *)host;
 

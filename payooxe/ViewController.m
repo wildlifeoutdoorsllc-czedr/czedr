@@ -157,6 +157,30 @@
     [CzedrTheme styleRedPrimaryButton:loginbutton];
     [CzedrTheme styleCharcoalButton:signupbutton];
     [forgetbutton setTitleColor:[[CzedrTheme lightText] colorWithAlphaComponent:0.75] forState:UIControlStateNormal];
+
+    _viewDetail.userInteractionEnabled = YES;
+    self.view.userInteractionEnabled = YES;
+    if (loginbutton) {
+        loginbutton.enabled = YES;
+        loginbutton.userInteractionEnabled = YES;
+        [loginbutton setTitle:NSLocalizedString(@"Sign in", Nil) forState:UIControlStateNormal];
+    }
+    if (_email) {
+        _email.userInteractionEnabled = YES;
+    }
+    if (_password) {
+        _password.userInteractionEnabled = YES;
+    }
+    [self czedr_layoutFullScreenSignIn];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    if (![self isMemberOfClass:[ViewController class]]) {
+        return;
+    }
+    [self czedr_layoutFullScreenSignIn];
 }
 
 - (UIView *)czedr_authDividerView

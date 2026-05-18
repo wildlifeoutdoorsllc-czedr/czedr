@@ -358,6 +358,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     bar.hidden = NO;
     bar.userInteractionEnabled = YES;
     [drawer.view bringSubviewToFront:bar];
+    [self applyChromeContentInsetsForDrawer:drawer];
 }
 
 + (UIView *)installSessionBarInViewController:(UIViewController *)host
@@ -386,26 +387,32 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     return top;
 }
 
-+ (void)hideLegacyPageHeadersInView:(UIView *)rootView
++ (void)applyChromeContentInsetsForDrawer:(MMDrawerController *)drawer
 {
-    if (!rootView) {
+    if (!drawer) {
         return;
     }
-    for (UIView *sub in rootView.subviews) {
-        if (sub.hidden) {
-            continue;
-        }
-        UIColor *bg = sub.backgroundColor;
-        if (sub.frame.size.height > 0 && sub.frame.size.height <= 90 && CGRectGetMinY(sub.frame) < 120) {
-            const CGFloat *c = CGColorGetComponents(bg.CGColor);
-            if (CGColorGetNumberOfComponents(bg.CGColor) >= 3) {
-                if (c[0] > 0.45 && c[0] < 0.65 && c[1] > 0.72 && c[1] < 0.85 && c[2] > 0.32 && c[2] < 0.48) {
-                    sub.hidden = YES;
-                }
-            }
-        }
-        [self hideLegacyPageHeadersInView:sub];
+    UINavigationController *nav = nil;
+    if ([drawer.centerViewController isKindOfClass:[UINavigationController class]]) {
+        nav = (UINavigationController *)drawer.centerViewController;
     }
+    UIViewController *top = nav.topViewController;
+    if (!top) {
+        return;
+    }
+    NSString *topClass = NSStringFromClass([top class]);
+    if ([topClass isEqualToString:@"ViewController"]
+        || [topClass isEqualToString:@"leftSwipeViewController"]) {
+        top.additionalSafeAreaInsets = UIEdgeInsetsZero;
+        return;
+    }
+    CGFloat chromeBottom = [self topChromeBottomYForView:drawer.view];
+    CGFloat baseTop = 0;
+    if (@available(iOS 11.0, *)) {
+        baseTop = top.view.safeAreaInsets.top;
+    }
+    CGFloat extraTop = MAX(0.0, chromeBottom - baseTop);
+    top.additionalSafeAreaInsets = UIEdgeInsetsMake(extraTop, 0, 0, 0);
 }
 
 + (void)clearLocalSession
@@ -421,16 +428,31 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 {
     [self removeSessionBarFromDrawer:drawer];
     [self clearLocalSession];
+    if (drawer && drawer.openSide != MMDrawerSideNone) {
+        [drawer closeDrawerAnimated:NO completion:nil];
+    }
     ViewController *login = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+    login.additionalSafeAreaInsets = UIEdgeInsetsZero;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:login];
     nav.navigationBarHidden = YES;
-    if (drawer) {
-        [drawer setCenterViewController:nav withCloseAnimation:YES completion:nil];
-    } else if (host.navigationController) {
-        [host.navigationController setViewControllers:@[login] animated:YES];
-    } else {
-        [host presentViewController:nav animated:YES completion:nil];
-    }
+    void (^showLoginNav)(void) = ^{
+        if (drawer) {
+            [drawer setCenterViewController:nav withCloseAnimation:NO completion:^(BOOL finished) {
+                (void)finished;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ([login isViewLoaded]) {
+                        [login.view setNeedsLayout];
+                        [login.view layoutIfNeeded];
+                    }
+                });
+            }];
+        } else if (host.navigationController) {
+            [host.navigationController setViewControllers:@[login] animated:NO];
+        } else {
+            [host presentViewController:nav animated:YES completion:nil];
+        }
+    };
+    showLoginNav();
 }
 
 + (void)logoutFromViewController:(UIViewController *)host drawer:(MMDrawerController *)drawer

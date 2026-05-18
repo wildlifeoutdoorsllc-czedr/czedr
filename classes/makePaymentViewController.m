@@ -86,7 +86,6 @@
 -(void)viewWillAppear:(BOOL)animated
 {
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
-    [CzedrAppChrome hideLegacyPageHeadersInView:self.view];
     _scroll_view.contentSize=CGSizeMake(320, 568);
     _czedrId.layer.cornerRadius=3;
     _czedrId.clipsToBounds = YES;

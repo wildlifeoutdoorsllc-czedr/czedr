@@ -51,7 +51,6 @@
     }
     [CzedrTheme applyDeckLookToView:self.view];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
-    [CzedrAppChrome hideLegacyPageHeadersInView:self.view];
 }
 
 - (void)didReceiveMemoryWarning
