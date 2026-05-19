@@ -24,4 +24,10 @@
 + (void)fetchImageDataFromURL:(NSString *)imageUrl
                    completion:(void (^)(NSData *imageData, NSError *error))completion;
 
+/** Card link: AES-256-GCM keyed by card photo bytes + user id (HKDF salt). */
++ (NSString *)encryptCardPayload:(NSDictionary *)payload
+                      imageData:(NSData *)imageData
+                         userId:(NSString *)userId
+                          error:(NSError **)error;
+
 @end

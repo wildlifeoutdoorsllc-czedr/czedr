@@ -115,6 +115,18 @@ typedef void (^CzedrAPIFailureBlock)(NSString *message);
 
 + (void)syncBankAccountsToCoreData:(void (^)(void))completion;
 
++ (void)fetchLinkedCardsSuccess:(void (^)(NSArray *cards))success
+                        failure:(CzedrAPIFailureBlock)failure;
+
++ (void)linkCardSecureWithJPEGData:(NSData *)jpegData
+                           payload:(NSDictionary *)payload
+                           success:(CzedrAPISuccessBlock)success
+                           failure:(CzedrAPIFailureBlock)failure;
+
++ (void)deleteLinkedCardId:(NSString *)cardId
+                    success:(CzedrAPISuccessBlock)success
+                    failure:(CzedrAPIFailureBlock)failure;
+
 /** Returns legacy-shaped rows: name, amount, email, sender_user_id, receiver_user_id, cardnumber */
 + (void)fetchPaymentHistorySuccess:(void (^)(NSArray *rows, NSInteger total))success
                           failure:(CzedrAPIFailureBlock)failure;

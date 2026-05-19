@@ -725,11 +725,63 @@ static void CzedrDispatchMain(void (^block)(void))
 + (void)fetchBankAccountsSuccess:(void (^)(NSArray *accounts))success
                          failure:(CzedrAPIFailureBlock)failure
 {
+    if ([self usesV1API]) {
+        [self fetchLinkedCardsSuccess:success failure:failure];
+        return;
+    }
     [self requestJSONMethod:@"GET" path:@"/v1/bank-accounts" parameters:nil authenticated:YES
                     success:^(NSDictionary *data) {
                         NSArray *accounts = [data objectForKey:@"accounts"];
                         success([accounts isKindOfClass:[NSArray class]] ? accounts : @[]);
                     } failure:failure];
+}
+
++ (void)fetchLinkedCardsSuccess:(void (^)(NSArray *cards))success
+                        failure:(CzedrAPIFailureBlock)failure
+{
+    [self requestJSONMethod:@"GET" path:@"/v1/cards" parameters:nil authenticated:YES
+                    success:^(NSDictionary *data) {
+                        NSArray *cards = [data objectForKey:@"cards"];
+                        success([cards isKindOfClass:[NSArray class]] ? cards : @[]);
+                    } failure:failure];
+}
+
++ (void)linkCardSecureWithJPEGData:(NSData *)jpegData
+                           payload:(NSDictionary *)payload
+                           success:(CzedrAPISuccessBlock)success
+                           failure:(CzedrAPIFailureBlock)failure
+{
+    NSString *userId = [self savedCzedrUserId];
+    if (userId.length == 0) {
+        failure(@"Not signed in");
+        return;
+    }
+    NSError *cryptoErr = nil;
+    NSString *enc = [CzedrSignupCrypto encryptCardPayload:payload
+                                                imageData:jpegData
+                                                   userId:userId
+                                                    error:&cryptoErr];
+    if (!enc.length) {
+        failure(cryptoErr.localizedDescription ?: @"Encryption failed");
+        return;
+    }
+    NSString *imageB64 = [jpegData base64EncodedStringWithOptions:0];
+    [self requestJSONMethod:@"POST" path:@"/v1/cards/link-secure"
+                 parameters:@{
+                     @"image_b64": imageB64 ?: @"",
+                     @"enc_data": enc,
+                     @"crypto_version": @([CzedrSignupCrypto preferredCryptoVersion])
+                 }
+              authenticated:YES success:success failure:failure];
+}
+
++ (void)deleteLinkedCardId:(NSString *)cardId
+                   success:(CzedrAPISuccessBlock)success
+                   failure:(CzedrAPIFailureBlock)failure
+{
+    [self requestJSONMethod:@"POST" path:@"/v1/cards/delete"
+                 parameters:@{@"card_id": cardId ?: @""}
+              authenticated:YES success:success failure:failure];
 }
 
 + (void)createInvoiceToCzedrId:(NSString *)czedrId
@@ -947,11 +999,13 @@ static void CzedrDispatchMain(void (^block)(void))
                         }
                         NSManagedObject *card = [NSEntityDescription insertNewObjectForEntityForName:@"Cards" inManagedObjectContext:context];
                         [card setValue:[acct objectForKey:@"id"] forKey:@"id"];
-                        [card setValue:[acct objectForKey:@"display_name"] forKey:@"name"];
-                        [card setValue:[acct objectForKey:@"last4"] forKey:@"cardnumber"];
-                        [card setValue:@"01" forKey:@"month"];
-                        [card setValue:@"30" forKey:@"year"];
-                        [card setValue:@"0" forKey:@"card_default"];
+                        NSString *displayName = [acct objectForKey:@"display_name"] ?: [acct objectForKey:@"name"];
+                        [card setValue:displayName forKey:@"name"];
+                        NSString *last4 = [acct objectForKey:@"last4"] ?: [acct objectForKey:@"cardnumber"];
+                        [card setValue:last4 forKey:@"cardnumber"];
+                        [card setValue:[acct objectForKey:@"exp_month"] ?: @"01" forKey:@"month"];
+                        [card setValue:[acct objectForKey:@"exp_year"] ?: @"30" forKey:@"year"];
+                        [card setValue:[acct objectForKey:@"card_default"] ?: @"0" forKey:@"card_default"];
                     }
                     [context save:nil];
                 } @catch (NSException *exception) {

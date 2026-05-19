@@ -12,6 +12,7 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "AESCrypt.h"
 #import "SharedServiceController.h"
+#import "CzedrSignupCrypto.h"
 #import <CommonCrypto/CommonCryptor.h>
 #import <CommonCrypto/CommonKeyDerivation.h>
 #import <Security/Security.h>
@@ -550,23 +551,6 @@ replacementString:(NSString *)string
             }
             else
             {
-                if ([SharedServiceController usesV1API]) {
-                    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-                    [SharedServiceController addBankAccountHolder:_name.text
-                        routing:@CZEDR_DEV_ROUTING_NUMBER
-                        account:_cardNumber.text
-                    accountType:@"checking"
-                        success:^(NSDictionary *data) {
-                        [MBProgressHUD hideHUDForView:self.view animated:YES];
-                        [[NSNotificationCenter defaultCenter] postNotificationName:@"call_cardcount" object:nil];
-                        [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(targetMethod_added) userInfo:nil repeats:NO];
-                    } failure:^(NSString *message) {
-                        [MBProgressHUD hideHUDForView:self.view animated:YES];
-                        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                        [alert show];
-                    }];
-                    return;
-                }
                 [actionView removeFromSuperview];
                 [_name resignFirstResponder];
                 [_cvvNumber resignFirstResponder];
@@ -610,11 +594,19 @@ replacementString:(NSString *)string
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:    (NSDictionary *)info
 {
     cardImage = [info objectForKey:UIImagePickerControllerOriginalImage];
+    UIImage *scaled = [self imageWithImage:cardImage scaledToSize:CGSizeMake(200, 200)];
+    NSData *jpegData = UIImageJPEGRepresentation(scaled, 0.8);
+    if ([SharedServiceController usesV1API]) {
+        [picker dismissViewControllerAnimated:YES completion:nil];
+        [self dismissViewControllerAnimated:YES completion:^{
+            [self submitSecureCardLinkWithJPEG:jpegData];
+        }];
+        return;
+    }
+
     NSData* data = UIImageJPEGRepresentation(cardImage,100);
-   
     NSString *base64String =[data base64EncodedStringWithOptions:0];
     baseImage_16=[base64String substringToIndex:16];
-    
     NSString *myCzedrId=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"id"];
     NSString *MD5string= [self md5HexDigest:myCzedrId];
     finalString=[MD5string substringToIndex:16];
@@ -631,28 +623,58 @@ replacementString:(NSString *)string
     NSString *key =concatString;
     NSString * secret =all_textfieldValues;
     NSError *error;
-    
     encryptedData1 = [RNEncryptor encryptData:[secret dataUsingEncoding:NSUTF8StringEncoding]
                        withSettings:kRNCryptorAES256Settings
                            password:key
                               error:&error];
-    
-    
-    NSString *string = [[NSString alloc] initWithData:encryptedData1 encoding:NSUTF8StringEncoding];
-    if (string)
-    {
-//        printf("%s\n", [string UTF8String]);
-    }
-    else
-    {
-//        printf("%s\n", [[encryptedData1 base64EncodedStringWithOptions:0] UTF8String]);
-    }
     newstring=[NSString stringWithFormat:@"%s",[[encryptedData1 base64EncodedStringWithOptions:0] UTF8String]];
-    
     [self imageUpload_service];
-   
     [picker dismissViewControllerAnimated:YES completion:nil];
     [self dismissViewControllerAnimated:YES completion:^{}];
+}
+
+-(void)submitSecureCardLinkWithJPEG:(NSData *)jpegData
+{
+    if (!jpegData.length) {
+        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:@"Could not read card photo" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        [alert show];
+        return;
+    }
+    NSMutableDictionary *payload = [NSMutableDictionary dictionaryWithDictionary:@{
+        @"name": _name.text ?: @"",
+        @"card_no": _cardNumber.text ?: @"",
+        @"cvv": _cvvNumber.text ?: @"",
+        @"date": _expiryDate.titleLabel.text ?: @"",
+        @"type": @"visa",
+        @"default": checkValueSet ?: @"0"
+    }];
+    BOOL isUpdate = [[[NSUserDefaults standardUserDefaults] valueForKey:@"cardInfo"] isEqualToString:@"updtae"];
+    if (isUpdate) {
+        NSString *cardid = [NSString stringWithFormat:@"%@", [addcardArraydata valueForKey:@"id"]];
+        if (cardid.length) {
+            payload[@"id"] = cardid;
+        }
+    }
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    [SharedServiceController linkCardSecureWithJPEGData:jpegData
+        payload:payload
+        success:^(NSDictionary *data) {
+        [SharedServiceController syncBankAccountsToCoreData:^{
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"call_cardcount" object:nil];
+            if (isUpdate) {
+                [[NSUserDefaults standardUserDefaults] setValue:@"store_databse" forKey:@"update_value"];
+                [[NSUserDefaults standardUserDefaults] synchronize];
+                [self targetMethod_updated];
+            } else {
+                [self targetMethod_added];
+            }
+        }];
+    } failure:^(NSString *message) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        [alert show];
+    }];
 }
 
 //NSData *plain = [secret dataUsingEncoding:NSUTF8StringEncoding];
@@ -1093,11 +1115,13 @@ replacementString:(NSString *)string
     }
     else{
         if ([SharedServiceController usesV1API]) {
-            NSString *bankId = [NSString stringWithFormat:@"%@", [addcardArraydata valueForKey:@"id"]];
-            [SharedServiceController deleteBankAccountId:bankId
+            NSString *cardId = [NSString stringWithFormat:@"%@", [addcardArraydata valueForKey:@"id"]];
+            [SharedServiceController deleteLinkedCardId:cardId
                 success:^(NSDictionary *data) {
-                [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(targetMethod_deleted) userInfo:nil repeats:NO];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"call_cardcount" object:nil];
+                [SharedServiceController syncBankAccountsToCoreData:^{
+                    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(targetMethod_deleted) userInfo:nil repeats:NO];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"call_cardcount" object:nil];
+                }];
             } failure:^(NSString *message) {
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
                 UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];

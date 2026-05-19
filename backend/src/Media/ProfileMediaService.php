@@ -16,15 +16,31 @@ final class ProfileMediaService
 
     public function saveForUser(string $userId, string $binary): string
     {
+        return $this->writeJpeg($userId . '.jpg', $binary);
+    }
+
+    public function saveCardForUser(string $userId, string $cardId, string $binary): string
+    {
+        $safeId = preg_replace('/[^a-zA-Z0-9\-]/', '', $cardId) ?? '';
+        if ($safeId === '') {
+            throw new \InvalidArgumentException('Invalid card id');
+        }
+
+        return $this->writeJpeg('card-' . $userId . '-' . $safeId . '.jpg', $binary);
+    }
+
+    private function writeJpeg(string $filename, string $binary): string
+    {
         if ($binary === '') {
             throw new \InvalidArgumentException('Empty image data');
         }
-        $filename = $userId . '.jpg';
-        $path = $this->storageDir() . '/' . $filename;
+        $safe = basename($filename);
+        $path = $this->storageDir() . '/' . $safe;
         if (file_put_contents($path, $binary) === false) {
-            throw new \RuntimeException('Could not save profile image');
+            throw new \RuntimeException('Could not save image');
         }
-        return $filename;
+
+        return $safe;
     }
 
     public function read(string $filename): ?string
@@ -42,11 +58,14 @@ final class ProfileMediaService
     public function userMayRead(string $userId, string $filename): bool
     {
         $safe = basename($filename);
-        $allowed = [
-            $userId . '.jpg',
-            'card-' . $userId . '.jpg',
-        ];
+        if ($safe === $userId . '.jpg' || $safe === 'card-' . $userId . '.jpg') {
+            return true;
+        }
+        $prefix = 'card-' . $userId . '-';
+        if (str_starts_with($safe, $prefix) && str_ends_with($safe, '.jpg')) {
+            return true;
+        }
 
-        return in_array($safe, $allowed, true);
+        return false;
     }
 }

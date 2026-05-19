@@ -15,6 +15,7 @@ static const size_t kCzedrGcmIvLen = 12;
 static const size_t kCzedrGcmTagLen = 16;
 static const size_t kCzedrAesKeyLen = 32;
 static NSString * const kCzedrHkdfInfo = @"czedr-secure-v2";
+static NSString * const kCzedrHkdfCardInfo = @"czedr-card-link-v2";
 
 @implementation CzedrSignupCrypto
 
@@ -113,8 +114,13 @@ static NSString * const kCzedrHkdfInfo = @"czedr-secure-v2";
 
 + (NSData *)deriveKeyV2FromImageData:(NSData *)imageData challengeId:(NSString *)challengeId
 {
-    NSData *salt = [challengeId dataUsingEncoding:NSUTF8StringEncoding];
-    NSData *info = [kCzedrHkdfInfo dataUsingEncoding:NSUTF8StringEncoding];
+    return [self deriveKeyV2FromImageData:imageData salt:challengeId info:kCzedrHkdfInfo];
+}
+
++ (NSData *)deriveKeyV2FromImageData:(NSData *)imageData salt:(NSString *)saltString info:(NSString *)infoString
+{
+    NSData *salt = [saltString dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *info = [infoString dataUsingEncoding:NSUTF8StringEncoding];
     uint8_t derivedKey[kCzedrAesKeyLen];
     int status = CCKeyDerivationHKDF(
         kCCPRFHmacAlgSHA256,
@@ -210,6 +216,49 @@ static NSString * const kCzedrHkdfInfo = @"czedr-secure-v2";
     }
 
     return out;
+}
+
++ (NSString *)encryptCardPayload:(NSDictionary *)payload
+                      imageData:(NSData *)imageData
+                         userId:(NSString *)userId
+                          error:(NSError **)error
+{
+    NSData *json = [NSJSONSerialization dataWithJSONObject:payload options:0 error:error];
+    if (!json) {
+        return nil;
+    }
+    NSData *key = [self deriveKeyV2FromImageData:imageData salt:userId info:kCzedrHkdfCardInfo];
+    if (key.length != kCzedrAesKeyLen) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:4
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Key derivation failed"}];
+        }
+        return nil;
+    }
+
+    uint8_t iv[kCzedrGcmIvLen];
+    if (SecRandomCopyBytes(kSecRandomDefault, kCzedrGcmIvLen, iv) != errSecSuccess) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:5
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Random IV failed"}];
+        }
+        return nil;
+    }
+
+    uint8_t tag[kCzedrGcmTagLen];
+    NSData *cipher = [self aesGcmEncrypt:json key:key iv:iv tagOut:tag error:error];
+    if (!cipher) {
+        return nil;
+    }
+
+    NSMutableData *wire = [NSMutableData dataWithCapacity:1 + kCzedrGcmIvLen + kCzedrGcmTagLen + cipher.length];
+    uint8_t version = kCzedrCryptoVersionV2;
+    [wire appendBytes:&version length:1];
+    [wire appendBytes:iv length:kCzedrGcmIvLen];
+    [wire appendBytes:tag length:kCzedrGcmTagLen];
+    [wire appendData:cipher];
+
+    return [wire base64EncodedStringWithOptions:0];
 }
 
 + (void)fetchImageDataFromURL:(NSString *)imageUrl

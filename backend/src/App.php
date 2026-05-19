@@ -13,6 +13,7 @@ use Czedr\Http\Router;
 use Czedr\Invoice\InvoiceService;
 use Czedr\Legacy\LegacyCompat;
 use Czedr\Ledger\LedgerService;
+use Czedr\Cards\CardLinkService;
 use Czedr\Media\ProfileMediaService;
 use Czedr\Security\HttpsGate;
 use Czedr\Security\PayloadCryptor;
@@ -30,6 +31,7 @@ final class App
     private LedgerService $ledger;
     private InvoiceService $invoices;
     private ProfileMediaService $profileMedia;
+    private CardLinkService $cardLinks;
     private SignupChallengeService $signupChallenges;
     private PasswordResetService $passwordReset;
     private RateLimiter $rateLimiter;
@@ -41,6 +43,7 @@ final class App
         $this->ledger = new LedgerService($this->audit);
         $this->invoices = new InvoiceService($this->audit);
         $this->profileMedia = new ProfileMediaService();
+        $this->cardLinks = new CardLinkService($this->profileMedia);
         $this->signupChallenges = new SignupChallengeService();
         $this->passwordReset = new PasswordResetService($this->audit);
         $this->auth = new AuthService($this->audit, $this->ledger);
@@ -371,6 +374,40 @@ final class App
             JsonResponse::ok(['deleted' => true, 'ledger_only' => true]);
         }));
 
+        $this->router->get('/v1/cards', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            JsonResponse::ok(['cards' => $this->cardLinks->listForUser($uid)]);
+        }));
+
+        $this->router->post('/v1/cards/link-secure', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $imageB64 = (string) ($r->body['image_b64'] ?? '');
+            $encData = (string) ($r->body['enc_data'] ?? '');
+            if ($imageB64 === '' || $encData === '') {
+                JsonResponse::error('image_b64 and enc_data are required', 400);
+                return;
+            }
+            try {
+                $card = $this->cardLinks->linkSecure($uid, $imageB64, $encData);
+                JsonResponse::ok(['card' => $card, 'Status' => 'true']);
+            } catch (\InvalidArgumentException $e) {
+                JsonResponse::error($e->getMessage(), 400);
+            } catch (\Throwable $e) {
+                JsonResponse::error('Could not link card', 500);
+            }
+        }));
+
+        $this->router->post('/v1/cards/delete', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $cardId = (string) ($r->body['card_id'] ?? $r->body['id'] ?? '');
+            if ($cardId === '') {
+                JsonResponse::error('card_id is required', 400);
+                return;
+            }
+            if (!$this->cardLinks->delete($uid, $cardId)) {
+                JsonResponse::error('Card not found', 404);
+                return;
+            }
+            JsonResponse::ok(['deleted' => true, 'Status' => 'true']);
+        }));
+
         $this->router->post('/v1/ach/export', fn (Request $r) => $this->withAuth($r, function (string $uid) {
             JsonResponse::error(self::LEDGER_ONLY_EXTERNAL_MONEY_MSG, 501);
         }));
@@ -426,13 +463,9 @@ final class App
             JsonResponse::ok(['dispatched' => true, 'msg' => (string) ($r->body['msg'] ?? '')]);
         }));
 
-        $this->router->post('/v1/legacy/card/decrypt', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            JsonResponse::ok(['result' => self::LEDGER_ONLY_EXTERNAL_MONEY_MSG]);
-        }));
+        $this->router->post('/v1/legacy/card/decrypt', fn (Request $r) => $this->legacyCardLink($r));
 
-        $this->router->post('/v1/legacy/card/update', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            JsonResponse::ok(['updated' => true]);
-        }));
+        $this->router->post('/v1/legacy/card/update', fn (Request $r) => $this->legacyCardLink($r));
 
         (new LegacyCompat(
             $this->auth,
@@ -465,6 +498,26 @@ final class App
             }
         }
         return '';
+    }
+
+    private function legacyCardLink(Request $request): void
+    {
+        $this->withAuth($request, function (string $uid) use ($request) {
+            $imageB64 = (string) ($request->body['image_b64'] ?? $_GET['image_b64'] ?? '');
+            $encData = (string) ($request->body['enc_data'] ?? $_GET['enc_data'] ?? '');
+            if ($imageB64 === '' || $encData === '') {
+                JsonResponse::error('image_b64 and enc_data are required', 400);
+                return;
+            }
+            try {
+                $card = $this->cardLinks->linkSecure($uid, $imageB64, $encData);
+                JsonResponse::ok(['Status' => 'true', 'card' => $card]);
+            } catch (\InvalidArgumentException $e) {
+                JsonResponse::error($e->getMessage(), 400);
+            } catch (\Throwable $e) {
+                JsonResponse::error('Could not link card', 500);
+            }
+        });
     }
 
     private function withAuth(Request $request, callable $fn): void
