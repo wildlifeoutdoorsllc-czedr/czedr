@@ -172,7 +172,7 @@ static NSString * const kCzedrHkdfCardInfo = @"czedr-card-link-v2";
 {
 #if __has_include("Czedr-Swift.h")
     NSData *ivData = [NSData dataWithBytes:iv length:kCzedrGcmIvLen];
-    return [CzedrAesGcmBridge encryptPlain:plain key:key iv:ivData tag:tagOut error:error];
+    return [CzedrAesGcmBridge encryptPlain:plain key:key iv:ivData tag:tag error:error];
 #else
     if (error) {
         *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:6
