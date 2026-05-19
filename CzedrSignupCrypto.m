@@ -8,7 +8,22 @@
 #import <CommonCrypto/CommonCryptor.h>
 #import <CommonCrypto/CommonKeyDerivation.h>
 #import <CommonCrypto/CommonDigest.h>
+#import <CommonCrypto/CommonHMAC.h>
 #import <Security/Security.h>
+
+/* iPhoneOS 26 SDK module map may omit these; symbols are still in libcommonCrypto. */
+extern int CCKeyDerivationHKDF(
+    CCPBKDFAlgorithm algorithm,
+    const void *password,
+    size_t passwordLen,
+    const void *salt,
+    size_t saltLen,
+    const void *info,
+    size_t infoLen,
+    void *derivedKey,
+    size_t derivedKeyLen);
+
+extern CCCryptorStatus CCCryptorGCMtag(CCCryptorRef cryptor, void *tag, size_t *tagLength);
 
 static const uint8_t kCzedrCryptoVersionV2 = 0x02;
 static const size_t kCzedrGcmIvLen = 12;
@@ -133,10 +148,47 @@ static NSString * const kCzedrHkdfCardInfo = @"czedr-card-link-v2";
         derivedKey,
         kCzedrAesKeyLen
     );
-    if (status != kCCSuccess) {
-        return nil;
+    if (status == kCCSuccess) {
+        return [NSData dataWithBytes:derivedKey length:kCzedrAesKeyLen];
     }
-    return [NSData dataWithBytes:derivedKey length:kCzedrAesKeyLen];
+    return [self hkdfSha256FromInput:imageData salt:salt info:info outputLength:kCzedrAesKeyLen];
+}
+
+/** RFC 5869 HKDF-SHA256 fallback when CCKeyDerivationHKDF is unavailable at compile time. */
++ (NSData *)hkdfSha256FromInput:(NSData *)input salt:(NSData *)salt info:(NSData *)info outputLength:(size_t)length
+{
+    uint8_t prk[CC_SHA256_DIGEST_LENGTH];
+    unsigned char zeroSalt[CC_SHA256_DIGEST_LENGTH] = {0};
+    const void *saltBytes = salt.length ? salt.bytes : zeroSalt;
+    size_t saltLen = salt.length ? salt.length : sizeof(zeroSalt);
+
+    CCHmac(kCCHmacAlgSHA256, saltBytes, saltLen, input.bytes, input.length, prk);
+
+    NSMutableData *okm = [NSMutableData dataWithLength:length];
+    uint8_t t[CC_SHA256_DIGEST_LENGTH];
+    size_t done = 0;
+    uint8_t counter = 1;
+    size_t tLen = 0;
+
+    while (done < length) {
+        CCHmacContext ctx;
+        CCHmacInit(&ctx, kCCHmacAlgSHA256, prk, CC_SHA256_DIGEST_LENGTH);
+        if (tLen > 0) {
+            CCHmacUpdate(&ctx, t, tLen);
+        }
+        if (info.length) {
+            CCHmacUpdate(&ctx, info.bytes, info.length);
+        }
+        CCHmacUpdate(&ctx, &counter, 1);
+        CCHmacFinal(&ctx, t);
+        tLen = CC_SHA256_DIGEST_LENGTH;
+        size_t copy = MIN(tLen, length - done);
+        memcpy((uint8_t *)okm.mutableBytes + done, t, copy);
+        done += copy;
+        counter++;
+    }
+
+    return okm;
 }
 
 + (NSData *)aesGcmEncrypt:(NSData *)plain
