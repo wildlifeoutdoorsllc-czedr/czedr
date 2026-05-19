@@ -74,7 +74,7 @@ $reg = api('POST', '/v1/auth/register', [
 ]);
 $token = $reg['auth_token'];
 
-api('POST', '/userpin', ['user_pin' => '1234'], $token);
+api('POST', '/v1/auth/pin/set', ['user_pin' => '1234'], $token);
 
 echo "Load balance...\n";
 api('POST', '/v1/ledger/load', [

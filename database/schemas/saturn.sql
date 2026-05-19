@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     pin_hash VARCHAR(255) NULL,
+    pin_failed_attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    pin_locked_until TIMESTAMP NULL,
     referred_by_user_id CHAR(36) NULL,
     status ENUM('active', 'suspended') NOT NULL DEFAULT 'active',
     role ENUM('member', 'staff') NOT NULL DEFAULT 'member',

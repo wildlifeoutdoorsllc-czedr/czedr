@@ -10,6 +10,7 @@ use Czedr\Http\Request;
 use Czedr\Http\Router;
 use Czedr\Invoice\InvoiceService;
 use Czedr\Ledger\LedgerService;
+use Czedr\Security\RateLimiter;
 
 /**
  * Maps legacy iOS path names (POST /login, /invoicerecev, …) to the v1 API.
@@ -25,6 +26,7 @@ final class LegacyCompat
         private readonly mixed $withAuth,
         /** @var callable(array): array */
         private readonly mixed $loginResponsePayload,
+        private readonly RateLimiter $rateLimiter,
     ) {
     }
 
@@ -65,16 +67,36 @@ final class LegacyCompat
         });
 
         $router->post('/checkpin', fn (Request $r) => ($this->withAuth)($r, function (string $uid) use ($r) {
-            $this->auth->verifyPin($uid, (string) ($r->body['user_pin'] ?? ''));
+            $this->rateLimiter->check('pin:uid:' . $uid, 5, 900);
+            try {
+                $this->auth->verifyPin($uid, (string) ($r->body['user_pin'] ?? ''));
+            } catch (\InvalidArgumentException $e) {
+                if (str_contains($e->getMessage(), 'PIN')) {
+                    $this->rateLimiter->hit('pin:uid:' . $uid, 5, 900);
+                }
+                throw $e;
+            }
             JsonResponse::ok(['result' => 'userpin matched']);
         }));
 
         $router->post('/updatepin', fn (Request $r) => ($this->withAuth)($r, function (string $uid) use ($r) {
-            $this->auth->setPin($uid, (string) ($r->body['user_pin'] ?? ''));
+            $oldPin = (string) ($r->body['old_pin'] ?? $r->body['user_pin_old'] ?? '');
+            $newPin = (string) ($r->body['new_pin'] ?? $r->body['user_pin'] ?? '');
+            if ($oldPin === '' || $newPin === '') {
+                throw new \InvalidArgumentException(
+                    'old_pin and new_pin are required. Use the Change PIN screen or /v1/auth/pin/update-secure.'
+                );
+            }
+            $this->auth->changePin($uid, $oldPin, $newPin);
             JsonResponse::ok(['updated' => true]);
         }));
 
         $router->post('/userpin', fn (Request $r) => ($this->withAuth)($r, function (string $uid) use ($r) {
+            if ($this->auth->hasPinSet($uid)) {
+                throw new \InvalidArgumentException(
+                    'PIN already set. Use Change PIN with your current PIN.'
+                );
+            }
             $this->auth->setPin($uid, (string) ($r->body['user_pin'] ?? ''));
             JsonResponse::ok(['set' => true]);
         }));

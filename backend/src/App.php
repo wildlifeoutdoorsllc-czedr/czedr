@@ -391,7 +391,27 @@ final class App
         }));
 
         $this->router->get('__profile_media', function (Request $r) {
+            $token = $r->bearerToken();
+            if (!$token && isset($_GET['auth_code']) && is_string($_GET['auth_code'])) {
+                $token = $_GET['auth_code'];
+            }
+            if (!$token && !empty($r->body['auth_code'])) {
+                $token = (string) $r->body['auth_code'];
+            }
+            if (!$token) {
+                JsonResponse::error('Unauthorized', 401);
+                return;
+            }
+            $userId = $this->auth->resolveUserId($token);
+            if (!$userId) {
+                JsonResponse::error('Unauthorized', 401);
+                return;
+            }
             $file = basename((string) substr($r->path, strlen('/v1/media/profile/')));
+            if (!$this->profileMedia->userMayRead($userId, $file)) {
+                JsonResponse::error('Not found', 404);
+                return;
+            }
             $binary = $this->profileMedia->read($file);
             if ($binary === null) {
                 JsonResponse::error('Not found', 404);
@@ -421,6 +441,7 @@ final class App
             $this->invoices,
             fn (Request $r, callable $fn) => $this->withAuth($r, $fn),
             fn (array $out) => $this->loginResponsePayload($out),
+            $this->rateLimiter,
         ))->register($this->router);
 
         $this->router->post('/v1/legacy/card/image', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {

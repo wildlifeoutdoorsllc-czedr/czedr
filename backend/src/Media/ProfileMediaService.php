@@ -37,4 +37,16 @@ final class ProfileMediaService
         $data = file_get_contents($path);
         return $data === false ? null : $data;
     }
+
+    /** Profile avatar or card image owned by the authenticated user only. */
+    public function userMayRead(string $userId, string $filename): bool
+    {
+        $safe = basename($filename);
+        $allowed = [
+            $userId . '.jpg',
+            'card-' . $userId . '.jpg',
+        ];
+
+        return in_array($safe, $allowed, true);
+    }
 }

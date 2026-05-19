@@ -65,8 +65,8 @@ echo "  Alice balance: " . ($bal['balance_cents'] / 100) . " USD\n";
 
 $pin = '1234';
 echo "Set PIN on Alice and Bob (demo)...\n";
-api('POST', '/userpin', ['user_pin' => $pin], $tokenA);
-api('POST', '/userpin', ['user_pin' => $pin], $tokenB);
+api('POST', '/v1/auth/pin/set', ['user_pin' => $pin], $tokenA);
+api('POST', '/v1/auth/pin/set', ['user_pin' => $pin], $tokenB);
 
 echo "Alice pays Bob \$25.50...\n";
 $txn = api('POST', '/v1/transfers', [

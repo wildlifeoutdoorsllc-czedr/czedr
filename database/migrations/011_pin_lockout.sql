@@ -1,0 +1,5 @@
+USE saturn;
+
+ALTER TABLE users
+    ADD COLUMN pin_failed_attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    ADD COLUMN pin_locked_until TIMESTAMP NULL DEFAULT NULL;

@@ -91,10 +91,14 @@ Implemented in `backend/src/Security/RateLimiter.php`, migration `010_rate_limit
 
 **User impact:** After repeated wrong passwords, users see: *“Too many attempts. Please try again later.”*
 
-### Optional next steps
+### Hardening (build 76) ✅
 
 | Item | Status |
 |------|--------|
+| Legacy `/updatepin` without old PIN | **Blocked** — requires `old_pin` + `new_pin` |
+| Legacy `/userpin` overwrite | **Blocked** if PIN already set |
+| Profile photos public | **Auth required** (Bearer or `auth_code` query on own files only) |
+| PIN brute force | **Account lockout** — 5 failures → 30 min lock |
 | Email user after lockout | Not yet |
 | CAPTCHA on register | Only if bots appear |
 

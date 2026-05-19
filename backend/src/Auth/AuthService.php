@@ -15,6 +15,8 @@ final class AuthService
 {
     private const TOKEN_BYTES = 32;
     private const SESSION_DAYS = 30;
+    private const PIN_MAX_FAILURES = 5;
+    private const PIN_LOCKOUT_MINUTES = 30;
 
     public function __construct(
         private readonly AuditService $audit,
@@ -196,14 +198,61 @@ final class AuthService
 
     public function verifyPin(string $userId, string $pin): void
     {
+        $this->assertPinNotLocked($userId);
         $pin = $this->normalizePin($pin);
         $pdo = ConnectionFactory::saturn();
         $stmt = $pdo->prepare('SELECT pin_hash FROM users WHERE id = :id LIMIT 1');
         $stmt->execute(['id' => $userId]);
         $hash = $stmt->fetchColumn();
         if (!is_string($hash) || $hash === '' || !password_verify($pin, $hash)) {
+            $this->recordPinFailure($userId);
             throw new \InvalidArgumentException('The entered PIN number is not correct.');
         }
+        $this->clearPinFailures($userId);
+    }
+
+    public function assertPinNotLocked(string $userId): void
+    {
+        $pdo = ConnectionFactory::saturn();
+        $stmt = $pdo->prepare(
+            'SELECT 1 FROM users WHERE id = :id AND pin_locked_until IS NOT NULL AND pin_locked_until > NOW() LIMIT 1'
+        );
+        $stmt->execute(['id' => $userId]);
+        if ($stmt->fetchColumn()) {
+            throw new \InvalidArgumentException(
+                'PIN is temporarily locked after too many failed attempts. Try again later.'
+            );
+        }
+    }
+
+    private function recordPinFailure(string $userId): void
+    {
+        $pdo = ConnectionFactory::saturn();
+        $pdo->prepare(
+            'UPDATE users SET pin_failed_attempts = pin_failed_attempts + 1 WHERE id = :id'
+        )->execute(['id' => $userId]);
+        $stmt = $pdo->prepare(
+            'SELECT pin_failed_attempts FROM users WHERE id = :id LIMIT 1'
+        );
+        $stmt->execute(['id' => $userId]);
+        $failures = (int) $stmt->fetchColumn();
+        if ($failures >= self::PIN_MAX_FAILURES) {
+            $pdo->prepare(
+                'UPDATE users SET pin_locked_until = DATE_ADD(NOW(), INTERVAL :mins MINUTE) WHERE id = :id'
+            )->execute(['id' => $userId, 'mins' => self::PIN_LOCKOUT_MINUTES]);
+            $this->audit->log($userId, 'auth.pin_locked', 'user', $userId, null, null, [
+                'failures' => $failures,
+                'minutes' => self::PIN_LOCKOUT_MINUTES,
+            ]);
+        }
+    }
+
+    private function clearPinFailures(string $userId): void
+    {
+        $pdo = ConnectionFactory::saturn();
+        $pdo->prepare(
+            'UPDATE users SET pin_failed_attempts = 0, pin_locked_until = NULL WHERE id = :id'
+        )->execute(['id' => $userId]);
     }
 
     /** Payments and invoices require a configured PIN (matches product security model). */

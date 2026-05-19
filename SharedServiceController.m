@@ -793,7 +793,13 @@ static void CzedrDispatchMain(void (^block)(void))
     }
     NSString *encoded = [storedName stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
     NSString *base = [self apiBaseURLString];
-    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/v1/media/profile/%@", base, encoded ?: storedName]];
+    NSString *url = [NSString stringWithFormat:@"%@/v1/media/profile/%@", base, encoded ?: storedName];
+    NSString *token = [self authToken];
+    if (token.length > 0) {
+        NSString *escaped = [token stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        url = [NSString stringWithFormat:@"%@?auth_code=%@", url, escaped ?: @""];
+    }
+    return [NSURL URLWithString:url];
 }
 
 + (void)logoutWithSuccess:(void (^)(void))success
