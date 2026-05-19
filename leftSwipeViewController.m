@@ -47,16 +47,38 @@
     }
 }
 
+- (void)czedr_styleHomeTile:(UIView *)tile width:(CGFloat)tileW height:(CGFloat)tileH
+{
+    if (!tile) {
+        return;
+    }
+    [CzedrTheme styleGridTile:tile];
+    tile.autoresizingMask = UIViewAutoresizingNone;
+    for (UIView *sub in tile.subviews) {
+        sub.autoresizingMask = UIViewAutoresizingNone;
+        if ([sub isKindOfClass:[UIImageView class]]) {
+            CGFloat iconW = MIN(96.0, tileW - 36.0);
+            CGFloat iconH = MIN(78.0, tileH - 44.0);
+            sub.frame = CGRectMake((tileW - iconW) / 2.0, 10.0, iconW, iconH);
+            ((UIImageView *)sub).contentMode = UIViewContentModeScaleAspectFit;
+        } else if ([sub isKindOfClass:[UILabel class]]) {
+            sub.frame = CGRectMake(4.0, tileH - 30.0, tileW - 8.0, 26.0);
+        } else if ([sub isKindOfClass:[UIButton class]]) {
+            sub.frame = CGRectMake(0, 0, tileW, tileH);
+        }
+    }
+}
+
 - (void)czedr_bringHomeContentToFront
 {
+    if (self.legacyHeaderView) {
+        self.legacyHeaderView.hidden = YES;
+    }
     if (self.homeLogoImageView) {
-        [self.view sendSubviewToBack:self.homeLogoImageView];
+        self.homeLogoImageView.hidden = YES;
     }
     if (self.homeTilesContainer) {
-        [self.view sendSubviewToBack:self.homeTilesContainer];
-    }
-    if (self.legacyHeaderView) {
-        [self.view sendSubviewToBack:self.legacyHeaderView];
+        [self.view bringSubviewToFront:self.homeTilesContainer];
     }
     if (self.homeBalanceCaptionLabel) {
         [self.view bringSubviewToFront:self.homeBalanceCaptionLabel];
@@ -128,15 +150,13 @@
         self.homeTilesContainer.autoresizingMask = UIViewAutoresizingNone;
     }
     if (self.homeLogoImageView) {
-        UIImage *logo = [UIImage imageNamed:@"Czedr@3x.png"];
-        if (!logo) {
-            logo = [UIImage imageNamed:@"Czedr@3x"];
+        self.homeLogoImageView.hidden = YES;
+    }
+    if (self.homeTilesContainer) {
+        self.homeTilesContainer.backgroundColor = [UIColor clearColor];
+        for (UIView *tile in self.homeTilesContainer.subviews) {
+            [self czedr_styleHomeTile:tile width:120 height:118];
         }
-        if (logo) {
-            self.homeLogoImageView.image = logo;
-        }
-        self.homeLogoImageView.contentMode = UIViewContentModeScaleAspectFit;
-        self.homeLogoImageView.backgroundColor = [UIColor clearColor];
     }
     if (self.homeBalanceCaptionLabel) {
         self.homeBalanceCaptionLabel.text = NSLocalizedString(@"Available balance", nil);
@@ -191,7 +211,7 @@
     if (czedrIdLabel) {
         czedrIdLabel.textColor = [CzedrTheme mutedText];
     }
-    [CzedrTheme applyDeckLookToView:self.view];
+    self.view.backgroundColor = [UIColor whiteColor];
     NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
     [self syncReferralEarningsUIWithAuthToken:tok];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
@@ -231,17 +251,23 @@
     return 0;
 }
 
-- (void)czedr_layoutHomeTilesAtY:(CGFloat)y width:(CGFloat)width
+- (void)czedr_layoutHomeTilesBetweenTop:(CGFloat)top bottom:(CGFloat)bottom width:(CGFloat)width
 {
-    if (!self.homeTilesContainer) {
+    if (!self.homeTilesContainer || bottom <= top + 80.0) {
         return;
     }
-    const CGFloat gap = 8.0;
-    const CGFloat tileH = 124.0;
+    const CGFloat gap = 10.0;
     CGFloat tileW = floor((width - gap * 3.0) / 2.0);
-    CGFloat tilesH = gap + tileH + gap + tileH + gap;
-    self.homeTilesContainer.frame = CGRectMake(0, y, width, tilesH);
+    CGFloat maxTileH = floor((bottom - top - gap) / 2.0);
+    CGFloat tileH = MIN(tileW, maxTileH, 118.0);
+    tileH = MAX(96.0, tileH);
+
+    CGFloat gridH = gap + tileH + gap + tileH + gap;
+    CGFloat gridY = top + MAX(0.0, (bottom - top - gridH) / 2.0);
+
+    self.homeTilesContainer.frame = CGRectMake(0, gridY, width, gridH);
     self.homeTilesContainer.autoresizingMask = UIViewAutoresizingNone;
+    self.homeTilesContainer.backgroundColor = [UIColor clearColor];
 
     NSArray<UIView *> *tiles = self.homeTilesContainer.subviews;
     if (tiles.count < 4) {
@@ -255,9 +281,10 @@
     tr.frame = CGRectMake(gap + tileW + gap, gap, tileW, tileH);
     bl.frame = CGRectMake(gap, gap + tileH + gap, tileW, tileH);
     br.frame = CGRectMake(gap + tileW + gap, gap + tileH + gap, tileW, tileH);
-    for (UIView *tile in tiles) {
-        tile.autoresizingMask = UIViewAutoresizingNone;
-    }
+    [self czedr_styleHomeTile:tl width:tileW height:tileH];
+    [self czedr_styleHomeTile:tr width:tileW height:tileH];
+    [self czedr_styleHomeTile:bl width:tileW height:tileH];
+    [self czedr_styleHomeTile:br width:tileW height:tileH];
 }
 
 - (void)czedr_layoutHomeHeader
@@ -266,51 +293,52 @@
         return;
     }
     CGFloat width = self.view.bounds.size.width;
-    CGFloat y = [self czedr_topChromeBottomY] + 4.0;
+    CGFloat viewH = self.view.bounds.size.height;
+    CGFloat y = [self czedr_topChromeBottomY] + 12.0;
 
     if (self.homeLogoImageView) {
-        UIImage *logo = self.homeLogoImageView.image;
-        CGFloat maxW = width - 40.0;
-        CGFloat aspect = (logo.size.width > 1.0) ? (logo.size.width / logo.size.height) : 1.1;
-        CGFloat logoH = MIN(120.0, maxW / MAX(aspect, 0.5));
-        CGFloat logoW = logoH * aspect;
-        self.homeLogoImageView.frame = CGRectMake((width - logoW) / 2.0, y, logoW, logoH);
-        y = CGRectGetMaxY(self.homeLogoImageView.frame) + 2.0;
+        self.homeLogoImageView.hidden = YES;
     }
 
     if (self.homeBalanceCaptionLabel) {
         self.homeBalanceCaptionLabel.frame = CGRectMake(16.0, y, width - 32.0, 20.0);
-        y = CGRectGetMaxY(self.homeBalanceCaptionLabel.frame) + 2.0;
+        y = CGRectGetMaxY(self.homeBalanceCaptionLabel.frame) + 4.0;
     }
 
     if (self.homeBalanceLabel) {
-        self.homeBalanceLabel.frame = CGRectMake(16.0, y, width - 32.0, 32.0);
-        y = CGRectGetMaxY(self.homeBalanceLabel.frame) + 2.0;
+        self.homeBalanceLabel.frame = CGRectMake(16.0, y, width - 32.0, 34.0);
+        y = CGRectGetMaxY(self.homeBalanceLabel.frame) + 6.0;
     }
 
     if (czedrIdLabel) {
-        czedrIdLabel.frame = CGRectMake(16.0, y, width - 32.0, 26.0);
+        czedrIdLabel.frame = CGRectMake(16.0, y, width - 32.0, 24.0);
         czedrIdLabel.textAlignment = NSTextAlignmentCenter;
-        y = CGRectGetMaxY(czedrIdLabel.frame) + 8.0;
+        y = CGRectGetMaxY(czedrIdLabel.frame) + 12.0;
     }
 
-    [self czedr_layoutHomeTilesAtY:y width:width];
-
-    if (self.referralEarningsBtn) {
-        CGFloat btnH = 48.0;
-        CGFloat btnY = self.view.bounds.size.height - btnH;
+    CGFloat btnH = 48.0;
+    CGFloat btnY = viewH - btnH;
+    if (@available(iOS 11.0, *)) {
+        btnY -= self.view.safeAreaInsets.bottom;
+    }
+    if (self.referralEarningsBtn && !self.referralEarningsBtn.hidden) {
+        self.referralEarningsBtn.frame = CGRectMake(0, btnY, width, btnH);
+        [CzedrTheme styleRedPrimaryButton:self.referralEarningsBtn];
+    } else {
+        btnY = viewH;
         if (@available(iOS 11.0, *)) {
             btnY -= self.view.safeAreaInsets.bottom;
         }
-        self.referralEarningsBtn.frame = CGRectMake(0, btnY, width, btnH);
-        [CzedrTheme styleRedPrimaryButton:self.referralEarningsBtn];
     }
+
+    [self czedr_layoutHomeTilesBetweenTop:y bottom:btnY - 8.0 width:width];
     [self czedr_bringHomeContentToFront];
 }
 
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     [self czedr_layoutHomeHeader];
 }
 
