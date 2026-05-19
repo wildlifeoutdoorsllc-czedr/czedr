@@ -259,7 +259,7 @@
     const CGFloat gap = 10.0;
     CGFloat tileW = floor((width - gap * 3.0) / 2.0);
     CGFloat maxTileH = floor((bottom - top - gap) / 2.0);
-    CGFloat tileH = MIN(tileW, maxTileH, 118.0);
+    CGFloat tileH = MIN(MIN(tileW, maxTileH), 118.0);
     tileH = MAX(96.0, tileH);
 
     CGFloat gridH = gap + tileH + gap + tileH + gap;
