@@ -174,6 +174,9 @@
         self.homeBalanceLabel.adjustsFontSizeToFitWidth = YES;
         self.homeBalanceLabel.minimumScaleFactor = 0.7;
         self.homeBalanceLabel.backgroundColor = [UIColor clearColor];
+        self.homeBalanceLabel.userInteractionEnabled = YES;
+        UITapGestureRecognizer *balanceTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(czedr_balanceTapped:)];
+        [self.homeBalanceLabel addGestureRecognizer:balanceTap];
     }
     
     if (autcode.length==0)
@@ -785,4 +788,49 @@
         [self presentViewController:alert animated:YES completion:nil];
     }];
 }
+
+- (void)czedr_balanceTapped:(UITapGestureRecognizer *)gesture
+{
+    (void)gesture;
+    if (![SharedServiceController usesV1API]) {
+        return;
+    }
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    [SharedServiceController fetchFundingStatusSuccess:^(NSDictionary *data) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        BOOL enabled = [[data objectForKey:@"enabled"] boolValue];
+        BOOL ready = [[data objectForKey:@"moov_ready"] boolValue];
+        NSArray *banks = [data objectForKey:@"banks"];
+        NSInteger bankCount = [banks isKindOfClass:[NSArray class]] ? banks.count : 0;
+        NSString *title = NSLocalizedString(@"Add money", nil);
+        NSString *msg;
+        if (!enabled || !ready) {
+            msg = NSLocalizedString(@"Bank transfers (ACH) are not available yet on this server. Use transfers from another Czedr user, or ask support to enable Moov funding.", nil);
+        } else if (bankCount == 0) {
+            msg = NSLocalizedString(@"Link your bank first (coming soon in this build). See docs/MOOV-ACH-FUNDING.md on the server.", nil);
+        } else {
+            NSInteger minC = [[data objectForKey:@"min_deposit_cents"] integerValue];
+            NSInteger maxC = [[data objectForKey:@"max_deposit_cents"] integerValue];
+            msg = [NSString stringWithFormat:NSLocalizedString(@"ACH deposit UI is in progress. You have %ld linked bank(s). Limits: $%.2f – $%.2f per deposit.", nil),
+                   (long)bankCount, minC / 100.0, maxC / 100.0];
+        }
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:msg preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+    } failure:^(NSString *message) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        if ([message containsString:@"503"] || [message rangeOfString:@"not configured" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+            NSString *title = NSLocalizedString(@"Add money", nil);
+            NSString *msg = NSLocalizedString(@"ACH funding is not configured on this server yet.", nil);
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:msg preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
+            return;
+        }
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Error", nil) message:message preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+    }];
+}
+
 @end

@@ -127,6 +127,19 @@ typedef void (^CzedrAPIFailureBlock)(NSString *message);
                     success:(CzedrAPISuccessBlock)success
                     failure:(CzedrAPIFailureBlock)failure;
 
+/** Moov ACH funding (503 until MOOV_ENABLED=1 on server). */
++ (void)fetchFundingStatusSuccess:(CzedrAPISuccessBlock)success
+                          failure:(CzedrAPIFailureBlock)failure;
+
++ (void)startMoovBankLinkSuccess:(CzedrAPISuccessBlock)success
+                         failure:(CzedrAPIFailureBlock)failure;
+
++ (void)submitMoovDepositAmountCents:(NSInteger)amountCents
+                      bankAccountId:(NSString *)bankAccountId
+                      idempotencyKey:(NSString *)idempotencyKey
+                             success:(CzedrAPISuccessBlock)success
+                             failure:(CzedrAPIFailureBlock)failure;
+
 /** Returns legacy-shaped rows: name, amount, email, sender_user_id, receiver_user_id, cardnumber */
 + (void)fetchPaymentHistorySuccess:(void (^)(NSArray *rows, NSInteger total))success
                           failure:(CzedrAPIFailureBlock)failure;

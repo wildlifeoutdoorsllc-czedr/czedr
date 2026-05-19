@@ -26,3 +26,7 @@ See `docs/TESTFLIGHT_SETUP.md` and GitHub Actions workflow **iOS TestFlight**.
 ## Test accounts
 
 `alice@test.czedr` / `bob@test.czedr` — password `TestPass1234!` (reset: `php scripts/reset-test-passwords.php`).
+
+## Moov ACH funding (planned)
+
+Add money from a linked bank account via [Moov](https://moov.io) ACH — design, API routes, and DB schema are in **`docs/MOOV-ACH-FUNDING.md`**. Off by default until `MOOV_ENABLED=1` and Moov credentials are set.

@@ -315,6 +315,12 @@ final class AuthService
     }
 
     /** @return array<string, mixed> */
+    public function userProfile(string $userId): array
+    {
+        return $this->findUserById($userId);
+    }
+
+    /** @return array<string, mixed> */
     private function findUserById(string $userId): array
     {
         $pdo = ConnectionFactory::saturn();

@@ -15,6 +15,10 @@ use Czedr\Legacy\LegacyCompat;
 use Czedr\Ledger\LedgerService;
 use Czedr\Cards\CardLinkService;
 use Czedr\Media\ProfileMediaService;
+use Czedr\Moov\MoovAchService;
+use Czedr\Moov\MoovConfig;
+use Czedr\Moov\MoovHttpClient;
+use Czedr\Moov\MoovWebhookVerifier;
 use Czedr\Security\HttpsGate;
 use Czedr\Security\PayloadCryptor;
 use Czedr\Security\RateLimitExceededException;
@@ -32,6 +36,7 @@ final class App
     private InvoiceService $invoices;
     private ProfileMediaService $profileMedia;
     private CardLinkService $cardLinks;
+    private MoovAchService $moovAch;
     private SignupChallengeService $signupChallenges;
     private PasswordResetService $passwordReset;
     private RateLimiter $rateLimiter;
@@ -44,6 +49,7 @@ final class App
         $this->invoices = new InvoiceService($this->audit);
         $this->profileMedia = new ProfileMediaService();
         $this->cardLinks = new CardLinkService($this->profileMedia);
+        $this->moovAch = new MoovAchService(new MoovHttpClient(), $this->ledger);
         $this->signupChallenges = new SignupChallengeService();
         $this->passwordReset = new PasswordResetService($this->audit);
         $this->auth = new AuthService($this->audit, $this->ledger);
@@ -289,6 +295,8 @@ final class App
             JsonResponse::ok($this->ledger->referralEarningsForUser($uid, $lim));
         }));
 
+        $this->registerFundingRoutes();
+
         $this->router->post('/v1/ledger/load', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
             if (!Env::allowSelfServiceLedgerLoad()) {
                 JsonResponse::error('Self-service account load is disabled', 403);
@@ -498,6 +506,96 @@ final class App
             }
         }
         return '';
+    }
+
+    private function registerFundingRoutes(): void
+    {
+        $this->router->get('/v1/funding/status', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            $this->fundingJson(fn () => $this->moovAch->statusForUser($uid));
+        }));
+
+        $this->router->post('/v1/funding/moov/onboarding', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            $this->fundingJson(function () use ($uid) {
+                $user = $this->auth->userProfile($uid);
+
+                return $this->moovAch->ensureMoovAccount(
+                    $uid,
+                    (string) ($user['email'] ?? ''),
+                    (string) ($user['czedr_id'] ?? '')
+                );
+            });
+        }));
+
+        $this->router->post('/v1/funding/moov/bank-link', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            $this->fundingJson(function () use ($uid) {
+                $user = $this->auth->userProfile($uid);
+
+                return $this->moovAch->startBankLink(
+                    $uid,
+                    (string) ($user['email'] ?? ''),
+                    (string) ($user['czedr_id'] ?? '')
+                );
+            });
+        }));
+
+        $this->router->get('/v1/funding/moov/banks', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            $this->fundingJson(fn () => ['banks' => $this->moovAch->listBanks($uid)]);
+        }));
+
+        $this->router->post('/v1/funding/moov/deposit', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $this->fundingJson(function () use ($uid, $r) {
+                return $this->moovAch->initiateDeposit(
+                    $uid,
+                    (int) ($r->body['amount_cents'] ?? 0),
+                    (string) ($r->body['idempotency_key'] ?? ''),
+                    isset($r->body['bank_account_id']) ? (string) $r->body['bank_account_id'] : null,
+                    $r->ip,
+                    $r->userAgent
+                );
+            });
+        }));
+
+        $this->router->post('/v1/webhooks/moov', function (Request $r) {
+            $raw = $r->rawBody ?? '';
+            if ($raw === '') {
+                JsonResponse::error('Empty body', 400);
+                return;
+            }
+            $headers = [];
+            foreach ($_SERVER as $key => $value) {
+                if (str_starts_with($key, 'HTTP_')) {
+                    $name = str_replace('_', '-', substr($key, 5));
+                    $headers[$name] = is_string($value) ? $value : '';
+                }
+            }
+            if (!MoovWebhookVerifier::verify($raw, $headers)) {
+                JsonResponse::error('Invalid signature', 401);
+                return;
+            }
+            /** @var array<string, mixed> $payload */
+            $payload = json_decode($raw, true) ?: [];
+            $event = (string) ($payload['type'] ?? $payload['event'] ?? '');
+            if (str_contains(strtolower($event), 'transfer')) {
+                $this->moovAch->handleTransferWebhook($payload);
+            }
+            JsonResponse::ok(['received' => true]);
+        });
+    }
+
+    /** @param callable(): array<string, mixed> $fn */
+    private function fundingJson(callable $fn): void
+    {
+        if (!MoovConfig::isEnabled()) {
+            JsonResponse::error('ACH funding is not configured', 503);
+            return;
+        }
+        try {
+            JsonResponse::ok($fn());
+        } catch (\InvalidArgumentException $e) {
+            JsonResponse::error($e->getMessage(), 400);
+        } catch (\RuntimeException $e) {
+            JsonResponse::error($e->getMessage(), 503);
+        }
     }
 
     private function legacyCardLink(Request $request): void

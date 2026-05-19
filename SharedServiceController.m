@@ -784,6 +784,37 @@ static void CzedrDispatchMain(void (^block)(void))
               authenticated:YES success:success failure:failure];
 }
 
++ (void)fetchFundingStatusSuccess:(CzedrAPISuccessBlock)success
+                          failure:(CzedrAPIFailureBlock)failure
+{
+    [self requestJSONMethod:@"GET" path:@"/v1/funding/status" parameters:nil
+              authenticated:YES success:success failure:failure];
+}
+
++ (void)startMoovBankLinkSuccess:(CzedrAPISuccessBlock)success
+                         failure:(CzedrAPIFailureBlock)failure
+{
+    [self requestJSONMethod:@"POST" path:@"/v1/funding/moov/bank-link" parameters:@{}
+              authenticated:YES success:success failure:failure];
+}
+
++ (void)submitMoovDepositAmountCents:(NSInteger)amountCents
+                      bankAccountId:(NSString *)bankAccountId
+                      idempotencyKey:(NSString *)idempotencyKey
+                             success:(CzedrAPISuccessBlock)success
+                             failure:(CzedrAPIFailureBlock)failure
+{
+    NSMutableDictionary *params = [@{
+        @"amount_cents": @(amountCents),
+        @"idempotency_key": idempotencyKey ?: [[NSUUID UUID] UUIDString]
+    } mutableCopy];
+    if (bankAccountId.length) {
+        params[@"bank_account_id"] = bankAccountId;
+    }
+    [self requestJSONMethod:@"POST" path:@"/v1/funding/moov/deposit"
+                 parameters:params authenticated:YES success:success failure:failure];
+}
+
 + (void)createInvoiceToCzedrId:(NSString *)czedrId
                         amount:(NSString *)amountDollars
                    description:(NSString *)description
