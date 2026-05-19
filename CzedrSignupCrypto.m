@@ -25,6 +25,10 @@ extern int CCKeyDerivationHKDF(
 
 extern CCCryptorStatus CCCryptorGCMtag(CCCryptorRef cryptor, void *tag, size_t *tagLength);
 
+#ifndef kCCModeGCM
+enum { kCCModeGCM = 11 };
+#endif
+
 static const uint8_t kCzedrCryptoVersionV2 = 0x02;
 static const size_t kCzedrGcmIvLen = 12;
 static const size_t kCzedrGcmTagLen = 16;
