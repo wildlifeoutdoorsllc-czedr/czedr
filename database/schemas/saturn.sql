@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS audit_events (
 CREATE TABLE IF NOT EXISTS signup_challenges (
     id CHAR(36) PRIMARY KEY,
     image_url VARCHAR(512) NOT NULL,
+    image_b64 MEDIUMTEXT NULL,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_signup_challenge_expires (expires_at)

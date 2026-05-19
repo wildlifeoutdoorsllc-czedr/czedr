@@ -161,15 +161,15 @@ static void CzedrDispatchMain(void (^block)(void))
               authenticated:NO
                     success:^(NSDictionary *challenge) {
                         NSString *challengeId = [challenge objectForKey:@"challenge_id"];
+                        NSString *imageB64 = [challenge objectForKey:@"image_b64"];
                         NSString *imageUrl = [challenge objectForKey:@"image_url"];
-                        if (challengeId.length == 0 || imageUrl.length == 0) {
+                        if (challengeId.length == 0) {
                             failure(@"Could not start secure request");
                             return;
                         }
-                        [CzedrSignupCrypto fetchImageDataFromURL:imageUrl
-                                                      completion:^(NSData *imageData, NSError *err) {
-                            if (err || !imageData.length) {
-                                failure(err.localizedDescription ?: @"Could not load encryption image");
+                        void (^encryptAndPost)(NSData *) = ^(NSData *imageData) {
+                            if (!imageData.length) {
+                                failure(@"Could not load encryption image");
                                 return;
                             }
                             NSError *cryptErr = nil;
@@ -190,6 +190,23 @@ static void CzedrDispatchMain(void (^block)(void))
                                       authenticated:authenticated
                                             success:success
                                             failure:failure];
+                        };
+                        if ([imageB64 isKindOfClass:[NSString class]] && imageB64.length > 0) {
+                            NSData *imageData = [[NSData alloc] initWithBase64EncodedString:imageB64 options:0];
+                            encryptAndPost(imageData);
+                            return;
+                        }
+                        if (imageUrl.length == 0) {
+                            failure(@"Could not start secure request");
+                            return;
+                        }
+                        [CzedrSignupCrypto fetchImageDataFromURL:imageUrl
+                                                      completion:^(NSData *imageData, NSError *err) {
+                            if (err || !imageData.length) {
+                                failure(err.localizedDescription ?: @"Could not load encryption image");
+                                return;
+                            }
+                            encryptAndPost(imageData);
                         }];
                     }
                     failure:failure];
@@ -546,26 +563,45 @@ static void CzedrDispatchMain(void (^block)(void))
         @"password": password ?: @"",
         @"mobile_no": mobile ?: @""
     };
+    void (^finishRegister)(NSDictionary *) = ^(NSDictionary *data) {
+        NSDictionary *legacy = [self legacyUserPayloadFromV1:data];
+        if (![legacy objectForKey:@"auth_code"] || [[legacy objectForKey:@"auth_code"] length] == 0) {
+            NSString *token = [data objectForKey:@"auth_token"];
+            if (token.length > 0) {
+                NSMutableDictionary *fixed = [legacy mutableCopy];
+                [fixed setObject:token forKey:@"auth_code"];
+                legacy = fixed;
+            }
+        }
+        NSMutableDictionary *withPin = [legacy mutableCopy];
+        [withPin setObject:@"0" forKey:@"user_pin"];
+        legacy = withPin;
+        [self saveLoginPayload:legacy];
+        success(legacy);
+    };
     [self sendSecurePOSTToPath:@"/v1/auth/register-secure"
                        payload:payload
                    authenticated:NO
-                         success:^(NSDictionary *data) {
-                             NSDictionary *legacy = [self legacyUserPayloadFromV1:data];
-                             if (![legacy objectForKey:@"auth_code"] || [[legacy objectForKey:@"auth_code"] length] == 0) {
-                                 NSString *token = [data objectForKey:@"auth_token"];
-                                 if (token.length > 0) {
-                                     NSMutableDictionary *fixed = [legacy mutableCopy];
-                                     [fixed setObject:token forKey:@"auth_code"];
-                                     legacy = fixed;
-                                 }
-                             }
-                             NSMutableDictionary *withPin = [legacy mutableCopy];
-                             [withPin setObject:@"0" forKey:@"user_pin"];
-                             legacy = withPin;
-                             [self saveLoginPayload:legacy];
-                             success(legacy);
-                         }
-                         failure:failure];
+                         success:finishRegister
+                         failure:^(NSString *secureMessage) {
+        BOOL cryptoFailure = secureMessage.length > 0 &&
+            ([secureMessage rangeOfString:@"Decrypt" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+             [secureMessage rangeOfString:@"encrypt" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+             [secureMessage rangeOfString:@"challenge" options:NSCaseInsensitiveSearch].location != NSNotFound);
+        if (!cryptoFailure) {
+            failure(secureMessage);
+            return;
+        }
+        [self requestJSONMethod:@"POST"
+                           path:@"/v1/auth/register"
+                     parameters:@{
+                         @"email": email ?: @"",
+                         @"password": password ?: @""
+                     }
+                  authenticated:NO
+                        success:finishRegister
+                        failure:failure];
+    }];
 }
 
 + (void)fetchLedgerBalanceSuccess:(CzedrAPISuccessBlock)success

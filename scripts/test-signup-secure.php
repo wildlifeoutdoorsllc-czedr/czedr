@@ -33,12 +33,19 @@ function api(string $method, string $path, ?array $body = null): array
 echo "Signup challenge...\n";
 $challenge = api('GET', '/v1/auth/signup-challenge');
 $challengeId = $challenge['challenge_id'];
-$imageUrl = $challenge['image_url'];
+$imageUrl = $challenge['image_url'] ?? '';
 echo "  challenge_id: {$challengeId}\n";
 echo "  image_url: {$imageUrl}\n";
 
 $svc = new SignupChallengeService();
-$imageBytes = $svc->fetchImageBytes($imageUrl);
+if (!empty($challenge['image_b64'])) {
+    $imageBytes = base64_decode((string) $challenge['image_b64'], true);
+    if ($imageBytes === false || strlen($imageBytes) < 256) {
+        throw new RuntimeException('Invalid image_b64 in challenge');
+    }
+} else {
+    $imageBytes = $svc->fetchImageBytes($imageUrl);
+}
 $payload = json_encode([
     'email' => 'secure_' . bin2hex(random_bytes(3)) . '@czedr.local',
     'password' => 'SecurePass123!',

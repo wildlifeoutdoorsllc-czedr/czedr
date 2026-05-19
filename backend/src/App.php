@@ -127,8 +127,7 @@ final class App
             if ($challengeId === '' || $encData === '') {
                 throw new \InvalidArgumentException('challenge_id and enc_data are required');
             }
-            $imageUrl = $this->signupChallenges->resolveImageUrl($challengeId);
-            $imageBytes = $this->signupChallenges->fetchImageBytes($imageUrl);
+            $imageBytes = $this->signupChallenges->resolveImageBytes($challengeId);
             $json = ImageDerivedCryptor::decryptBase64Payload($encData, $imageBytes, $challengeId);
             $payload = json_decode($json, true);
             if (!is_array($payload)) {
@@ -450,8 +449,7 @@ final class App
         if ($challengeId === '' || $encData === '') {
             throw new \InvalidArgumentException('challenge_id and enc_data are required');
         }
-        $imageUrl = $this->signupChallenges->resolveImageUrl($challengeId);
-        $imageBytes = $this->signupChallenges->fetchImageBytes($imageUrl);
+        $imageBytes = $this->signupChallenges->resolveImageBytes($challengeId);
         $json = ImageDerivedCryptor::decryptBase64Payload($encData, $imageBytes, $challengeId);
         $payload = json_decode($json, true);
         if (!is_array($payload)) {
