@@ -14,7 +14,7 @@ on:
       build_number:
         description: "iOS build number (CFBundleVersion), e.g. 50"
         required: false
-        default: "73"
+        default: "78"
   push:
     branches: [main, master, czedrmaster]
     paths:
@@ -25,6 +25,7 @@ on:
       - "fastlane/**"
       - "Czedr*.h"
       - "Czedr*.m"
+      - "Czedr*.swift"
       - "SharedServiceController.*"
       - "leftSwipeViewController.*"
       - "ios/**"

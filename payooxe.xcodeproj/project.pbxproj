@@ -29,6 +29,7 @@
 		CZED0E241F60000500CZEDR /* CzedrAppChrome.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED0E231F60000500CZEDR /* CzedrAppChrome.m */; };
 		CZED0F241F60000600CZEDR /* CzedrLanAPIFinder.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED0F231F60000600CZEDR /* CzedrLanAPIFinder.m */; };
 		CZED10241F60000700CZEDR /* CzedrMaximizeIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED10231F60000700CZEDR /* CzedrMaximizeIconView.m */; };
+		CZED20241F60000800CZEDR /* CzedrAesGcmBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZED20231F60000800CZEDR /* CzedrAesGcmBridge.swift */; };
 		068F847E1B182B2E003652F0 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */; };
 		068F847F1B182B2E003652F0 /* AFHTTPRequestOperationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846E1B182B2E003652F0 /* AFHTTPRequestOperationManager.m */; };
 		068F84801B182B2E003652F0 /* AFHTTPSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F84701B182B2E003652F0 /* AFHTTPSessionManager.m */; };
@@ -216,6 +217,7 @@
 		CZED0F231F60000600CZEDR /* CzedrLanAPIFinder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = classes/CzedrLanAPIFinder.m; sourceTree = "<group>"; };
 		CZED10221F60000700CZEDR /* CzedrMaximizeIconView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = classes/CzedrMaximizeIconView.h; sourceTree = "<group>"; };
 		CZED10231F60000700CZEDR /* CzedrMaximizeIconView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = classes/CzedrMaximizeIconView.m; sourceTree = "<group>"; };
+		CZED20231F60000800CZEDR /* CzedrAesGcmBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrAesGcmBridge.swift; sourceTree = "<group>"; };
 		068F846B1B182B2E003652F0 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
 		068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPRequestOperation.m; sourceTree = "<group>"; };
 		068F846D1B182B2E003652F0 /* AFHTTPRequestOperationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperationManager.h; sourceTree = "<group>"; };
@@ -516,6 +518,7 @@
 				CZED0F231F60000600CZEDR /* CzedrLanAPIFinder.m */,
 				CZED10221F60000700CZEDR /* CzedrMaximizeIconView.h */,
 				CZED10231F60000700CZEDR /* CzedrMaximizeIconView.m */,
+				CZED20231F60000800CZEDR /* CzedrAesGcmBridge.swift */,
 			);
 			name = Services_class;
 			sourceTree = "<group>";
@@ -1103,6 +1106,7 @@
 				CZED0E241F60000500CZEDR /* CzedrAppChrome.m in Sources */,
 				CZED0F241F60000600CZEDR /* CzedrLanAPIFinder.m in Sources */,
 				CZED10241F60000700CZEDR /* CzedrMaximizeIconView.m in Sources */,
+				CZED20241F60000800CZEDR /* CzedrAesGcmBridge.swift in Sources */,
 				AF3FBE1B1A9C70B600F8FE78 /* GCPlaceholderTextView.m in Sources */,
 				068F84B11B182B54003652F0 /* SBJsonWriter.m in Sources */,
 				068F84A51B182B54003652F0 /* NSObject+SBJson.m in Sources */,
@@ -1300,6 +1304,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.czedr.app;
 				PRODUCT_NAME = Czedr;
+				SWIFT_VERSION = 5.0;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -1327,6 +1333,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.czedr.app;
 				PRODUCT_NAME = Czedr;
+				SWIFT_VERSION = 5.0;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;

@@ -5,28 +5,12 @@
 
 #import "CzedrSignupCrypto.h"
 #import "NSData+Encryption.h"
-#import <CommonCrypto/CommonCryptor.h>
-#import <CommonCrypto/CommonKeyDerivation.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <CommonCrypto/CommonHMAC.h>
 #import <Security/Security.h>
 
-/* iPhoneOS 26 SDK module map may omit these; symbols are still in libcommonCrypto. */
-extern int CCKeyDerivationHKDF(
-    CCPBKDFAlgorithm algorithm,
-    const void *password,
-    size_t passwordLen,
-    const void *salt,
-    size_t saltLen,
-    const void *info,
-    size_t infoLen,
-    void *derivedKey,
-    size_t derivedKeyLen);
-
-extern CCCryptorStatus CCCryptorGCMtag(CCCryptorRef cryptor, void *tag, size_t *tagLength);
-
-#ifndef kCCModeGCM
-enum { kCCModeGCM = 11 };
+#if __has_include("Czedr-Swift.h")
+#import "Czedr-Swift.h"
 #endif
 
 static const uint8_t kCzedrCryptoVersionV2 = 0x02;
@@ -140,21 +124,6 @@ static NSString * const kCzedrHkdfCardInfo = @"czedr-card-link-v2";
 {
     NSData *salt = [saltString dataUsingEncoding:NSUTF8StringEncoding];
     NSData *info = [infoString dataUsingEncoding:NSUTF8StringEncoding];
-    uint8_t derivedKey[kCzedrAesKeyLen];
-    int status = CCKeyDerivationHKDF(
-        kCCPRFHmacAlgSHA256,
-        imageData.bytes,
-        imageData.length,
-        salt.bytes,
-        salt.length,
-        info.bytes,
-        info.length,
-        derivedKey,
-        kCzedrAesKeyLen
-    );
-    if (status == kCCSuccess) {
-        return [NSData dataWithBytes:derivedKey length:kCzedrAesKeyLen];
-    }
     return [self hkdfSha256FromInput:imageData salt:salt info:info outputLength:kCzedrAesKeyLen];
 }
 
@@ -201,77 +170,16 @@ static NSString * const kCzedrHkdfCardInfo = @"czedr-card-link-v2";
                    tagOut:(uint8_t *)tag
                     error:(NSError **)error
 {
-    CCCryptorRef cryptor = NULL;
-    CCCryptorStatus status = CCCryptorCreateWithMode(
-        kCCEncrypt,
-        kCCModeGCM,
-        kCCAlgorithmAES,
-        ccNoPadding,
-        iv,
-        key.bytes,
-        key.length,
-        NULL,
-        0,
-        0,
-        0,
-        &cryptor
-    );
-    if (status != kCCSuccess || !cryptor) {
-        if (error) {
-            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:6
-                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM init failed"}];
-        }
-        return nil;
+#if __has_include("Czedr-Swift.h")
+    NSData *ivData = [NSData dataWithBytes:iv length:kCzedrGcmIvLen];
+    return [CzedrAesGcmBridge encryptPlain:plain key:key iv:ivData tag:tagOut error:error];
+#else
+    if (error) {
+        *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:6
+                                 userInfo:@{NSLocalizedDescriptionKey: @"CryptoKit bridge unavailable"}];
     }
-
-    size_t outMoved = 0;
-    NSMutableData *out = [NSMutableData dataWithLength:plain.length + kCCBlockSizeAES128];
-    status = CCCryptorUpdate(
-        cryptor,
-        plain.bytes,
-        plain.length,
-        out.mutableBytes,
-        out.length,
-        &outMoved
-    );
-    if (status != kCCSuccess) {
-        CCCryptorRelease(cryptor);
-        if (error) {
-            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:7
-                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM encrypt failed"}];
-        }
-        return nil;
-    }
-
-    size_t finalMoved = 0;
-    status = CCCryptorFinal(
-        cryptor,
-        out.mutableBytes + outMoved,
-        out.length - outMoved,
-        &finalMoved
-    );
-    if (status != kCCSuccess) {
-        CCCryptorRelease(cryptor);
-        if (error) {
-            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:7
-                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM encrypt final failed"}];
-        }
-        return nil;
-    }
-    out.length = outMoved + finalMoved;
-
-    size_t tagLen = kCzedrGcmTagLen;
-    status = CCCryptorGCMtag(cryptor, tag, &tagLen);
-    CCCryptorRelease(cryptor);
-    if (status != kCCSuccess || tagLen != kCzedrGcmTagLen) {
-        if (error) {
-            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:8
-                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM tag failed"}];
-        }
-        return nil;
-    }
-
-    return out;
+    return nil;
+#endif
 }
 
 + (NSString *)encryptCardPayload:(NSDictionary *)payload
