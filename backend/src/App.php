@@ -14,7 +14,10 @@ use Czedr\Invoice\InvoiceService;
 use Czedr\Legacy\LegacyCompat;
 use Czedr\Ledger\LedgerService;
 use Czedr\Media\ProfileMediaService;
+use Czedr\Security\HttpsGate;
 use Czedr\Security\ImageDerivedCryptor;
+use Czedr\Security\RateLimitExceededException;
+use Czedr\Security\RateLimiter;
 use Czedr\Support\Env;
 
 final class App
@@ -29,9 +32,11 @@ final class App
     private ProfileMediaService $profileMedia;
     private SignupChallengeService $signupChallenges;
     private PasswordResetService $passwordReset;
+    private RateLimiter $rateLimiter;
 
     public function __construct()
     {
+        $this->rateLimiter = new RateLimiter();
         $this->audit = new AuditService();
         $this->ledger = new LedgerService($this->audit);
         $this->invoices = new InvoiceService($this->audit);
@@ -49,7 +54,14 @@ final class App
             http_response_code(204);
             return;
         }
-        $this->router->dispatch(Request::fromGlobals());
+        HttpsGate::enforce();
+        $request = Request::fromGlobals();
+        try {
+            $this->applyIngressRateLimits($request);
+            $this->router->dispatch($request);
+        } catch (RateLimitExceededException $e) {
+            JsonResponse::error($e->getMessage(), 429);
+        }
     }
 
     private function registerRoutes(): void
@@ -105,10 +117,21 @@ final class App
         });
 
         $this->router->get('/v1/auth/signup-challenge', function (Request $r) {
+            $this->rateLimiter->check(
+                'challenge:ip:' . RateLimiter::clientIp($r->ip),
+                30,
+                3600
+            );
+            $this->rateLimiter->hit(
+                'challenge:ip:' . RateLimiter::clientIp($r->ip),
+                30,
+                3600
+            );
             JsonResponse::ok($this->signupChallenges->createChallenge());
         });
 
         $this->router->post('/v1/auth/register', function (Request $r) {
+            $this->guardRegisterAttempt($r);
             $out = $this->auth->register(
                 (string) ($r->body['email'] ?? ''),
                 (string) ($r->body['password'] ?? ''),
@@ -133,6 +156,7 @@ final class App
             if (!is_array($payload)) {
                 throw new \InvalidArgumentException('Invalid signup payload');
             }
+            $this->guardRegisterAttempt($r);
             $out = $this->auth->register(
                 (string) ($payload['email'] ?? $payload['user_email'] ?? ''),
                 (string) ($payload['password'] ?? $payload['user_pwd'] ?? ''),
@@ -146,30 +170,34 @@ final class App
         });
 
         $this->router->post('/v1/auth/login', function (Request $r) {
-            $out = $this->auth->login(
+            $this->handleLogin(
+                $r,
                 (string) ($r->body['user_email'] ?? $r->body['email'] ?? ''),
-                (string) ($r->body['user_pwd'] ?? $r->body['password'] ?? ''),
-                $r->ip,
-                $r->userAgent
+                (string) ($r->body['user_pwd'] ?? $r->body['password'] ?? '')
             );
-            JsonResponse::ok($this->loginResponsePayload($out));
         });
 
         $this->router->post('/v1/auth/login-secure', function (Request $r) {
             $payload = $this->decryptSecureBody($r);
-            $out = $this->auth->login(
+            $this->handleLogin(
+                $r,
                 (string) ($payload['user_email'] ?? $payload['email'] ?? ''),
-                (string) ($payload['user_pwd'] ?? $payload['password'] ?? ''),
-                $r->ip,
-                $r->userAgent
+                (string) ($payload['user_pwd'] ?? $payload['password'] ?? '')
             );
-            JsonResponse::ok($this->loginResponsePayload($out));
         });
 
         $this->router->post('/v1/auth/pin/verify-secure', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $this->guardPinAttempt($uid);
             $payload = $this->decryptSecureBody($r);
             $pin = (string) ($payload['user_pin'] ?? $payload['pin'] ?? '');
-            $this->auth->verifyPin($uid, $pin);
+            try {
+                $this->auth->verifyPin($uid, $pin);
+            } catch (\InvalidArgumentException $e) {
+                if (str_contains($e->getMessage(), 'PIN')) {
+                    $this->rateLimiter->hit('pin:uid:' . $uid, 5, 900);
+                }
+                throw $e;
+            }
             JsonResponse::ok(['verified' => true, 'result' => 'userpin matched']);
         }));
 
@@ -212,8 +240,21 @@ final class App
         });
 
         $this->router->post('/v1/auth/forgot-password', function (Request $r) {
+            $email = (string) ($r->body['user_email'] ?? $r->body['email'] ?? '');
+            $this->rateLimiter->check(
+                'forgot:ip:' . RateLimiter::clientIp($r->ip),
+                3,
+                3600
+            );
+            $this->rateLimiter->check(
+                'forgot:' . RateLimiter::emailBucket($email),
+                3,
+                3600
+            );
+            $this->rateLimiter->hit('forgot:ip:' . RateLimiter::clientIp($r->ip), 3, 3600);
+            $this->rateLimiter->hit('forgot:' . RateLimiter::emailBucket($email), 3, 3600);
             $out = $this->passwordReset->requestReset(
-                (string) ($r->body['user_email'] ?? $r->body['email'] ?? ''),
+                $email,
                 $r->ip,
                 $r->userAgent
             );
@@ -439,6 +480,47 @@ final class App
             'user_pin' => $this->auth->userPinFlag($userId),
             'profile_pic ' => '',
         ];
+    }
+
+    private function applyIngressRateLimits(Request $r): void
+    {
+        if ($r->method !== 'POST') {
+            return;
+        }
+        $ip = RateLimiter::clientIp($r->ip);
+        if ($r->path === '/v1/auth/login' || $r->path === '/v1/auth/login-secure') {
+            $this->rateLimiter->check('login:ip:' . $ip, 10, 900);
+        }
+    }
+
+    private function guardRegisterAttempt(Request $r): void
+    {
+        $ip = RateLimiter::clientIp($r->ip);
+        $this->rateLimiter->check('register:ip:' . $ip, 5, 3600);
+        $this->rateLimiter->hit('register:ip:' . $ip, 5, 3600);
+    }
+
+    private function guardPinAttempt(string $userId): void
+    {
+        $this->rateLimiter->check('pin:uid:' . $userId, 5, 900);
+    }
+
+    private function handleLogin(Request $r, string $email, string $password): void
+    {
+        $ip = RateLimiter::clientIp($r->ip);
+        $emailKey = RateLimiter::emailBucket($email);
+        $this->rateLimiter->check('login:ip:' . $ip, 10, 900);
+        $this->rateLimiter->check('login:' . $emailKey, 10, 900);
+        try {
+            $out = $this->auth->login($email, $password, $r->ip, $r->userAgent);
+        } catch (\InvalidArgumentException $e) {
+            if ($e->getMessage() === 'Invalid credentials') {
+                $this->rateLimiter->hit('login:ip:' . $ip, 10, 900);
+                $this->rateLimiter->hit('login:' . $emailKey, 10, 900);
+            }
+            throw $e;
+        }
+        JsonResponse::ok($this->loginResponsePayload($out));
     }
 
     /** @return array<string, mixed> */

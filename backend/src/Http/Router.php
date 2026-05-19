@@ -34,6 +34,8 @@ final class Router
         }
         try {
             $handler($request);
+        } catch (\Czedr\Security\RateLimitExceededException $e) {
+            JsonResponse::error($e->getMessage(), 429);
         } catch (\InvalidArgumentException $e) {
             JsonResponse::error($e->getMessage(), 400);
         } catch (\RuntimeException $e) {

@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Czedr\Http;
 
+use Czedr\Security\HttpsGate;
+use Czedr\Support\Env;
+
 final class JsonResponse
 {
     public static function send(int $status, array $payload): void
@@ -13,6 +16,9 @@ final class JsonResponse
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: DENY');
         header('Referrer-Policy: no-referrer');
+        if (!Env::isLocal() && HttpsGate::requestIsHttps()) {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+        }
         echo json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
     }
 

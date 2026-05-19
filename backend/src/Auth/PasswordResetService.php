@@ -135,12 +135,21 @@ final class PasswordResetService
         if (!is_dir($logDir)) {
             mkdir($logDir, 0755, true);
         }
-        $line = sprintf(
-            "[%s] password reset for %s token=%s\n",
-            date('c'),
-            $email,
-            $token
-        );
+        if (Env::isLocal()) {
+            $line = sprintf(
+                "[%s] password reset for %s token=%s\n",
+                date('c'),
+                $email,
+                $token
+            );
+        } else {
+            $line = sprintf(
+                "[%s] password reset requested for %s token_hash=%s\n",
+                date('c'),
+                $email,
+                hash('sha256', $token)
+            );
+        }
         file_put_contents($logDir . '/password-reset.log', $line, FILE_APPEND | LOCK_EX);
 
         // Production: integrate SMTP / SendGrid / SES using MAIL_* env vars.

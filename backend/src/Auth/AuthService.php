@@ -6,6 +6,7 @@ namespace Czedr\Auth;
 use Czedr\Audit\AuditService;
 use Czedr\Database\ConnectionFactory;
 use Czedr\Ledger\LedgerService;
+use Czedr\Security\ReservedCzedrIds;
 use Czedr\Support\Env;
 use Czedr\Support\Uuid;
 use PDO;
@@ -55,6 +56,7 @@ final class AuthService
         $userId = Uuid::v4();
         $czedrId = $czedrId ?: $this->generateCzedrId();
         $czedrId = strtoupper(trim($czedrId));
+        ReservedCzedrIds::assertAvailable($czedrId);
 
         $referrerUserId = $this->resolveReferrerUserId($referrerCzedrId);
         if ($referrerUserId !== null && $czedrId === strtoupper(trim((string) $referrerCzedrId))) {
