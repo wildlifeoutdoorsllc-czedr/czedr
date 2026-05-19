@@ -100,42 +100,22 @@ Implemented in `backend/src/Security/RateLimiter.php`, migration `010_rate_limit
 
 ---
 
-## Phase 3 — Modernize payload crypto (behind the scenes)
+## Phase 3 — Modernize payload crypto ✅ **Done (build 75)**
 
-**Goal:** Keep the image challenge UX for marketing/legacy parity, but use algorithms security auditors expect.
+**User impact:** None — same screens; stronger invisible encryption.
 
-**User impact:** None — same register/login; app still fetches challenge, still sends `enc_data`.
+| Component | Implementation |
+|-----------|----------------|
+| Cipher | **AES-256-GCM** (12-byte random IV, 16-byte auth tag per request) |
+| Key derivation | **HKDF-SHA256** from full image bytes + `challenge_id` |
+| Wire format | `0x02` + IV + tag + ciphertext (base64), `crypto_version: 2` |
+| Server optional pepper | `CZEDR_CRYPTO_PEPPER` in `.env` |
+| Legacy v1 | Server still decrypts old ECB clients; new app sends v2 only |
+| iOS plain-register fallback | **Removed** (secure path only) |
 
-### 3A — Replace weak pieces (incremental)
+**Test:** `php scripts/test-crypto-v2-roundtrip.php`
 
-| Today | Target | Why |
-|-------|--------|-----|
-| AES-256-**ECB** | AES-256-**GCM** (random 12-byte IV per request) | ECB leaks patterns; GCM adds integrity |
-| Key = b64[0:16] + md5(challenge)[0:16] | **HKDF-SHA256**(image_bytes, challenge_id, salt) → 32-byte key | Proper key derivation |
-| MD5 in key mix | Remove | MD5 is deprecated for security use |
-| Challenge image via URL | **Keep `image_b64`** (build 74) | Phone and server must use identical bytes |
-
-### 3B — Versioned API (no big-bang)
-
-Support both during transition:
-
-```
-POST /v1/auth/login-secure        (v1: ECB, legacy key)
-POST /v1/auth/login-secure-v2     (v2: GCM + HKDF)
-```
-
-- App tries v2; on `404` or `crypto_version` mismatch, fall back to v1.
-- After all clients updated, retire v1.
-
-### 3C — Optional end state
-
-| Approach | When |
-|----------|------|
-| **TLS + plain JSON** for login/register | Strongest simplicity once HTTPS is universal |
-| Keep image envelope as **optional extra** | Only if patent/deck positioning requires it |
-| Remove plain `/v1/auth/register` fallback on iOS | After v2 stable; keep server plain route for sandbox only |
-
-**Done when:** Security review passes algorithm choices; v1 endpoints deprecated.
+**Note:** This is the **strongest practical design** for an image-bound envelope. True classified/military systems add HSMs, key escrow, and accredited modules — not achievable in a consumer app alone.
 
 ---
 

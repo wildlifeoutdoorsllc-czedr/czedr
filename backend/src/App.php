@@ -15,7 +15,7 @@ use Czedr\Legacy\LegacyCompat;
 use Czedr\Ledger\LedgerService;
 use Czedr\Media\ProfileMediaService;
 use Czedr\Security\HttpsGate;
-use Czedr\Security\ImageDerivedCryptor;
+use Czedr\Security\PayloadCryptor;
 use Czedr\Security\RateLimitExceededException;
 use Czedr\Security\RateLimiter;
 use Czedr\Support\Env;
@@ -151,7 +151,8 @@ final class App
                 throw new \InvalidArgumentException('challenge_id and enc_data are required');
             }
             $imageBytes = $this->signupChallenges->resolveImageBytes($challengeId);
-            $json = ImageDerivedCryptor::decryptBase64Payload($encData, $imageBytes, $challengeId);
+            $cryptoVersion = (int) ($r->body['crypto_version'] ?? 0);
+            $json = PayloadCryptor::decrypt($encData, $imageBytes, $challengeId, $cryptoVersion);
             $payload = json_decode($json, true);
             if (!is_array($payload)) {
                 throw new \InvalidArgumentException('Invalid signup payload');
@@ -532,7 +533,8 @@ final class App
             throw new \InvalidArgumentException('challenge_id and enc_data are required');
         }
         $imageBytes = $this->signupChallenges->resolveImageBytes($challengeId);
-        $json = ImageDerivedCryptor::decryptBase64Payload($encData, $imageBytes, $challengeId);
+        $cryptoVersion = (int) ($r->body['crypto_version'] ?? 0);
+        $json = PayloadCryptor::decrypt($encData, $imageBytes, $challengeId, $cryptoVersion);
         $payload = json_decode($json, true);
         if (!is_array($payload)) {
             throw new \InvalidArgumentException('Invalid encrypted payload');

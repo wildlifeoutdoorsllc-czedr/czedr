@@ -5,9 +5,23 @@
 
 #import "CzedrSignupCrypto.h"
 #import "NSData+Encryption.h"
+#import <CommonCrypto/CommonCryptor.h>
+#import <CommonCrypto/CommonKeyDerivation.h>
 #import <CommonCrypto/CommonDigest.h>
+#import <Security/Security.h>
+
+static const uint8_t kCzedrCryptoVersionV2 = 0x02;
+static const size_t kCzedrGcmIvLen = 12;
+static const size_t kCzedrGcmTagLen = 16;
+static const size_t kCzedrAesKeyLen = 32;
+static NSString * const kCzedrHkdfInfo = @"czedr-secure-v2";
 
 @implementation CzedrSignupCrypto
+
++ (NSInteger)preferredCryptoVersion
+{
+    return 2;
+}
 
 + (NSString *)derivedKeyFromImageData:(NSData *)imageData challengeId:(NSString *)challengeId
 {
@@ -24,7 +38,19 @@
 + (NSString *)encryptPayload:(NSDictionary *)payload
                   imageData:(NSData *)imageData
                 challengeId:(NSString *)challengeId
+               cryptoVersion:(NSInteger)cryptoVersion
                       error:(NSError **)error
+{
+    if (cryptoVersion <= 1) {
+        return [self encryptPayloadV1:payload imageData:imageData challengeId:challengeId error:error];
+    }
+    return [self encryptPayloadV2:payload imageData:imageData challengeId:challengeId error:error];
+}
+
++ (NSString *)encryptPayloadV1:(NSDictionary *)payload
+                    imageData:(NSData *)imageData
+                  challengeId:(NSString *)challengeId
+                        error:(NSError **)error
 {
     NSData *json = [NSJSONSerialization dataWithJSONObject:payload options:0 error:error];
     if (!json) {
@@ -40,6 +66,150 @@
         return nil;
     }
     return [cipher base64EncodedStringWithOptions:0];
+}
+
++ (NSString *)encryptPayloadV2:(NSDictionary *)payload
+                    imageData:(NSData *)imageData
+                  challengeId:(NSString *)challengeId
+                        error:(NSError **)error
+{
+    NSData *json = [NSJSONSerialization dataWithJSONObject:payload options:0 error:error];
+    if (!json) {
+        return nil;
+    }
+    NSData *key = [self deriveKeyV2FromImageData:imageData challengeId:challengeId];
+    if (key.length != kCzedrAesKeyLen) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:4
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Key derivation failed"}];
+        }
+        return nil;
+    }
+
+    uint8_t iv[kCzedrGcmIvLen];
+    if (SecRandomCopyBytes(kSecRandomDefault, kCzedrGcmIvLen, iv) != errSecSuccess) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:5
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Random IV failed"}];
+        }
+        return nil;
+    }
+
+    uint8_t tag[kCzedrGcmTagLen];
+    NSData *cipher = [self aesGcmEncrypt:json key:key iv:iv tagOut:tag error:error];
+    if (!cipher) {
+        return nil;
+    }
+
+    NSMutableData *wire = [NSMutableData dataWithCapacity:1 + kCzedrGcmIvLen + kCzedrGcmTagLen + cipher.length];
+    uint8_t version = kCzedrCryptoVersionV2;
+    [wire appendBytes:&version length:1];
+    [wire appendBytes:iv length:kCzedrGcmIvLen];
+    [wire appendBytes:tag length:kCzedrGcmTagLen];
+    [wire appendData:cipher];
+
+    return [wire base64EncodedStringWithOptions:0];
+}
+
++ (NSData *)deriveKeyV2FromImageData:(NSData *)imageData challengeId:(NSString *)challengeId
+{
+    NSData *salt = [challengeId dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *info = [kCzedrHkdfInfo dataUsingEncoding:NSUTF8StringEncoding];
+    uint8_t derivedKey[kCzedrAesKeyLen];
+    int status = CCKeyDerivationHKDF(
+        kCCPRFHmacAlgSHA256,
+        imageData.bytes,
+        imageData.length,
+        salt.bytes,
+        salt.length,
+        info.bytes,
+        info.length,
+        derivedKey,
+        kCzedrAesKeyLen
+    );
+    if (status != kCCSuccess) {
+        return nil;
+    }
+    return [NSData dataWithBytes:derivedKey length:kCzedrAesKeyLen];
+}
+
++ (NSData *)aesGcmEncrypt:(NSData *)plain
+                      key:(NSData *)key
+                       iv:(const uint8_t *)iv
+                   tagOut:(uint8_t *)tag
+                    error:(NSError **)error
+{
+    CCCryptorRef cryptor = NULL;
+    CCCryptorStatus status = CCCryptorCreateWithMode(
+        kCCEncrypt,
+        kCCModeGCM,
+        kCCAlgorithmAES,
+        ccNoPadding,
+        iv,
+        key.bytes,
+        key.length,
+        NULL,
+        0,
+        0,
+        0,
+        &cryptor
+    );
+    if (status != kCCSuccess || !cryptor) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:6
+                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM init failed"}];
+        }
+        return nil;
+    }
+
+    size_t outMoved = 0;
+    NSMutableData *out = [NSMutableData dataWithLength:plain.length + kCCBlockSizeAES128];
+    status = CCCryptorUpdate(
+        cryptor,
+        plain.bytes,
+        plain.length,
+        out.mutableBytes,
+        out.length,
+        &outMoved
+    );
+    if (status != kCCSuccess) {
+        CCCryptorRelease(cryptor);
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:7
+                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM encrypt failed"}];
+        }
+        return nil;
+    }
+
+    size_t finalMoved = 0;
+    status = CCCryptorFinal(
+        cryptor,
+        out.mutableBytes + outMoved,
+        out.length - outMoved,
+        &finalMoved
+    );
+    if (status != kCCSuccess) {
+        CCCryptorRelease(cryptor);
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:7
+                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM encrypt final failed"}];
+        }
+        return nil;
+    }
+    out.length = outMoved + finalMoved;
+
+    size_t tagLen = kCzedrGcmTagLen;
+    status = CCCryptorGCMtag(cryptor, tag, &tagLen);
+    CCCryptorRelease(cryptor);
+    if (status != kCCSuccess || tagLen != kCzedrGcmTagLen) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"CzedrSignupCrypto" code:8
+                                     userInfo:@{NSLocalizedDescriptionKey: @"GCM tag failed"}];
+        }
+        return nil;
+    }
+
+    return out;
 }
 
 + (void)fetchImageDataFromURL:(NSString *)imageUrl

@@ -167,6 +167,14 @@ static void CzedrDispatchMain(void (^block)(void))
                             failure(@"Could not start secure request");
                             return;
                         }
+                        NSInteger cryptoVersion = 2;
+                        id cv = [challenge objectForKey:@"crypto_version"];
+                        if ([cv respondsToSelector:@selector(integerValue)] && [cv integerValue] > 0) {
+                            cryptoVersion = [cv integerValue];
+                        }
+                        if (cryptoVersion < 2) {
+                            cryptoVersion = [CzedrSignupCrypto preferredCryptoVersion];
+                        }
                         void (^encryptAndPost)(NSData *) = ^(NSData *imageData) {
                             if (!imageData.length) {
                                 failure(@"Could not load encryption image");
@@ -176,6 +184,7 @@ static void CzedrDispatchMain(void (^block)(void))
                             NSString *enc = [CzedrSignupCrypto encryptPayload:payload
                                                                      imageData:imageData
                                                                    challengeId:challengeId
+                                                                  cryptoVersion:cryptoVersion
                                                                          error:&cryptErr];
                             if (!enc.length) {
                                 failure(cryptErr.localizedDescription ?: @"Encryption failed");
@@ -185,7 +194,8 @@ static void CzedrDispatchMain(void (^block)(void))
                                                path:path
                                          parameters:@{
                                              @"challenge_id": challengeId,
-                                             @"enc_data": enc
+                                             @"enc_data": enc,
+                                             @"crypto_version": @(cryptoVersion)
                                          }
                                       authenticated:authenticated
                                             success:success
@@ -583,25 +593,7 @@ static void CzedrDispatchMain(void (^block)(void))
                        payload:payload
                    authenticated:NO
                          success:finishRegister
-                         failure:^(NSString *secureMessage) {
-        BOOL cryptoFailure = secureMessage.length > 0 &&
-            ([secureMessage rangeOfString:@"Decrypt" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-             [secureMessage rangeOfString:@"encrypt" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-             [secureMessage rangeOfString:@"challenge" options:NSCaseInsensitiveSearch].location != NSNotFound);
-        if (!cryptoFailure) {
-            failure(secureMessage);
-            return;
-        }
-        [self requestJSONMethod:@"POST"
-                           path:@"/v1/auth/register"
-                     parameters:@{
-                         @"email": email ?: @"",
-                         @"password": password ?: @""
-                     }
-                  authenticated:NO
-                        success:finishRegister
-                        failure:failure];
-    }];
+                         failure:failure];
 }
 
 + (void)fetchLedgerBalanceSuccess:(CzedrAPISuccessBlock)success

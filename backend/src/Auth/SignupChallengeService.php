@@ -36,6 +36,8 @@ final class SignupChallengeService
             'challenge_id' => $challengeId,
             'image_url' => $imageUrl,
             'image_b64' => $imageB64,
+            'crypto_version' => 2,
+            'crypto' => 'AES-256-GCM+HKDF-SHA256',
         ];
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/backend/bootstrap.php';
 
 use Czedr\Auth\SignupChallengeService;
-use Czedr\Security\ImageDerivedCryptor;
+use Czedr\Security\SecurePayloadCryptor;
 
 $base = 'http://127.0.0.1:8080';
 
@@ -53,15 +53,14 @@ $payload = json_encode([
     'mobile_no' => '5550100',
 ], JSON_THROW_ON_ERROR);
 
-$key = ImageDerivedCryptor::deriveKeyString($imageBytes, $challengeId);
-$keyPadded = str_pad(substr($key, 0, 32), 32, "\0");
-$cipher = openssl_encrypt($payload, 'AES-256-ECB', $keyPadded, OPENSSL_RAW_DATA);
-$enc = base64_encode($cipher);
+$enc = SecurePayloadCryptor::encryptJson($payload, $imageBytes, $challengeId);
+$cryptoVersion = (int) ($challenge['crypto_version'] ?? 2);
 
-echo "Register secure...\n";
+echo "Register secure (crypto v{$cryptoVersion})...\n";
 $reg = api('POST', '/v1/auth/register-secure', [
     'challenge_id' => $challengeId,
     'enc_data' => $enc,
+    'crypto_version' => $cryptoVersion,
 ]);
 echo "  czedr_id: " . ($reg['user']['czedr_id'] ?? '') . "\n";
 echo "Secure signup test passed.\n";
