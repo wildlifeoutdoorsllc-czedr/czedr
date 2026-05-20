@@ -9,6 +9,12 @@ import UIKit
 @objc public final class CzedrSwiftBootstrap: NSObject {
     private static let session = AppSession()
 
+    /// Force-quit then reopen must show sign-in (matches legacy clearLocalSession on launch).
+    @objc public static func clearSessionOnColdLaunch() {
+        KeychainStore.clearSession()
+        session.resetToLoggedOut()
+    }
+
     @objc public static func present(in window: UIWindow) {
         let root = UIHostingController(
             rootView: CzedrSwiftRootView().environmentObject(session)

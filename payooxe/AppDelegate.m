@@ -42,6 +42,10 @@
     [CzedrTheme applyGlobalAppearance];
     self.window.backgroundColor = [CzedrTheme darkBackground];
 #if CZEDR_USE_SWIFTUI
+    if ([CzedrAppChrome isLoggedIn]) {
+        [CzedrAppChrome clearLocalSession];
+    }
+    [CzedrSwiftLauncher prepareColdLaunch];
     [CzedrSwiftLauncher presentInWindow:self.window];
 #else
     // New process after force-quit: stored auth must not skip sign-in (token alone is not enough).

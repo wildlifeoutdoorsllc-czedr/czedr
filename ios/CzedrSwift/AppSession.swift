@@ -20,7 +20,21 @@ final class AppSession: ObservableObject {
     private let api = CzedrAPIClient()
 
     init() {
-        restoreFromKeychain()
+        resetToLoggedOut()
+    }
+
+    /// Clears in-memory session (Keychain cleared separately on cold launch).
+    func resetToLoggedOut() {
+        token = ""
+        email = ""
+        czedrId = ""
+        apiBase = defaultApiBase()
+        balanceText = "—"
+        balanceCents = 0
+        isLoggedIn = false
+        isLoading = false
+        errorMessage = nil
+        actionMessage = nil
     }
 
     var buildLabel: String {
@@ -32,14 +46,6 @@ final class AppSession: ObservableObject {
         let stored = KeychainStore.get(KeychainStore.Keys.apiBase)
         if let stored, !stored.isEmpty { return stored }
         return CzedrEffectiveAPIBase()
-    }
-
-    func restoreFromKeychain() {
-        token = KeychainStore.get(KeychainStore.Keys.token) ?? ""
-        email = KeychainStore.get(KeychainStore.Keys.email) ?? ""
-        czedrId = KeychainStore.get(KeychainStore.Keys.czedrId) ?? ""
-        apiBase = defaultApiBase()
-        isLoggedIn = !token.isEmpty && !czedrId.isEmpty
     }
 
     func clearError() { errorMessage = nil }

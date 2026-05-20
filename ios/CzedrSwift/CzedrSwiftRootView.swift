@@ -33,15 +33,8 @@ struct LoginView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Image("Czedr-auth-logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 280, maxHeight: 120)
-                    .padding(.top, 40)
-
-                Text("Czedr")
-                    .font(.title.bold())
-                    .foregroundColor(CzedrPalette.lightText)
+                CzedrBrandLogoView(style: .signIn)
+                    .padding(.top, 32)
 
                 Text(session.buildLabel)
                     .font(.caption)
@@ -130,6 +123,10 @@ struct MenuSheet: View {
     var body: some View {
         NavigationView {
             List {
+                Section {
+                    CzedrBrandLogoView(style: .hero)
+                        .listRowBackground(CzedrPalette.background)
+                }
                 NavigationLink(destination: shellWrap(HomeView(showMenu: .constant(false)), title: "Home", showBack: true)) {
                     Text("Home")
                 }
@@ -184,12 +181,10 @@ struct LoggedInShell<Content: View>: View {
                         .foregroundColor(CzedrPalette.lightText)
                         .frame(width: 44, height: 44)
                 }
-                Spacer()
-                Image("Czedr-auth-logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 36)
-                Spacer()
+                Spacer(minLength: 4)
+                CzedrBrandLogoView(style: .toolbar)
+                    .frame(maxWidth: 200)
+                Spacer(minLength: 4)
                 if showBack {
                     Button(action: {
                         if let onBack { onBack() } else { presentationMode.wrappedValue.dismiss() }
@@ -234,6 +229,9 @@ struct HomeView: View {
         LoggedInShell(title: "Home", showBack: false, onMenu: { showMenu = true }) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    CzedrBrandLogoView(style: .hero)
+                        .padding(.bottom, 4)
+
                     Text(session.czedrId)
                         .font(.subheadline)
                         .foregroundColor(CzedrPalette.caption)
@@ -323,6 +321,8 @@ struct MakePaymentView: View {
         LoggedInShell(title: "Make Payment") {
             ScrollView {
                 VStack(spacing: 12) {
+                    CzedrBrandLogoView(style: .hero)
+
                     HStack {
                         TextField("Recipient Czedr ID", text: $recipientId)
                             .textFieldStyle(CzedrFieldStyle())
@@ -391,6 +391,9 @@ struct HistoryView: View {
 
     var body: some View {
         LoggedInShell(title: "History") {
+            VStack(spacing: 0) {
+                CzedrBrandLogoView(style: .hero)
+                    .padding(.vertical, 8)
             List(rows) { row in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(AppSession.formatMoney(cents: row.amountCents, currency: row.currency))
@@ -403,6 +406,7 @@ struct HistoryView: View {
                     Text(row.createdAt).font(.caption).foregroundColor(CzedrPalette.caption)
                 }
                 .listRowBackground(CzedrPalette.surface)
+            }
             }
             .onAppear(perform: load)
         }
@@ -421,6 +425,8 @@ struct ProfileView: View {
     var body: some View {
         LoggedInShell(title: "Profile") {
             VStack(alignment: .leading, spacing: 16) {
+                CzedrBrandLogoView(style: .hero)
+
                 row("Email", session.email)
                 row("Czedr ID", session.czedrId)
                 row("API", session.apiBase)
@@ -451,9 +457,12 @@ struct ComingSoonView: View {
     let title: String
     var body: some View {
         LoggedInShell(title: title) {
+            VStack(alignment: .leading, spacing: 16) {
+                CzedrBrandLogoView(style: .hero)
             Text("Coming in the next SwiftUI sprint")
                 .foregroundColor(CzedrPalette.caption)
                 .padding()
+            }
         }
     }
 }

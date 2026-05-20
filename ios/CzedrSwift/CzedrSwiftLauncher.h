@@ -9,6 +9,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CzedrSwiftLauncher : NSObject
 
+/** Clear Keychain + in-memory session before UI (required after force-quit). */
++ (void)prepareColdLaunch;
+
 + (void)presentInWindow:(UIWindow *)window;
 
 @end

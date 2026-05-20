@@ -12,6 +12,13 @@
 
 @implementation CzedrSwiftLauncher
 
++ (void)prepareColdLaunch
+{
+#if __has_include("Czedr-Swift.h") || __has_include("payooxe-Swift.h")
+    [CzedrSwiftBootstrap clearSessionOnColdLaunch];
+#endif
+}
+
 + (void)presentInWindow:(UIWindow *)window
 {
 #if __has_include("Czedr-Swift.h") || __has_include("payooxe-Swift.h")

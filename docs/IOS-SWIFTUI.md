@@ -26,7 +26,12 @@ ios/CzedrSwift/
 - On device, sign-in screen shows **SwiftUI · Build N** under the logo
 - Test account: `docs/TEST-ACCOUNTS.md` (Alice, PIN `1` for transfers)
 
-## MVP screens (build 89+)
+## Session policy
+
+- **Force-quit and reopen** → sign-in required (Keychain + legacy UserDefaults cleared on cold launch).
+- **Sign out** on Profile → same clear + server logout when possible.
+
+## MVP screens (build 90+)
 
 | Screen | Status |
 |--------|--------|
