@@ -16,17 +16,6 @@ struct BalanceInfo {
     let transferFeeCents: Int64
 }
 
-struct InvoiceRow: Identifiable {
-    let id: String
-    let amountDisplay: String
-    let description: String
-    let otherCzedrId: String
-    let otherLabel: String
-    let createdAt: String
-    let status: String
-    let direction: String
-}
-
 struct TransferRow: Identifiable {
     let id: String
     let amountCents: Int64
@@ -221,22 +210,6 @@ final class CzedrAPIClient {
         }
     }
 
-    func fetchReceivedInvoices(
-        apiBase: String,
-        token: String,
-        completion: @escaping (APIResult<[InvoiceRow]>) -> Void
-    ) {
-        authedGetList(base: apiBase, path: "/v1/invoices/received?offset=1&limit=50", token: token, completion: completion)
-    }
-
-    func fetchSentInvoices(
-        apiBase: String,
-        token: String,
-        completion: @escaping (APIResult<[InvoiceRow]>) -> Void
-    ) {
-        authedGetList(base: apiBase, path: "/v1/invoices/sent?offset=1&limit=50", token: token, completion: completion)
-    }
-
     func fetchHistory(apiBase: String, token: String, completion: @escaping (APIResult<[TransferRow]>) -> Void) {
         authedGetObject(
             base: apiBase,
@@ -265,76 +238,6 @@ final class CzedrAPIClient {
     }
 
     // MARK: - HTTP helpers
-
-    private func authedGetList(
-        base: String,
-        path: String,
-        token: String,
-        completion: @escaping (APIResult<[InvoiceRow]>) -> Void
-    ) {
-        guard let base = Self.normalizeBase(base) else {
-            completion(.err("Invalid API base URL"))
-            return
-        }
-        if token.isEmpty {
-            completion(.err("Not signed in"))
-            return
-        }
-        var req = URLRequest(url: URL(string: "\(base)\(path)")!)
-        req.httpMethod = "GET"
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        run(req) { result in
-            switch result {
-            case .failure(let err):
-                completion(.err(err.localizedDescription))
-            case .success(let data):
-                guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                    completion(.err("Invalid JSON"))
-                    return
-                }
-                if json["Status"] as? String != "true" {
-                    completion(.err(Self.errorMessage(from: data) ?? "Request failed"))
-                    return
-                }
-                let rows = Self.parseInvoiceRows(json["Data"])
-                completion(.ok(rows))
-            }
-        }
-    }
-
-    private static func parseInvoiceRows(_ payload: Any?) -> [InvoiceRow] {
-        let arr: [[String: Any]]
-        if let a = payload as? [[String: Any]] {
-            arr = a
-        } else if let a = payload as? [Any] {
-            arr = a.compactMap { $0 as? [String: Any] }
-        } else {
-            return []
-        }
-        return arr.compactMap { row in
-            let id = (row["id"] as? String) ?? ""
-            if id.isEmpty { return nil }
-            let amountStr = (row["amount"] as? String) ?? "0"
-            let amountDisplay: String
-            if let dollars = Double(amountStr) {
-                amountDisplay = String(format: "$%.2f", dollars)
-            } else {
-                amountDisplay = "$\(amountStr)"
-            }
-            let cid = (row["user_id"] as? String) ?? ""
-            let label = (row["name"] as? String) ?? (row["user_email"] as? String) ?? cid
-            return InvoiceRow(
-                id: id,
-                amountDisplay: amountDisplay,
-                description: (row["description"] as? String) ?? "",
-                otherCzedrId: cid,
-                otherLabel: label,
-                createdAt: (row["created_date"] as? String) ?? "",
-                status: (row["status"] as? String) ?? "pending",
-                direction: (row["direction"] as? String) ?? ""
-            )
-        }
-    }
 
     private func authedGetObject<T>(
         base: String,

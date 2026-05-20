@@ -42,7 +42,7 @@ ios/CzedrSwift/
 | History | Done |
 | Profile / Sign out | Done |
 | Send Invoice | Request payment from debtor (`POST /v1/invoices`) |
-| Pending Invoices | Received + Sent tabs (`GET /v1/invoices/received`, `/sent`) |
+| Pending Invoices | Placeholder |
 | Link Card | Placeholder |
 
 ## Adding a screen

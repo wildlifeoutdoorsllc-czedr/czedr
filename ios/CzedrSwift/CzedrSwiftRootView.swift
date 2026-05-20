@@ -263,7 +263,7 @@ struct MenuSheet: View {
                 NavigationLink(destination: SendInvoiceScreen(showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Send Invoice")
                 }
-                NavigationLink(destination: PendingInvoicesScreen(showMenu: $showMenu, openedFromMenu: true)) {
+                NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Pending Invoices")
                 }
                 NavigationLink(destination: PlaceholderScreen(title: "Link Card", showMenu: $showMenu, openedFromMenu: true)) {
@@ -355,20 +355,27 @@ struct HomeScreen: View {
     var body: some View {
         LoggedInPageLayout(title: "", showBack: openedFromMenu, onMenu: openMenu) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(session.czedrId)
-                        .font(.subheadline)
-                        .foregroundColor(CzedrPalette.caption)
-                    Text(session.buildLabel)
-                        .font(.caption)
-                        .foregroundColor(CzedrPalette.caption)
+                VStack(spacing: 16) {
+                    VStack(spacing: 8) {
+                        Text(session.czedrId)
+                            .font(.subheadline)
+                            .foregroundColor(CzedrPalette.caption)
+                            .multilineTextAlignment(.center)
+                        Text(session.buildLabel)
+                            .font(.caption)
+                            .foregroundColor(CzedrPalette.caption)
+                            .multilineTextAlignment(.center)
 
-                    Text("Available balance")
-                        .font(.caption)
-                        .foregroundColor(CzedrPalette.caption)
-                    Text(session.balanceText)
-                        .font(.system(size: 32, weight: .semibold))
-                        .foregroundColor(CzedrPalette.balanceGreen)
+                        Text("Available balance")
+                            .font(.caption)
+                            .foregroundColor(CzedrPalette.caption)
+                            .multilineTextAlignment(.center)
+                        Text(session.balanceText)
+                            .font(.system(size: 32, weight: .semibold))
+                            .foregroundColor(CzedrPalette.balanceGreen)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
 
                     if let msg = session.actionMessage {
                         HStack {
@@ -392,7 +399,7 @@ struct HomeScreen: View {
                             }
                         }
                         HStack(spacing: 12) {
-                            NavigationLink(destination: PendingInvoicesScreen(showMenu: $showMenu)) {
+                            NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", showMenu: $showMenu)) {
                                 tileContent("Pending", "clock")
                             }
                             NavigationLink(destination: HistoryScreen(showMenu: $showMenu)) {

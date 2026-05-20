@@ -210,36 +210,6 @@ final class AppSession: ObservableObject {
         }
     }
 
-    func fetchPendingInvoices(completion: @escaping ([InvoiceRow], [InvoiceRow]) -> Void) {
-        isLoading = true
-        let group = DispatchGroup()
-        var received: [InvoiceRow] = []
-        var sent: [InvoiceRow] = []
-        var hadError = false
-
-        group.enter()
-        api.fetchReceivedInvoices(apiBase: apiBase, token: token) { result in
-            if case .ok(let rows) = result { received = rows }
-            if case .err = result { hadError = true }
-            group.leave()
-        }
-
-        group.enter()
-        api.fetchSentInvoices(apiBase: apiBase, token: token) { result in
-            if case .ok(let rows) = result { sent = rows }
-            if case .err = result { hadError = true }
-            group.leave()
-        }
-
-        group.notify(queue: .main) { [weak self] in
-            self?.isLoading = false
-            if hadError, received.isEmpty, sent.isEmpty {
-                self?.errorMessage = self?.errorMessage ?? "Could not load invoices"
-            }
-            completion(received, sent)
-        }
-    }
-
     func fetchHistory(completion: @escaping ([TransferRow]) -> Void) {
         isLoading = true
         api.fetchHistory(apiBase: apiBase, token: token) { [weak self] result in
