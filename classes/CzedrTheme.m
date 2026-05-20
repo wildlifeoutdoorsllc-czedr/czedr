@@ -265,21 +265,36 @@
     return logo;
 }
 
++ (CGSize)brandAuthLogoDisplaySizeForPanelWidth:(CGFloat)panelW panelHeight:(CGFloat)panelH {
+    UIImage *logo = [self brandAuthLogoImage];
+    if (!logo || panelW < 1.0) {
+        return CGSizeZero;
+    }
+    CGFloat maxW = panelW - 40.0;
+    CGFloat maxLogoH = panelH > 80.0 ? panelH * 0.26 : 118.0;
+    CGFloat aspect = logo.size.width / MAX(logo.size.height, 1.0);
+    CGFloat height = MIN(maxLogoH, maxW / MAX(aspect, 0.5));
+    CGFloat width = height * aspect;
+    return CGSizeMake(width, height);
+}
+
 + (CGFloat)layoutAuthLogoInPanel:(UIView *)detailPanel logoView:(UIImageView *)logoView {
     if (!detailPanel || !logoView) {
         return 0;
     }
-    UIImage *logo = logoView.image;
+    UIImage *logo = logoView.image ?: [self brandAuthLogoImage];
     if (!logo) {
         return 0;
     }
+    logoView.image = logo;
     CGFloat panelW = detailPanel.bounds.size.width;
-    CGFloat maxW = MAX(panelW - 36.0, 180.0);
-    CGFloat aspect = logo.size.width / MAX(logo.size.height, 1.0);
-    CGFloat height = MIN(118.0, maxW / MAX(aspect, 0.5));
-    CGFloat width = height * aspect;
-    CGFloat x = (panelW - width) / 2.0;
-    logoView.frame = CGRectMake(x, 14.0, width, height);
+    CGFloat panelH = detailPanel.bounds.size.height;
+    CGSize size = [self brandAuthLogoDisplaySizeForPanelWidth:panelW panelHeight:panelH];
+    if (size.width < 1.0) {
+        return 0;
+    }
+    CGFloat x = (panelW - size.width) / 2.0;
+    logoView.frame = CGRectMake(x, 14.0, size.width, size.height);
     logoView.contentMode = UIViewContentModeScaleAspectFit;
     logoView.backgroundColor = [UIColor clearColor];
     logoView.layer.cornerRadius = 0;

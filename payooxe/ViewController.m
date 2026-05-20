@@ -256,12 +256,9 @@
     if (logo) {
         UIImage *img = logo.image ?: [CzedrTheme brandAuthLogoImage];
         if (img) {
-            CGFloat maxW = panelW - 40.0;
-            CGFloat maxLogoH = panelH * 0.26;
-            CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
-            CGFloat height = MIN(maxLogoH, maxW / MAX(aspect, 0.5));
-            CGFloat width = height * aspect;
-            logo.frame = CGRectMake((panelW - width) / 2.0, y, width, height);
+            logo.image = img;
+            CGSize size = [CzedrTheme brandAuthLogoDisplaySizeForPanelWidth:panelW panelHeight:panelH];
+            logo.frame = CGRectMake((panelW - size.width) / 2.0, y, size.width, size.height);
             logo.contentMode = UIViewContentModeScaleAspectFit;
             logo.backgroundColor = [UIColor clearColor];
             logo.hidden = NO;
