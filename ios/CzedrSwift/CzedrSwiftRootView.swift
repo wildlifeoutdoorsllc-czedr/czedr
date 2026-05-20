@@ -105,8 +105,7 @@ struct LoggedInNavigationView: View {
 
     var body: some View {
         NavigationView {
-            HomeView(showMenu: $showMenu)
-                .navigationBarHidden(true)
+            HomeScreen(showMenu: $showMenu)
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .sheet(isPresented: $showMenu) {
@@ -123,29 +122,25 @@ struct MenuSheet: View {
     var body: some View {
         NavigationView {
             List {
-                Section {
-                    CzedrBrandLogoView(style: .hero)
-                        .listRowBackground(CzedrPalette.background)
-                }
-                NavigationLink(destination: shellWrap(HomeView(showMenu: .constant(false)), title: "Home", showBack: true)) {
+                NavigationLink(destination: HomeScreen(showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Home")
                 }
-                NavigationLink(destination: shellWrap(MakePaymentView(), title: "Make Payment")) {
+                NavigationLink(destination: MakePaymentScreen(showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Make Payment")
                 }
-                NavigationLink(destination: shellWrap(HistoryView(), title: "History")) {
+                NavigationLink(destination: HistoryScreen(showMenu: $showMenu, openedFromMenu: true)) {
                     Text("History")
                 }
-                NavigationLink(destination: shellWrap(ProfileView(), title: "Profile")) {
+                NavigationLink(destination: ProfileScreen(showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Profile")
                 }
-                NavigationLink(destination: shellWrap(ComingSoonView(title: "Send Invoice"), title: "Send Invoice")) {
+                NavigationLink(destination: PlaceholderScreen(title: "Send Invoice", showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Send Invoice")
                 }
-                NavigationLink(destination: shellWrap(ComingSoonView(title: "Pending Invoices"), title: "Pending")) {
+                NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Pending Invoices")
                 }
-                NavigationLink(destination: shellWrap(ComingSoonView(title: "Link Card"), title: "Link Card")) {
+                NavigationLink(destination: PlaceholderScreen(title: "Link Card", showMenu: $showMenu, openedFromMenu: true)) {
                     Text("Link Card")
                 }
             }
@@ -153,23 +148,15 @@ struct MenuSheet: View {
             .navigationBarItems(trailing: Button("Done") { showMenu = false })
         }
     }
-
-    private func shellWrap<Content: View>(_ content: Content, title: String, showBack: Bool = true) -> some View {
-        LoggedInShell(title: title, showBack: showBack, onMenu: { showMenu = false }, onBack: nil) {
-            content
-        }
-        .environmentObject(session)
-    }
 }
 
-// MARK: - Shell (logo + toolbar)
+// MARK: - Screen chrome (one toolbar + one logo per screen)
 
-struct LoggedInShell<Content: View>: View {
+/// Top bar only — logo lives in page body, not duplicated in the toolbar.
+struct ShellToolbar: View {
     let title: String
     var showBack: Bool = true
     var onMenu: (() -> Void)?
-    var onBack: (() -> Void)?
-    @ViewBuilder let content: () -> Content
     @Environment(\.presentationMode) private var presentationMode
 
     var body: some View {
@@ -181,14 +168,9 @@ struct LoggedInShell<Content: View>: View {
                         .foregroundColor(CzedrPalette.lightText)
                         .frame(width: 44, height: 44)
                 }
-                Spacer(minLength: 4)
-                CzedrBrandLogoView(style: .toolbar)
-                    .frame(maxWidth: 200)
-                Spacer(minLength: 4)
+                Spacer()
                 if showBack {
-                    Button(action: {
-                        if let onBack { onBack() } else { presentationMode.wrappedValue.dismiss() }
-                    }) {
+                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Image(systemName: "chevron.left")
                             .font(.title)
                             .foregroundColor(CzedrPalette.lightText)
@@ -202,15 +184,31 @@ struct LoggedInShell<Content: View>: View {
             .padding(.vertical, 6)
             .background(CzedrPalette.surface)
 
-            if !title.isEmpty && title != "Home" {
+            if !title.isEmpty {
                 Text(title)
                     .font(.headline)
                     .foregroundColor(CzedrPalette.lightText)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                    .padding(.vertical, 8)
+                    .background(CzedrPalette.surface)
             }
+        }
+    }
+}
 
+/// Standard logged-in page: single toolbar, single hero logo, then content.
+struct LoggedInPageLayout<Content: View>: View {
+    let title: String
+    var showBack: Bool = true
+    var onMenu: (() -> Void)?
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ShellToolbar(title: title, showBack: showBack, onMenu: onMenu)
+            CzedrBrandLogoView(style: .hero)
+                .padding(.vertical, 8)
             content()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
@@ -221,17 +219,17 @@ struct LoggedInShell<Content: View>: View {
 
 // MARK: - Home
 
-struct HomeView: View {
+struct HomeScreen: View {
     @Binding var showMenu: Bool
+    var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
 
+    private var openMenu: () -> Void { { showMenu = true } }
+
     var body: some View {
-        LoggedInShell(title: "Home", showBack: false, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: "", showBack: openedFromMenu, onMenu: openMenu) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    CzedrBrandLogoView(style: .hero)
-                        .padding(.bottom, 4)
-
                     Text(session.czedrId)
                         .font(.subheadline)
                         .foregroundColor(CzedrPalette.caption)
@@ -260,24 +258,24 @@ struct HomeView: View {
 
                     VStack(spacing: 12) {
                         HStack(spacing: 12) {
-                            NavigationLink(destination: MakePaymentView().environmentObject(session)) {
+                            NavigationLink(destination: MakePaymentScreen(showMenu: $showMenu)) {
                                 tileContent("Make Payment", "dollarsign.circle")
                             }
-                            NavigationLink(destination: ComingSoonView(title: "Send Invoice").environmentObject(session)) {
+                            NavigationLink(destination: PlaceholderScreen(title: "Send Invoice", showMenu: $showMenu)) {
                                 tileContent("Send Invoice", "doc.text")
                             }
                         }
                         HStack(spacing: 12) {
-                            NavigationLink(destination: ComingSoonView(title: "Pending Invoices").environmentObject(session)) {
+                            NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", showMenu: $showMenu)) {
                                 tileContent("Pending", "clock")
                             }
-                            NavigationLink(destination: HistoryView().environmentObject(session)) {
+                            NavigationLink(destination: HistoryScreen(showMenu: $showMenu)) {
                                 tileContent("History", "list.bullet")
                             }
                         }
                     }
 
-                    NavigationLink(destination: ProfileView().environmentObject(session)) {
+                    NavigationLink(destination: ProfileScreen(showMenu: $showMenu)) {
                         Text("My Profile")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -286,7 +284,8 @@ struct HomeView: View {
                             .cornerRadius(6)
                     }
                 }
-                .padding(16)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
             }
         }
         .onAppear { session.refreshBalance() }
@@ -309,7 +308,9 @@ struct HomeView: View {
 
 // MARK: - Make Payment
 
-struct MakePaymentView: View {
+struct MakePaymentScreen: View {
+    @Binding var showMenu: Bool
+    var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
     @State private var recipientId = ""
     @State private var validatedName = ""
@@ -318,11 +319,9 @@ struct MakePaymentView: View {
     @State private var pin = ""
 
     var body: some View {
-        LoggedInShell(title: "Make Payment") {
+        LoggedInPageLayout(title: "Make Payment", showBack: true, onMenu: { showMenu = true }) {
             ScrollView {
                 VStack(spacing: 12) {
-                    CzedrBrandLogoView(style: .hero)
-
                     HStack {
                         TextField("Recipient Czedr ID", text: $recipientId)
                             .textFieldStyle(CzedrFieldStyle())
@@ -365,7 +364,8 @@ struct MakePaymentView: View {
                     .disabled(session.isLoading)
                     .padding(.top, 8)
                 }
-                .padding(16)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
             }
         }
     }
@@ -385,15 +385,14 @@ struct MakePaymentView: View {
 
 // MARK: - History
 
-struct HistoryView: View {
+struct HistoryScreen: View {
+    @Binding var showMenu: Bool
+    var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
     @State private var rows: [TransferRow] = []
 
     var body: some View {
-        LoggedInShell(title: "History") {
-            VStack(spacing: 0) {
-                CzedrBrandLogoView(style: .hero)
-                    .padding(.vertical, 8)
+        LoggedInPageLayout(title: "History", showBack: true, onMenu: { showMenu = true }) {
             List(rows) { row in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(AppSession.formatMoney(cents: row.amountCents, currency: row.currency))
@@ -407,7 +406,6 @@ struct HistoryView: View {
                 }
                 .listRowBackground(CzedrPalette.surface)
             }
-            }
             .onAppear(perform: load)
         }
     }
@@ -419,14 +417,14 @@ struct HistoryView: View {
 
 // MARK: - Profile
 
-struct ProfileView: View {
+struct ProfileScreen: View {
+    @Binding var showMenu: Bool
+    var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
 
     var body: some View {
-        LoggedInShell(title: "Profile") {
+        LoggedInPageLayout(title: "Profile", showBack: true, onMenu: { showMenu = true }) {
             VStack(alignment: .leading, spacing: 16) {
-                CzedrBrandLogoView(style: .hero)
-
                 row("Email", session.email)
                 row("Czedr ID", session.czedrId)
                 row("API", session.apiBase)
@@ -453,16 +451,17 @@ struct ProfileView: View {
     }
 }
 
-struct ComingSoonView: View {
+struct PlaceholderScreen: View {
     let title: String
+    @Binding var showMenu: Bool
+    var openedFromMenu: Bool = false
+
     var body: some View {
-        LoggedInShell(title: title) {
-            VStack(alignment: .leading, spacing: 16) {
-                CzedrBrandLogoView(style: .hero)
+        LoggedInPageLayout(title: title, showBack: true, onMenu: { showMenu = true }) {
             Text("Coming in the next SwiftUI sprint")
                 .foregroundColor(CzedrPalette.caption)
-                .padding()
-            }
+                .padding(16)
+            Spacer()
         }
     }
 }
