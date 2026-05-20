@@ -174,6 +174,72 @@ final class AppSession: ObservableObject {
         }
     }
 
+    func sendInvoice(to: String, amountDollars: String, description: String, pin: String) {
+        guard Self.parseCents(fromDollars: amountDollars) != nil else {
+            errorMessage = "Enter a valid amount"
+            return
+        }
+        if pin.count != 4 {
+            errorMessage = "PIN must be 4 digits"
+            return
+        }
+        let toId = to.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if toId.isEmpty {
+            errorMessage = "Enter debtor Czedr ID"
+            return
+        }
+        isLoading = true
+        api.createInvoice(
+            apiBase: apiBase,
+            token: token,
+            toCzedrId: toId,
+            amountDollars: amountDollars,
+            description: description,
+            pin: pin
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self.errorMessage = msg
+                case .ok(let msg):
+                    self.actionMessage = msg
+                }
+            }
+        }
+    }
+
+    func fetchPendingInvoices(completion: @escaping ([InvoiceRow], [InvoiceRow]) -> Void) {
+        isLoading = true
+        let group = DispatchGroup()
+        var received: [InvoiceRow] = []
+        var sent: [InvoiceRow] = []
+        var hadError = false
+
+        group.enter()
+        api.fetchReceivedInvoices(apiBase: apiBase, token: token) { result in
+            if case .ok(let rows) = result { received = rows }
+            if case .err = result { hadError = true }
+            group.leave()
+        }
+
+        group.enter()
+        api.fetchSentInvoices(apiBase: apiBase, token: token) { result in
+            if case .ok(let rows) = result { sent = rows }
+            if case .err = result { hadError = true }
+            group.leave()
+        }
+
+        group.notify(queue: .main) { [weak self] in
+            self?.isLoading = false
+            if hadError, received.isEmpty, sent.isEmpty {
+                self?.errorMessage = self?.errorMessage ?? "Could not load invoices"
+            }
+            completion(received, sent)
+        }
+    }
+
     func fetchHistory(completion: @escaping ([TransferRow]) -> Void) {
         isLoading = true
         api.fetchHistory(apiBase: apiBase, token: token) { [weak self] result in
