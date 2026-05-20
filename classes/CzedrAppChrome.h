@@ -29,6 +29,9 @@ FOUNDATION_EXPORT NSString * const CzedrUserDidLoginNotification;
 + (CGFloat)topChromeBottomYForDrawer:(MMDrawerController *)drawer;
 + (void)applyChromeContentInsetsForDrawer:(MMDrawerController *)drawer;
 
+/** Resolves drawer from parent chain or window root (pushed VCs often lack direct parent link). */
++ (MMDrawerController *)drawerForViewController:(UIViewController *)viewController;
+
 /** Push legacy XIB content below toolbar + logo; hide duplicate page headers. */
 + (void)layoutLoggedInContentForViewController:(UIViewController *)viewController drawer:(MMDrawerController *)drawer;
 

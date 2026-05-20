@@ -86,20 +86,20 @@
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
+    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:nil];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
-    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
+    [CzedrAppChrome refreshSessionBarForViewController:self];
+    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:nil];
 }
 
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    [CzedrAppChrome refreshSessionBarForViewController:self];
     _scroll_view.contentSize=CGSizeMake(320, 568);
     _czedrId.layer.cornerRadius=3;
     _czedrId.clipsToBounds = YES;

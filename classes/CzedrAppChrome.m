@@ -428,12 +428,28 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     [CzedrForwardStack() removeAllObjects];
 }
 
++ (MMDrawerController *)drawerForViewController:(UIViewController *)viewController
+{
+    if (!viewController) {
+        return nil;
+    }
+    MMDrawerController *drawer = viewController.mm_drawerController;
+    if (drawer) {
+        return drawer;
+    }
+    UIViewController *rootVC = viewController.view.window.rootViewController;
+    if ([rootVC isKindOfClass:[MMDrawerController class]]) {
+        return (MMDrawerController *)rootVC;
+    }
+    return nil;
+}
+
 + (void)refreshSessionBarForViewController:(UIViewController *)host
 {
     if (!host) {
         return;
     }
-    [self refreshSessionBarForDrawer:host.mm_drawerController];
+    [self refreshSessionBarForDrawer:[self drawerForViewController:host]];
 }
 
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer
@@ -563,7 +579,13 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 
 + (void)layoutLoggedInContentForViewController:(UIViewController *)viewController drawer:(MMDrawerController *)drawer
 {
-    if (!viewController.isViewLoaded || !drawer) {
+    if (!viewController.isViewLoaded) {
+        return;
+    }
+    if (!drawer) {
+        drawer = [self drawerForViewController:viewController];
+    }
+    if (!drawer) {
         return;
     }
     NSString *topClass = NSStringFromClass([viewController class]);
@@ -571,12 +593,13 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         return;
     }
 
-    CGFloat chromeBottom = [self topChromeBottomYForDrawer:drawer];
-    if (chromeBottom < 1.0) {
-        return;
-    }
+    [self refreshSessionBarForViewController:viewController];
 
     UIView *root = viewController.view;
+    CGFloat chromeBottom = [self topChromeBottomYForView:root];
+    if (chromeBottom < root.safeAreaInsets.top + 30.0) {
+        chromeBottom = [self czedr_estimatedChromeBottomForView:root];
+    }
     CGFloat width = root.bounds.size.width;
     CGFloat height = root.bounds.size.height;
     CGFloat bottomInset = 0.0;
@@ -588,6 +611,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     if (scroll) {
         [self czedr_hideLegacyPageChromeInView:root scrollView:scroll];
         CGFloat contentH = MAX(scroll.contentSize.height, height - chromeBottom + 80.0);
+        scroll.autoresizingMask = UIViewAutoresizingNone;
         scroll.frame = CGRectMake(0.0, chromeBottom, width, height - chromeBottom - bottomInset);
         if (scroll.contentSize.height < contentH) {
             scroll.contentSize = CGSizeMake(width, contentH);
@@ -643,6 +667,19 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     return chromeBottom;
 }
 
++ (CGFloat)czedr_estimatedChromeBottomForView:(UIView *)view
+{
+    if (!view) {
+        return 0;
+    }
+    CGFloat top = 0.0;
+    if (@available(iOS 11.0, *)) {
+        top = view.safeAreaInsets.top;
+    }
+    CGSize logoSize = [CzedrTheme brandAuthLogoCompactDisplaySizeForPanelWidth:view.bounds.size.width];
+    return top + kCzedrTopChromeHeight + 6.0 + logoSize.height + 12.0;
+}
+
 + (CGFloat)topChromeBottomYForDrawer:(MMDrawerController *)drawer
 {
     if (!drawer) {
@@ -651,7 +688,11 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     UINavigationController *nav = [self centerNavigationForDrawer:drawer];
     UIViewController *top = nav.topViewController;
     if (top.isViewLoaded && top.view) {
-        return [self topChromeBottomYForView:top.view];
+        CGFloat measured = [self topChromeBottomYForView:top.view];
+        if (measured > top.view.safeAreaInsets.top + 40.0) {
+            return measured;
+        }
+        return [self czedr_estimatedChromeBottomForView:top.view];
     }
     return [self topChromeBottomYForView:drawer.view];
 }
