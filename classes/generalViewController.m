@@ -7,7 +7,9 @@
 //
 
 #import "generalViewController.h"
+#import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
+#import "UIViewController+MMDrawerController.h"
 #import "SharedServiceController.h"
 #import "changePasswordViewController.h"
 #import "ChangePinViewController.h"
@@ -21,6 +23,7 @@
 @implementation generalViewController
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForViewController:self];
     _name.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"name"];
      _emailAddress.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"email "];
      _contactNumber.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"mobile_no"];

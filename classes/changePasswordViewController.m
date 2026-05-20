@@ -7,7 +7,9 @@
 //
 
 #import "changePasswordViewController.h"
+#import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
+#import "UIViewController+MMDrawerController.h"
 #include "SharedServiceController.h"
 @interface changePasswordViewController ()
 
@@ -38,6 +40,7 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForViewController:self];
     UIColor *placeholderColor = [UIColor whiteColor];
     [CzedrTheme applyPlaceholderAppearanceToTextField:oldpassword color:placeholderColor font:nil];
     [CzedrTheme applyPlaceholderAppearanceToTextField:newpassword color:placeholderColor font:nil];

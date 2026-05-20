@@ -7,7 +7,9 @@
 //
 
 #import "addCreditViewController.h"
+#import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
+#import "UIViewController+MMDrawerController.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "AESCrypt.h"
@@ -227,6 +229,7 @@ replacementString:(NSString *)string
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForViewController:self];
     UIColor *placeholderColor = [UIColor whiteColor];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_name color:placeholderColor font:nil];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_cvvNumber color:placeholderColor font:nil];

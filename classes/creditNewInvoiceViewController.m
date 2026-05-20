@@ -5,8 +5,10 @@
 //  Created by Renu on 12/02/15.
 //  Copyright (c) 2015 mindroots. All rights reserved.
 #import "creditNewInvoiceViewController.h"
+#import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
 #import "SharedServiceController.h"
+#import "UIViewController+MMDrawerController.h"
 @interface creditNewInvoiceViewController ()
 @end
 @implementation creditNewInvoiceViewController
@@ -70,6 +72,7 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForViewController:self];
     NSString *strMakePayment = NSLocalizedString(@"Enter Description", Nil);
     [_makePayment setPlaceholderText:strMakePayment];
 //  [_makePayment setPlaceholderText:@"Enter Description"];

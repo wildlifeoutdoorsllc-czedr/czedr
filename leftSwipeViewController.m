@@ -266,21 +266,15 @@
     return 0;
 }
 
-- (void)czedr_layoutHomeTilesBetweenTop:(CGFloat)top bottom:(CGFloat)bottom width:(CGFloat)width
+- (void)czedr_layoutHomeTilesAtGridTop:(CGFloat)gridTop width:(CGFloat)width tileW:(CGFloat)tileW tileH:(CGFloat)tileH
 {
-    if (!self.homeTilesContainer || bottom <= top + 80.0) {
+    if (!self.homeTilesContainer) {
         return;
     }
     const CGFloat gap = 10.0;
-    CGFloat tileW = floor((width - gap * 3.0) / 2.0);
-    CGFloat maxTileH = floor((bottom - top - gap) / 2.0);
-    CGFloat tileH = MIN(MIN(tileW, maxTileH), 118.0);
-    tileH = MAX(96.0, tileH);
-
     CGFloat gridH = gap + tileH + gap + tileH + gap;
-    CGFloat gridY = top + MAX(0.0, (bottom - top - gridH) / 2.0);
 
-    self.homeTilesContainer.frame = CGRectMake(0, gridY, width, gridH);
+    self.homeTilesContainer.frame = CGRectMake(0, gridTop, width, gridH);
     self.homeTilesContainer.autoresizingMask = UIViewAutoresizingNone;
     self.homeTilesContainer.backgroundColor = [UIColor clearColor];
 
@@ -309,26 +303,15 @@
     }
     CGFloat width = self.view.bounds.size.width;
     CGFloat viewH = self.view.bounds.size.height;
-    CGFloat y = [self czedr_topChromeBottomY] + 12.0;
 
     if (self.homeLogoImageView) {
         self.homeLogoImageView.hidden = YES;
     }
 
-    if (self.homeBalanceCaptionLabel) {
-        self.homeBalanceCaptionLabel.frame = CGRectMake(16.0, y, width - 32.0, 20.0);
-        y = CGRectGetMaxY(self.homeBalanceCaptionLabel.frame) + 4.0;
-    }
-
-    if (self.homeBalanceLabel) {
-        self.homeBalanceLabel.frame = CGRectMake(16.0, y, width - 32.0, 34.0);
-        y = CGRectGetMaxY(self.homeBalanceLabel.frame) + 6.0;
-    }
-
     if (czedrIdLabel) {
-        czedrIdLabel.frame = CGRectMake(16.0, y, width - 32.0, 24.0);
+        CGFloat idY = [self czedr_topChromeBottomY] + 10.0;
+        czedrIdLabel.frame = CGRectMake(16.0, idY, width - 32.0, 22.0);
         czedrIdLabel.textAlignment = NSTextAlignmentCenter;
-        y = CGRectGetMaxY(czedrIdLabel.frame) + 12.0;
     }
 
     CGFloat btnH = 48.0;
@@ -346,7 +329,26 @@
         }
     }
 
-    [self czedr_layoutHomeTilesBetweenTop:y bottom:btnY - 8.0 width:width];
+    const CGFloat gap = 10.0;
+    CGFloat tileW = floor((width - gap * 3.0) / 2.0);
+    CGFloat tileH = MIN(tileW, 118.0);
+    tileH = MAX(96.0, tileH);
+    CGFloat gridH = gap + tileH + gap + tileH + gap;
+    CGFloat tilesBottom = btnY - 8.0;
+    CGFloat gridTop = tilesBottom - gridH;
+
+    CGFloat balanceBottom = gridTop - 12.0;
+    if (self.homeBalanceLabel) {
+        self.homeBalanceLabel.frame = CGRectMake(16.0, balanceBottom - 34.0, width - 32.0, 34.0);
+    }
+    if (self.homeBalanceCaptionLabel) {
+        CGFloat captionY = self.homeBalanceLabel
+            ? CGRectGetMinY(self.homeBalanceLabel.frame) - 24.0
+            : balanceBottom - 20.0;
+        self.homeBalanceCaptionLabel.frame = CGRectMake(16.0, captionY, width - 32.0, 20.0);
+    }
+
+    [self czedr_layoutHomeTilesAtGridTop:gridTop width:width tileW:tileW tileH:tileH];
     [self czedr_bringHomeContentToFront];
 }
 

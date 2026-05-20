@@ -17,7 +17,7 @@ static const NSInteger kChromeMinimizeButtonTag = 88043;
 static const NSInteger kChromeMaximizeButtonTag = 88044;
 static const NSInteger kChromeMenuButtonTag = 88045;
 static const NSInteger kChromeLogoImageTag = 88046;
-static const CGFloat kCzedrTopChromeHeight = 50.0;
+static const CGFloat kCzedrTopChromeHeight = 56.0;
 
 static NSMutableArray<UIViewController *> *CzedrForwardStack(void)
 {
@@ -225,11 +225,32 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     if (logo) {
         UIImage *img = logo.image ?: [CzedrTheme brandAuthLogoImage];
         if (img) {
-            CGFloat maxLogoH = barHeight - 8.0;
+            logo.image = img;
+            CGFloat leftEnd = pad;
+            if (forward) {
+                leftEnd = CGRectGetMaxX(forward.frame) + 6.0;
+            } else if (back) {
+                leftEnd = CGRectGetMaxX(back.frame) + 6.0;
+            } else if (menu) {
+                leftEnd = CGRectGetMaxX(menu.frame) + 6.0;
+            }
+            CGFloat rightStart = width - pad;
+            if (minimize) {
+                rightStart = CGRectGetMinX(minimize.frame) - 6.0;
+            } else if (maximize) {
+                rightStart = CGRectGetMinX(maximize.frame) - 6.0;
+            }
+            CGFloat slotW = MAX(rightStart - leftEnd, 80.0);
+            CGFloat maxLogoH = barHeight - 6.0;
             CGFloat aspect = img.size.width / MAX(img.size.height, 1.0);
-            CGFloat logoH = MIN(maxLogoH, 72.0 / MAX(aspect, 0.5));
+            CGFloat logoH = MIN(maxLogoH, 44.0);
             CGFloat logoW = logoH * aspect;
-            logo.frame = CGRectMake((width - logoW) / 2.0, (barHeight - logoH) / 2.0, logoW, logoH);
+            if (logoW > slotW) {
+                logoW = slotW;
+                logoH = logoW / MAX(aspect, 0.5);
+            }
+            CGFloat logoX = leftEnd + (slotW - logoW) / 2.0;
+            logo.frame = CGRectMake(logoX, (barHeight - logoH) / 2.0, logoW, logoH);
         }
     }
 
@@ -307,6 +328,14 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     UIView *bar = [drawer.view viewWithTag:kCzedrTopChromeTag];
     [bar removeFromSuperview];
     [CzedrForwardStack() removeAllObjects];
+}
+
++ (void)refreshSessionBarForViewController:(UIViewController *)host
+{
+    if (!host) {
+        return;
+    }
+    [self refreshSessionBarForDrawer:host.mm_drawerController];
 }
 
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer

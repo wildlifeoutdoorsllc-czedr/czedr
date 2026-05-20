@@ -7,7 +7,9 @@
 //
 
 #import "ChangePinViewController.h"
+#import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
+#import "UIViewController+MMDrawerController.h"
 #import "SharedServiceController.h"
 @interface ChangePinViewController ()
 
@@ -37,6 +39,7 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForViewController:self];
     _pin1.layer.cornerRadius=3;
     _pin1.clipsToBounds = YES;
     _pin2.layer.cornerRadius=3;

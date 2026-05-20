@@ -7,7 +7,9 @@
 //
 
 #import "LinkedViewController.h"
+#import "CzedrAppChrome.h"
 #import "CzedrTheme.h"
+#import "UIViewController+MMDrawerController.h"
 #import "addCreditViewController.h"
 #import <CoreData/CoreData.h>
 #import "SharedServiceController.h"
@@ -40,6 +42,7 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [CzedrAppChrome refreshSessionBarForViewController:self];
     if ([SharedServiceController usesV1API]) {
         [SharedServiceController syncBankAccountsToCoreData:^{
             [self reloadCardsTable];

@@ -22,6 +22,9 @@ FOUNDATION_EXPORT NSString * const CzedrUserDidLoginNotification;
 /** Top bar: menu, back/forward, centered logo, minimize / maximize. */
 + (void)refreshSessionBarForDrawer:(MMDrawerController *)drawer;
 
+/** Convenience: refresh chrome from any logged-in view controller. */
++ (void)refreshSessionBarForViewController:(UIViewController *)host;
+
 + (CGFloat)topChromeBottomYForView:(UIView *)view;
 + (void)applyChromeContentInsetsForDrawer:(MMDrawerController *)drawer;
 
