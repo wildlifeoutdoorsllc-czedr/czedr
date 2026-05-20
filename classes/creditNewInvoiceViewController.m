@@ -70,8 +70,15 @@
     [super didReceiveMemoryWarning];
 }
 
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
+}
+
 -(void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
     [CzedrAppChrome refreshSessionBarForViewController:self];
     NSString *strMakePayment = NSLocalizedString(@"Enter Description", Nil);
     [_makePayment setPlaceholderText:strMakePayment];

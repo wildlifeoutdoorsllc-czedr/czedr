@@ -69,6 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIImage *)brandAuthLogoImage;
 /** Same dimensions as the sign-in screen logo (panel height × 26%, width − 40pt). */
 + (CGSize)brandAuthLogoDisplaySizeForPanelWidth:(CGFloat)panelW panelHeight:(CGFloat)panelH;
+/** Smaller logo for inner pages (fits under toolbar without covering forms). */
++ (CGSize)brandAuthLogoCompactDisplaySizeForPanelWidth:(CGFloat)panelW;
 + (CGFloat)layoutAuthLogoInPanel:(UIView *)detailPanel logoView:(UIImageView *)logoView;
 + (void)applyAuthDarkScreen:(UIView *)rootView detailPanel:(nullable UIView *)detailPanel logoView:(nullable UIImageView *)logoView;
 

@@ -278,6 +278,19 @@
     return CGSizeMake(width, height);
 }
 
++ (CGSize)brandAuthLogoCompactDisplaySizeForPanelWidth:(CGFloat)panelW {
+    UIImage *logo = [self brandAuthLogoImage];
+    if (!logo || panelW < 1.0) {
+        return CGSizeZero;
+    }
+    CGFloat maxW = panelW - 48.0;
+    CGFloat maxLogoH = 64.0;
+    CGFloat aspect = logo.size.width / MAX(logo.size.height, 1.0);
+    CGFloat height = MIN(maxLogoH, maxW / MAX(aspect, 0.5));
+    CGFloat width = height * aspect;
+    return CGSizeMake(width, height);
+}
+
 + (CGFloat)layoutAuthLogoInPanel:(UIView *)detailPanel logoView:(UIImageView *)logoView {
     if (!detailPanel || !logoView) {
         return 0;

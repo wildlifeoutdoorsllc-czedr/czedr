@@ -29,6 +29,9 @@ FOUNDATION_EXPORT NSString * const CzedrUserDidLoginNotification;
 + (CGFloat)topChromeBottomYForDrawer:(MMDrawerController *)drawer;
 + (void)applyChromeContentInsetsForDrawer:(MMDrawerController *)drawer;
 
+/** Push legacy XIB content below toolbar + logo; hide duplicate page headers. */
++ (void)layoutLoggedInContentForViewController:(UIViewController *)viewController drawer:(MMDrawerController *)drawer;
+
 + (UIView *)installSessionBarInViewController:(UIViewController *)host;
 
 + (void)logoutFromViewController:(UIViewController *)host drawer:(MMDrawerController *)drawer;

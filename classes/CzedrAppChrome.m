@@ -298,7 +298,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     }
 }
 
-+ (void)layoutBrandLogoStrip:(UIView *)strip inDrawerView:(UIView *)drawerView belowBar:(UIView *)bar
++ (void)layoutBrandLogoStrip:(UIView *)strip inDrawerView:(UIView *)drawerView belowBar:(UIView *)bar compact:(BOOL)compact
 {
     if (!strip || !drawerView || !bar) {
         return;
@@ -318,14 +318,16 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 
     CGFloat width = drawerView.bounds.size.width;
     CGFloat panelH = drawerView.bounds.size.height;
-    CGSize size = [CzedrTheme brandAuthLogoDisplaySizeForPanelWidth:width panelHeight:panelH];
+    CGSize size = compact
+        ? [CzedrTheme brandAuthLogoCompactDisplaySizeForPanelWidth:width]
+        : [CzedrTheme brandAuthLogoDisplaySizeForPanelWidth:width panelHeight:panelH];
     if (size.width < 1.0) {
         strip.hidden = YES;
         return;
     }
 
-    const CGFloat topPad = 14.0;
-    const CGFloat bottomPad = 10.0;
+    const CGFloat topPad = compact ? 6.0 : 14.0;
+    const CGFloat bottomPad = compact ? 6.0 : 10.0;
     CGFloat logoX = (width - size.width) / 2.0;
     logo.frame = CGRectMake(logoX, topPad, size.width, size.height);
     logo.contentMode = UIViewContentModeScaleAspectFit;
@@ -486,9 +488,9 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     } else {
         [self attachChromeView:strip toDrawer:drawer];
     }
-    [self layoutBrandLogoStrip:strip inDrawerView:root belowBar:bar];
-    strip.userInteractionEnabled = NO;
     BOOL onHome = [topClass isEqualToString:@"leftSwipeViewController"];
+    [self layoutBrandLogoStrip:strip inDrawerView:root belowBar:bar compact:!onHome];
+    strip.userInteractionEnabled = NO;
     strip.hidden = onHome;
 
     [self attachChromeView:strip toDrawer:drawer];
@@ -496,10 +498,87 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     [self applyChromeContentInsetsForDrawer:drawer];
 
     if (centerTop.isViewLoaded) {
-        [centerTop.view setNeedsLayout];
+        [self layoutLoggedInContentForViewController:centerTop drawer:drawer];
     }
     } @finally {
         sChromeRefreshInProgress = NO;
+    }
+}
+
++ (UIScrollView *)czedr_firstScrollViewInView:(UIView *)view
+{
+    if ([view isKindOfClass:[UIScrollView class]]) {
+        return (UIScrollView *)view;
+    }
+    for (UIView *sub in view.subviews) {
+        UIScrollView *found = [self czedr_firstScrollViewInView:sub];
+        if (found) {
+            return found;
+        }
+    }
+    return nil;
+}
+
++ (void)czedr_hideLegacyPageChromeInView:(UIView *)rootView scrollView:(UIScrollView *)scrollView
+{
+    for (UIView *sub in rootView.subviews) {
+        if (sub == scrollView) {
+            continue;
+        }
+        if (sub.tag == kCzedrTopChromeTag || sub.tag == kChromeBrandLogoStripTag) {
+            continue;
+        }
+        if (CGRectGetMaxY(sub.frame) <= CGRectGetMinY(scrollView.frame) + 4.0 || sub.frame.origin.y < 120.0) {
+            sub.hidden = YES;
+        }
+    }
+}
+
++ (void)layoutLoggedInContentForViewController:(UIViewController *)viewController drawer:(MMDrawerController *)drawer
+{
+    if (!viewController.isViewLoaded || !drawer) {
+        return;
+    }
+    NSString *topClass = NSStringFromClass([viewController class]);
+    if ([topClass isEqualToString:@"leftSwipeViewController"]) {
+        return;
+    }
+
+    CGFloat chromeBottom = [self topChromeBottomYForDrawer:drawer];
+    if (chromeBottom < 1.0) {
+        return;
+    }
+
+    UIView *root = viewController.view;
+    CGFloat width = root.bounds.size.width;
+    CGFloat height = root.bounds.size.height;
+    CGFloat bottomInset = 0.0;
+    if (@available(iOS 11.0, *)) {
+        bottomInset = root.safeAreaInsets.bottom;
+    }
+
+    UIScrollView *scroll = [self czedr_firstScrollViewInView:root];
+    if (scroll) {
+        [self czedr_hideLegacyPageChromeInView:root scrollView:scroll];
+        CGFloat contentH = MAX(scroll.contentSize.height, height - chromeBottom + 80.0);
+        scroll.frame = CGRectMake(0.0, chromeBottom, width, height - chromeBottom - bottomInset);
+        if (scroll.contentSize.height < contentH) {
+            scroll.contentSize = CGSizeMake(width, contentH);
+        }
+        scroll.contentInset = UIEdgeInsetsZero;
+        if (@available(iOS 11.0, *)) {
+            scroll.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, bottomInset, 0);
+        }
+        return;
+    }
+
+    for (UIView *sub in root.subviews) {
+        if (sub.tag == kCzedrTopChromeTag || sub.tag == kChromeBrandLogoStripTag) {
+            continue;
+        }
+        if (sub.frame.origin.y < chromeBottom + 4.0) {
+            sub.hidden = YES;
+        }
     }
 }
 
@@ -564,6 +643,12 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     }
     NSString *topClass = NSStringFromClass([top class]);
     if ([topClass isEqualToString:@"leftSwipeViewController"]) {
+        if (!UIEdgeInsetsEqualToEdgeInsets(top.additionalSafeAreaInsets, UIEdgeInsetsZero)) {
+            top.additionalSafeAreaInsets = UIEdgeInsetsZero;
+        }
+        return;
+    }
+    if ([self czedr_firstScrollViewInView:top.view]) {
         if (!UIEdgeInsetsEqualToEdgeInsets(top.additionalSafeAreaInsets, UIEdgeInsetsZero)) {
             top.additionalSafeAreaInsets = UIEdgeInsetsZero;
         }

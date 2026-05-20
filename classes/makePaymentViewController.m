@@ -83,8 +83,15 @@
     }
 }
 
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
+}
+
 -(void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     _scroll_view.contentSize=CGSizeMake(320, 568);
     _czedrId.layer.cornerRadius=3;
