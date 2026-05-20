@@ -175,6 +175,64 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     return button;
 }
 
++ (UIView *)overlayHostViewForDrawer:(MMDrawerController *)drawer
+{
+    if (!drawer) {
+        return nil;
+    }
+    for (UIView *sub in drawer.view.subviews) {
+        for (UIView *child in sub.subviews) {
+            NSString *cls = NSStringFromClass([child class]);
+            if ([cls containsString:@"CenterContainer"]) {
+                return sub;
+            }
+        }
+    }
+    return drawer.view;
+}
+
++ (UIView *)centerContainerViewForDrawer:(MMDrawerController *)drawer
+{
+    UIView *host = [self overlayHostViewForDrawer:drawer];
+    if (!host) {
+        return nil;
+    }
+    for (UIView *child in host.subviews) {
+        NSString *cls = NSStringFromClass([child class]);
+        if ([cls containsString:@"CenterContainer"]) {
+            return child;
+        }
+    }
+    return nil;
+}
+
++ (void)attachChromeView:(UIView *)chrome toDrawer:(MMDrawerController *)drawer
+{
+    if (!chrome || !drawer) {
+        return;
+    }
+    UIView *host = [self overlayHostViewForDrawer:drawer];
+    if (!host) {
+        return;
+    }
+    if (chrome.superview != host) {
+        [chrome removeFromSuperview];
+        UIView *center = [self centerContainerViewForDrawer:drawer];
+        if (center) {
+            [host insertSubview:chrome aboveSubview:center];
+        } else {
+            [host addSubview:chrome];
+            [host bringSubviewToFront:chrome];
+        }
+    } else {
+        UIView *center = [self centerContainerViewForDrawer:drawer];
+        if (center) {
+            [host insertSubview:chrome aboveSubview:center];
+        }
+        [host bringSubviewToFront:chrome];
+    }
+}
+
 + (void)layoutTopChrome:(UIView *)bar inContainerView:(UIView *)containerView drawer:(MMDrawerController *)drawer
 {
     if (!bar || !containerView) {
@@ -294,7 +352,11 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     UIButton *menu = [UIButton buttonWithType:UIButtonTypeCustom];
     menu.tag = kChromeMenuButtonTag;
     menu.accessibilityLabel = @"Menu";
-    [menu setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];
+    UIImage *menuIcon = [UIImage imageNamed:@"menu2.png"];
+    if (!menuIcon) {
+        menuIcon = [UIImage imageNamed:@"menu2@2x.png"];
+    }
+    [menu setImage:menuIcon forState:UIControlStateNormal];
     menu.imageView.contentMode = UIViewContentModeScaleAspectFit;
     menu.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.15];
     menu.layer.cornerRadius = 4.0;
@@ -331,9 +393,14 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     if (!drawer) {
         return;
     }
-    UIView *bar = [drawer.view viewWithTag:kCzedrTopChromeTag];
+    UIView *host = [self overlayHostViewForDrawer:drawer] ?: drawer.view;
+    UIView *bar = [host viewWithTag:kCzedrTopChromeTag];
     [bar removeFromSuperview];
-    UIView *strip = [drawer.view viewWithTag:kChromeBrandLogoStripTag];
+    UIView *strip = [host viewWithTag:kChromeBrandLogoStripTag];
+    [strip removeFromSuperview];
+    bar = [drawer.view viewWithTag:kCzedrTopChromeTag];
+    [bar removeFromSuperview];
+    strip = [drawer.view viewWithTag:kChromeBrandLogoStripTag];
     [strip removeFromSuperview];
     [CzedrForwardStack() removeAllObjects];
 }
@@ -382,20 +449,23 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         lastCenterNav = nav;
     }
 
-    if (!drawer.view.window) {
+    UIView *host = [self overlayHostViewForDrawer:drawer];
+    if (!host) {
         return;
     }
 
-    UIView *bar = [drawer.view viewWithTag:kCzedrTopChromeTag];
+    UIView *bar = [host viewWithTag:kCzedrTopChromeTag];
     if (!bar) {
         bar = [self buildTopChromeWithTarget:target];
-        [drawer.view addSubview:bar];
+        [self attachChromeView:bar toDrawer:drawer];
+    } else {
+        [self attachChromeView:bar toDrawer:drawer];
     }
     [self layoutTopChrome:bar inContainerView:drawer.view drawer:drawer];
     bar.hidden = NO;
     bar.userInteractionEnabled = YES;
 
-    UIView *strip = [drawer.view viewWithTag:kChromeBrandLogoStripTag];
+    UIView *strip = [host viewWithTag:kChromeBrandLogoStripTag];
     if (!strip) {
         strip = [[UIView alloc] init];
         strip.tag = kChromeBrandLogoStripTag;
@@ -404,14 +474,25 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         logo.contentMode = UIViewContentModeScaleAspectFit;
         logo.backgroundColor = [UIColor clearColor];
         [strip addSubview:logo];
-        [drawer.view addSubview:strip];
+        [self attachChromeView:strip toDrawer:drawer];
+    } else {
+        [self attachChromeView:strip toDrawer:drawer];
     }
     [self layoutBrandLogoStrip:strip inDrawerView:drawer.view belowBar:bar];
     strip.userInteractionEnabled = NO;
+    BOOL onHome = [topClass isEqualToString:@"leftSwipeViewController"];
+    strip.hidden = onHome;
 
-    [drawer.view bringSubviewToFront:strip];
-    [drawer.view bringSubviewToFront:bar];
+    [self attachChromeView:strip toDrawer:drawer];
+    [self attachChromeView:bar toDrawer:drawer];
     [self applyChromeContentInsetsForDrawer:drawer];
+
+    if (!drawer.view.window) {
+        __weak MMDrawerController *weakDrawer = drawer;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self refreshSessionBarForDrawer:weakDrawer];
+        });
+    }
 }
 
 + (UIView *)installSessionBarInViewController:(UIViewController *)host
@@ -434,15 +515,27 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         top = view.safeAreaInsets.top;
     }
     CGFloat chromeBottom = top;
-    UIView *bar = [view viewWithTag:kCzedrTopChromeTag];
-    if (bar && !bar.hidden && bar.superview) {
-        chromeBottom = MAX(chromeBottom, CGRectGetMaxY(bar.frame));
-    }
-    UIView *strip = [view viewWithTag:kChromeBrandLogoStripTag];
-    if (strip && !strip.hidden && strip.superview) {
-        chromeBottom = MAX(chromeBottom, CGRectGetMaxY(strip.frame));
+    for (UIView *root in @[view]) {
+        UIView *bar = [root viewWithTag:kCzedrTopChromeTag];
+        if (bar && !bar.hidden && bar.superview) {
+            chromeBottom = MAX(chromeBottom, CGRectGetMaxY(bar.frame));
+        }
+        UIView *strip = [root viewWithTag:kChromeBrandLogoStripTag];
+        if (strip && !strip.hidden && strip.superview) {
+            chromeBottom = MAX(chromeBottom, CGRectGetMaxY(strip.frame));
+        }
     }
     return chromeBottom;
+}
+
++ (CGFloat)topChromeBottomYForDrawer:(MMDrawerController *)drawer
+{
+    if (!drawer) {
+        return 0;
+    }
+    UIView *host = [self overlayHostViewForDrawer:drawer];
+    CGFloat chromeBottom = [self topChromeBottomYForView:host ?: drawer.view];
+    return MAX(chromeBottom, [self topChromeBottomYForView:drawer.view]);
 }
 
 + (void)applyChromeContentInsetsForDrawer:(MMDrawerController *)drawer
@@ -458,13 +551,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     if (!top) {
         return;
     }
-    NSString *topClass = NSStringFromClass([top class]);
-    if ([topClass isEqualToString:@"ViewController"]
-        || [topClass isEqualToString:@"leftSwipeViewController"]) {
-        top.additionalSafeAreaInsets = UIEdgeInsetsZero;
-        return;
-    }
-    CGFloat chromeBottom = [self topChromeBottomYForView:drawer.view];
+    CGFloat chromeBottom = [self topChromeBottomYForDrawer:drawer];
     CGFloat baseTop = 0;
     if (@available(iOS 11.0, *)) {
         baseTop = top.view.safeAreaInsets.top;

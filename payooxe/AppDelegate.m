@@ -19,8 +19,7 @@
 #import "MBProgressHUD.h"
 #import <CoreData/CoreData.h>
 
-@interface AppDelegate ()
-
+@interface AppDelegate () <UINavigationControllerDelegate>
 @end
 
 @implementation AppDelegate
@@ -132,6 +131,7 @@
 - (MMDrawerController *)drawerControllerWithCenterNavigation:(UINavigationController *)navigation
 {
     leftViewController *leftDrawer = [[leftViewController alloc] initWithNibName:@"leftViewController" bundle:nil];
+    navigation.delegate = self;
     MMDrawerController *drawerController = [[MMDrawerController alloc]
                                           initWithCenterViewController:navigation
                                           leftDrawerViewController:leftDrawer
@@ -373,4 +373,20 @@
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 }
+
+#pragma mark - UINavigationControllerDelegate
+
+- (void)navigationController:(UINavigationController *)navigationController
+      didShowViewController:(UIViewController *)viewController
+                     animated:(BOOL)animated
+{
+    (void)navigationController;
+    (void)viewController;
+    (void)animated;
+    UIViewController *root = self.window.rootViewController;
+    if ([root isKindOfClass:[MMDrawerController class]]) {
+        [CzedrAppChrome refreshSessionBarForDrawer:(MMDrawerController *)root];
+    }
+}
+
 @end
