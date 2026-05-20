@@ -86,9 +86,6 @@
     if (self.homeBalanceLabel) {
         [self.view bringSubviewToFront:self.homeBalanceLabel];
     }
-    if (self.homeLogoImageView && !self.homeLogoImageView.hidden) {
-        [self.view bringSubviewToFront:self.homeLogoImageView];
-    }
     if (czedrIdLabel) {
         [self.view bringSubviewToFront:czedrIdLabel];
     }
@@ -305,18 +302,7 @@
     CGFloat y = [self czedr_topChromeBottomY] + 8.0;
 
     if (self.homeLogoImageView) {
-        UIImage *logoImg = [CzedrTheme brandAuthLogoImage];
-        if (logoImg) {
-            self.homeLogoImageView.image = logoImg;
-            CGSize logoSize = [CzedrTheme brandAuthLogoDisplaySizeForPanelWidth:width panelHeight:viewH];
-            self.homeLogoImageView.frame = CGRectMake((width - logoSize.width) / 2.0, y, logoSize.width, logoSize.height);
-            self.homeLogoImageView.contentMode = UIViewContentModeScaleAspectFit;
-            self.homeLogoImageView.backgroundColor = [UIColor clearColor];
-            self.homeLogoImageView.hidden = NO;
-            y = CGRectGetMaxY(self.homeLogoImageView.frame) + 6.0;
-        } else {
-            self.homeLogoImageView.hidden = YES;
-        }
+        self.homeLogoImageView.hidden = YES;
     }
 
     if (czedrIdLabel) {
@@ -367,7 +353,6 @@
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     [self czedr_layoutHomeHeader];
 }
 
