@@ -76,22 +76,34 @@ final class CzedrAPIClient {
     }
 
     func fetchBalance(apiBase: String, token: String, completion: @escaping (APIResult<BalanceInfo>) -> Void) {
-        authedGetObject(base: apiBase, path: "/v1/ledger/balance", token: token) { data in
-            .ok(BalanceInfo(
-                balanceCents: Self.int64(data["balance_cents"]),
-                currency: data["currency"] as? String ?? "USD",
-                transferFeeCents: Self.int64(data["transfer_fee_cents"])
-            ))
-        } completion: completion
+        authedGetObject(
+            base: apiBase,
+            path: "/v1/ledger/balance",
+            token: token,
+            map: { data in
+                .ok(BalanceInfo(
+                    balanceCents: Self.int64(data["balance_cents"]),
+                    currency: data["currency"] as? String ?? "USD",
+                    transferFeeCents: Self.int64(data["transfer_fee_cents"])
+                ))
+            },
+            completion: completion
+        )
     }
 
     func validateRecipient(apiBase: String, token: String, czedrId: String, completion: @escaping (APIResult<String>) -> Void) {
         let q = czedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         let encoded = q.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? q
-        authedGetObject(base: apiBase, path: "/v1/users/validate?czedr_id=\(encoded)", token: token) { data in
-            let name = (data["display_name"] as? String) ?? (data["result"] as? String) ?? q
-            return .ok(name.isEmpty ? q : name)
-        } completion: completion
+        authedGetObject(
+            base: apiBase,
+            path: "/v1/users/validate?czedr_id=\(encoded)",
+            token: token,
+            map: { data in
+                let name = (data["display_name"] as? String) ?? (data["result"] as? String) ?? q
+                return .ok(name.isEmpty ? q : name)
+            },
+            completion: completion
+        )
     }
 
     func transfer(
@@ -123,24 +135,30 @@ final class CzedrAPIClient {
     }
 
     func fetchHistory(apiBase: String, token: String, completion: @escaping (APIResult<[TransferRow]>) -> Void) {
-        authedGetObject(base: apiBase, path: "/v1/transfers/history", token: token) { data in
-            let rows = data["transactions"] as? [[String: Any]] ?? []
-            let mapped = rows.compactMap { row -> TransferRow? in
-                let id = (row["id"] as? String) ?? (row["id"] as? NSNumber)?.stringValue
-                guard let id, !id.isEmpty else { return nil }
-                return TransferRow(
-                    id: id,
-                    amountCents: Self.int64(row["amount_cents"]),
-                    currency: row["currency"] as? String ?? "USD",
-                    memo: row["memo"] as? String ?? "",
-                    createdAt: row["created_at"] as? String ?? "",
-                    fromCzedrId: row["from_czedr_id"] as? String ?? "",
-                    toCzedrId: row["to_czedr_id"] as? String ?? "",
-                    status: row["status"] as? String ?? ""
-                )
-            }
-            return .ok(mapped)
-        } completion: completion
+        authedGetObject(
+            base: apiBase,
+            path: "/v1/transfers/history",
+            token: token,
+            map: { data in
+                let rows = data["transactions"] as? [[String: Any]] ?? []
+                let mapped = rows.compactMap { row -> TransferRow? in
+                    let id = (row["id"] as? String) ?? (row["id"] as? NSNumber)?.stringValue
+                    guard let id, !id.isEmpty else { return nil }
+                    return TransferRow(
+                        id: id,
+                        amountCents: Self.int64(row["amount_cents"]),
+                        currency: row["currency"] as? String ?? "USD",
+                        memo: row["memo"] as? String ?? "",
+                        createdAt: row["created_at"] as? String ?? "",
+                        fromCzedrId: row["from_czedr_id"] as? String ?? "",
+                        toCzedrId: row["to_czedr_id"] as? String ?? "",
+                        status: row["status"] as? String ?? ""
+                    )
+                }
+                return .ok(mapped)
+            },
+            completion: completion
+        )
     }
 
     // MARK: - HTTP helpers
