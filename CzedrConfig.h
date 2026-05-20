@@ -12,6 +12,9 @@
 /** Legacy OneSignal SDK (2015) crashes on modern iOS at launch — off until SDK is upgraded. */
 #define CZEDR_ENABLE_ONESIGNAL 0
 
+/** 1 = SwiftUI shell (Option B); 0 = legacy Objective-C + MMDrawer */
+#define CZEDR_USE_SWIFTUI 1
+
 /** Simulator: 127.0.0.1 — physical device: your PC LAN IP */
 #define CZEDR_API_BASE "http://127.0.0.1:8080"
 

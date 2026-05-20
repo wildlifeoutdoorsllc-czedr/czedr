@@ -1,7 +1,7 @@
 # Czedr iOS — honest assessment and path to “done”
 
 **Date:** May 2026  
-**Context:** Builds 82–87 attempted toolbar + logo on logged-in screens. Make Payment on Build 87 still showed forms only (no logo, no chrome bar). Backend security work is in better shape than the legacy iOS UI layer.
+**Context:** Builds 82–88 attempted toolbar + logo on legacy Objective-C. **Option B (SwiftUI) is now in git** — set `CZEDR_USE_SWIFTUI` to `1` in `CzedrConfig.h` (default). Legacy UI remains available with `CZEDR_USE_SWIFTUI 0`.
 
 ---
 
@@ -84,7 +84,9 @@ Documented in `docs/SECURITY-UPGRADE-ROADMAP.md` and `docs/DEPLOY-HTTPS.md`:
 | App you can change without pain in **weeks** | **Option B** SwiftUI shell |
 | One codebase for Android + iOS later | Option C (after MVP) |
 
-**Recommendation:** Commit to **Option B** for UI, keep **Option A** only long enough to ship one stable TestFlight (Build 88–90) if you cannot pause feature work for a SwiftUI sprint.
+**Status:** **Option B started** — `ios/CzedrSwift/` (login, home, make payment, history, profile, menu shell). TestFlight **build 89+** ships SwiftUI when `CZEDR_USE_SWIFTUI` is `1`.
+
+**Next SwiftUI sprints:** Send Invoice, Pending, Link Card, Change PIN, forgot password, Moov deposit.
 
 ---
 

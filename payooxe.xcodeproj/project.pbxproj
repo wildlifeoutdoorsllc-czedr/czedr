@@ -30,6 +30,13 @@
 		CZED0F241F60000600CZEDR /* CzedrLanAPIFinder.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED0F231F60000600CZEDR /* CzedrLanAPIFinder.m */; };
 		CZED10241F60000700CZEDR /* CzedrMaximizeIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = CZED10231F60000700CZEDR /* CzedrMaximizeIconView.m */; };
 		CZED20241F60000800CZEDR /* CzedrAesGcmBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZED20231F60000800CZEDR /* CzedrAesGcmBridge.swift */; };
+		CZSW041F600100CZEDR /* CzedrAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW031F600100CZEDR /* CzedrAPIClient.swift */; };
+		CZSW061F600100CZEDR /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW051F600100CZEDR /* KeychainStore.swift */; };
+		CZSW081F600100CZEDR /* AppSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW071F600100CZEDR /* AppSession.swift */; };
+		CZSW0A1F600100CZEDR /* CzedrPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW091F600100CZEDR /* CzedrPalette.swift */; };
+		CZSW0C1F600100CZEDR /* CzedrSwiftRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW0B1F600100CZEDR /* CzedrSwiftRootView.swift */; };
+		CZSW0E1F600100CZEDR /* CzedrSwiftBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW0D1F600100CZEDR /* CzedrSwiftBootstrap.swift */; };
+		CZSW111F600100CZEDR /* CzedrSwiftLauncher.m in Sources */ = {isa = PBXBuildFile; fileRef = CZSW101F600100CZEDR /* CzedrSwiftLauncher.m */; };
 		068F847E1B182B2E003652F0 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */; };
 		068F847F1B182B2E003652F0 /* AFHTTPRequestOperationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846E1B182B2E003652F0 /* AFHTTPRequestOperationManager.m */; };
 		068F84801B182B2E003652F0 /* AFHTTPSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F84701B182B2E003652F0 /* AFHTTPSessionManager.m */; };
@@ -218,6 +225,15 @@
 		CZED10221F60000700CZEDR /* CzedrMaximizeIconView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = classes/CzedrMaximizeIconView.h; sourceTree = "<group>"; };
 		CZED10231F60000700CZEDR /* CzedrMaximizeIconView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = classes/CzedrMaximizeIconView.m; sourceTree = "<group>"; };
 		CZED20231F60000800CZEDR /* CzedrAesGcmBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrAesGcmBridge.swift; sourceTree = "<group>"; };
+		CZSW021F600100CZEDR /* CzedrSwift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CzedrSwift-Bridging-Header.h"; sourceTree = "<group>"; };
+		CZSW031F600100CZEDR /* CzedrAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrAPIClient.swift; sourceTree = "<group>"; };
+		CZSW051F600100CZEDR /* KeychainStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		CZSW071F600100CZEDR /* AppSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSession.swift; sourceTree = "<group>"; };
+		CZSW091F600100CZEDR /* CzedrPalette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPalette.swift; sourceTree = "<group>"; };
+		CZSW0B1F600100CZEDR /* CzedrSwiftRootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrSwiftRootView.swift; sourceTree = "<group>"; };
+		CZSW0D1F600100CZEDR /* CzedrSwiftBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrSwiftBootstrap.swift; sourceTree = "<group>"; };
+		CZSW0F1F600100CZEDR /* CzedrSwiftLauncher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CzedrSwiftLauncher.h; sourceTree = "<group>"; };
+		CZSW101F600100CZEDR /* CzedrSwiftLauncher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CzedrSwiftLauncher.m; sourceTree = "<group>"; };
 		068F846B1B182B2E003652F0 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
 		068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPRequestOperation.m; sourceTree = "<group>"; };
 		068F846D1B182B2E003652F0 /* AFHTTPRequestOperationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperationManager.h; sourceTree = "<group>"; };
@@ -673,9 +689,26 @@
 				AF2EDA2C0F0C522F0020ECBA /* images */,
 				AF2ED9EB0F0C4D330020ECBA /* leftDrawer */,
 				AF2ED9B40F0C4C450020ECBA /* payooxe */,
+				CZSW011F600100CZEDR /* CzedrSwift */,
 				AF2ED9CE0F0C4C460020ECBA /* payooxeTests */,
 				AF2ED9B30F0C4C450020ECBA /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		CZSW011F600100CZEDR /* CzedrSwift */ = {
+			isa = PBXGroup;
+			children = (
+				CZSW021F600100CZEDR /* CzedrSwift-Bridging-Header.h */,
+				CZSW031F600100CZEDR /* CzedrAPIClient.swift */,
+				CZSW051F600100CZEDR /* KeychainStore.swift */,
+				CZSW071F600100CZEDR /* AppSession.swift */,
+				CZSW091F600100CZEDR /* CzedrPalette.swift */,
+				CZSW0B1F600100CZEDR /* CzedrSwiftRootView.swift */,
+				CZSW0D1F600100CZEDR /* CzedrSwiftBootstrap.swift */,
+				CZSW0F1F600100CZEDR /* CzedrSwiftLauncher.h */,
+				CZSW101F600100CZEDR /* CzedrSwiftLauncher.m */,
+			);
+			path = ios/CzedrSwift;
 			sourceTree = "<group>";
 		};
 		AF2ED9B30F0C4C450020ECBA /* Products */ = {
@@ -1107,6 +1140,13 @@
 				CZED0F241F60000600CZEDR /* CzedrLanAPIFinder.m in Sources */,
 				CZED10241F60000700CZEDR /* CzedrMaximizeIconView.m in Sources */,
 				CZED20241F60000800CZEDR /* CzedrAesGcmBridge.swift in Sources */,
+				CZSW041F600100CZEDR /* CzedrAPIClient.swift in Sources */,
+				CZSW061F600100CZEDR /* KeychainStore.swift in Sources */,
+				CZSW081F600100CZEDR /* AppSession.swift in Sources */,
+				CZSW0A1F600100CZEDR /* CzedrPalette.swift in Sources */,
+				CZSW0C1F600100CZEDR /* CzedrSwiftRootView.swift in Sources */,
+				CZSW0E1F600100CZEDR /* CzedrSwiftBootstrap.swift in Sources */,
+				CZSW111F600100CZEDR /* CzedrSwiftLauncher.m in Sources */,
 				AF3FBE1B1A9C70B600F8FE78 /* GCPlaceholderTextView.m in Sources */,
 				068F84B11B182B54003652F0 /* SBJsonWriter.m in Sources */,
 				068F84A51B182B54003652F0 /* NSObject+SBJson.m in Sources */,
@@ -1304,6 +1344,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.czedr.app;
 				PRODUCT_NAME = Czedr;
+				SWIFT_OBJC_BRIDGING_HEADER = ios/CzedrSwift/CzedrSwift-Bridging-Header.h;
 				SWIFT_VERSION = 5.0;
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1333,6 +1374,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.czedr.app;
 				PRODUCT_NAME = Czedr;
+				SWIFT_OBJC_BRIDGING_HEADER = ios/CzedrSwift/CzedrSwift-Bridging-Header.h;
 				SWIFT_VERSION = 5.0;
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				TARGETED_DEVICE_FAMILY = 1;

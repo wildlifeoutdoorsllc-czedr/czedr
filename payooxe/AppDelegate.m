@@ -7,7 +7,9 @@
 //
 
 #import "AppDelegate.h"
+#import "CzedrConfig.h"
 #import "CzedrTheme.h"
+#import "CzedrSwiftLauncher.h"
 #import "MMDrawerController.h"
 #import "MMDrawerVisualState.h"
 #import <QuartzCore/QuartzCore.h>
@@ -39,6 +41,9 @@
     }
     [CzedrTheme applyGlobalAppearance];
     self.window.backgroundColor = [CzedrTheme darkBackground];
+#if CZEDR_USE_SWIFTUI
+    [CzedrSwiftLauncher presentInWindow:self.window];
+#else
     // New process after force-quit: stored auth must not skip sign-in (token alone is not enough).
     if ([CzedrAppChrome isLoggedIn]) {
         [CzedrAppChrome clearLocalSession];
@@ -46,6 +51,7 @@
     [[NSUserDefaults standardUserDefaults] setValue:@"0" forKey:@"Avalue"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [self mainViewSwitch];
+#endif
     [self.window makeKeyAndVisible];
     
 //    if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)])
