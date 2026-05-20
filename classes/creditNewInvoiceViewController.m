@@ -76,6 +76,13 @@
     [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
+    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
+}
+
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];

@@ -24,8 +24,15 @@
 static int receve_totalcount;
 static int sent_totalcount;
 @implementation pendingInvoicesViewController
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
+}
+
 -(void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
     if ([[[NSUserDefaults standardUserDefaults] valueForKey:@"pendingclick"] isEqualToString:@"pending"])
     {

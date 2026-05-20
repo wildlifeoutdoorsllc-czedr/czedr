@@ -40,8 +40,15 @@
     NSString *strNoHistory = NSLocalizedString(@"No history found", Nil);
     nohistory.text = strNoHistory;
 }
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    [CzedrAppChrome layoutLoggedInContentForViewController:self drawer:self.mm_drawerController];
+}
+
 -(void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
 //    [self.tableDetail dataSource];
 //    [self.tableDetail delegate];
     

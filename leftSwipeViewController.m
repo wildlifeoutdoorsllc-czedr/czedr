@@ -303,7 +303,10 @@
     }
     CGFloat width = self.view.bounds.size.width;
     CGFloat viewH = self.view.bounds.size.height;
-    CGFloat y = [self czedr_safeAreaTop] + [self czedr_toolbarReservedHeight] + 6.0;
+    CGFloat y = [CzedrAppChrome topChromeBottomYForDrawer:self.mm_drawerController] + 8.0;
+    if (y < [self czedr_safeAreaTop] + 40.0) {
+        y = [self czedr_safeAreaTop] + [self czedr_toolbarReservedHeight] + 6.0;
+    }
 
     if (self.homeLogoImageView) {
         UIImage *logoImg = [CzedrTheme brandAuthLogoImage];
