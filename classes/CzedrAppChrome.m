@@ -195,20 +195,22 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     return button;
 }
 
-+ (UIView *)childContainerViewForDrawer:(MMDrawerController *)drawer
++ (UINavigationController *)centerNavigationForDrawer:(MMDrawerController *)drawer
 {
     if (!drawer) {
         return nil;
     }
-    for (UIView *sub in drawer.view.subviews) {
-        for (UIView *child in sub.subviews) {
-            NSString *cls = NSStringFromClass([child class]);
-            if ([cls containsString:@"CenterContainer"]) {
-                return sub;
-            }
-        }
+    UIViewController *center = drawer.centerViewController;
+    if ([center isKindOfClass:[UINavigationController class]]) {
+        return (UINavigationController *)center;
     }
     return nil;
+}
+
++ (UIView *)chromeHostViewForDrawer:(MMDrawerController *)drawer
+{
+    UINavigationController *nav = [self centerNavigationForDrawer:drawer];
+    return nav.view;
 }
 
 + (void)attachChromeView:(UIView *)chrome toDrawer:(MMDrawerController *)drawer
@@ -216,21 +218,16 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     if (!chrome || !drawer) {
         return;
     }
-    UIView *root = drawer.view;
-    UIView *childHost = [self childContainerViewForDrawer:drawer];
+    UIView *root = [self chromeHostViewForDrawer:drawer];
     if (!root) {
         return;
     }
     if (chrome.superview != root) {
         [chrome removeFromSuperview];
     }
-    if (childHost) {
-        [root insertSubview:chrome aboveSubview:childHost];
-    } else {
-        [root addSubview:chrome];
-        [root bringSubviewToFront:chrome];
-    }
-    chrome.layer.zPosition = 1000.0;
+    [root addSubview:chrome];
+    [root bringSubviewToFront:chrome];
+    chrome.layer.zPosition = 10000.0;
     chrome.userInteractionEnabled = YES;
 }
 
@@ -398,11 +395,15 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     if (!drawer) {
         return;
     }
-    UIView *root = drawer.view;
-    UIView *bar = [root viewWithTag:kCzedrTopChromeTag];
-    [bar removeFromSuperview];
-    UIView *strip = [root viewWithTag:kChromeBrandLogoStripTag];
-    [strip removeFromSuperview];
+    for (UIView *root in @[[self chromeHostViewForDrawer:drawer], drawer.view]) {
+        if (!root) {
+            continue;
+        }
+        UIView *bar = [root viewWithTag:kCzedrTopChromeTag];
+        [bar removeFromSuperview];
+        UIView *strip = [root viewWithTag:kChromeBrandLogoStripTag];
+        [strip removeFromSuperview];
+    }
     [CzedrForwardStack() removeAllObjects];
 }
 
@@ -456,7 +457,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
         lastCenterNav = nav;
     }
 
-    UIView *root = drawer.view;
+    UIView *root = [self chromeHostViewForDrawer:drawer];
     if (!root) {
         return;
     }
@@ -468,7 +469,7 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     } else {
         [self attachChromeView:bar toDrawer:drawer];
     }
-    [self layoutTopChrome:bar inContainerView:drawer.view drawer:drawer];
+    [self layoutTopChrome:bar inContainerView:root drawer:drawer];
     bar.hidden = NO;
     bar.userInteractionEnabled = YES;
 
@@ -485,9 +486,10 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     } else {
         [self attachChromeView:strip toDrawer:drawer];
     }
-    [self layoutBrandLogoStrip:strip inDrawerView:drawer.view belowBar:bar];
+    [self layoutBrandLogoStrip:strip inDrawerView:root belowBar:bar];
     strip.userInteractionEnabled = NO;
-    strip.hidden = NO;
+    BOOL onHome = [topClass isEqualToString:@"leftSwipeViewController"];
+    strip.hidden = onHome;
 
     [self attachChromeView:strip toDrawer:drawer];
     [self attachChromeView:bar toDrawer:drawer];
@@ -506,7 +508,8 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
     MMDrawerController *drawer = host.mm_drawerController;
     if (drawer) {
         [self refreshSessionBarForDrawer:drawer];
-        return [drawer.view viewWithTag:kCzedrTopChromeTag];
+        UIView *host = [self chromeHostViewForDrawer:drawer];
+        return [host viewWithTag:kCzedrTopChromeTag];
     }
     return nil;
 }
@@ -538,6 +541,10 @@ static CzedrTopChromeTarget *CzedrTopChromeTargetShared(void)
 {
     if (!drawer) {
         return 0;
+    }
+    UIView *host = [self chromeHostViewForDrawer:drawer];
+    if (host) {
+        return [self topChromeBottomYForView:host];
     }
     return [self topChromeBottomYForView:drawer.view];
 }

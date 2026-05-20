@@ -86,6 +86,9 @@
     if (self.homeBalanceLabel) {
         [self.view bringSubviewToFront:self.homeBalanceLabel];
     }
+    if (self.homeLogoImageView && !self.homeLogoImageView.hidden) {
+        [self.view bringSubviewToFront:self.homeLogoImageView];
+    }
     if (czedrIdLabel) {
         [self.view bringSubviewToFront:czedrIdLabel];
     }
@@ -250,16 +253,17 @@
     });
 }
 
-- (CGFloat)czedr_topChromeBottomY
+- (CGFloat)czedr_safeAreaTop
 {
-    MMDrawerController *drawer = self.mm_drawerController;
-    if (drawer) {
-        return [CzedrAppChrome topChromeBottomYForDrawer:drawer];
-    }
     if (@available(iOS 11.0, *)) {
         return self.view.safeAreaInsets.top;
     }
-    return 0;
+    return 20.0;
+}
+
+- (CGFloat)czedr_toolbarReservedHeight
+{
+    return 50.0;
 }
 
 - (void)czedr_layoutHomeTilesAtGridTop:(CGFloat)gridTop width:(CGFloat)width tileW:(CGFloat)tileW tileH:(CGFloat)tileH
@@ -299,10 +303,21 @@
     }
     CGFloat width = self.view.bounds.size.width;
     CGFloat viewH = self.view.bounds.size.height;
-    CGFloat y = [self czedr_topChromeBottomY] + 8.0;
+    CGFloat y = [self czedr_safeAreaTop] + [self czedr_toolbarReservedHeight] + 6.0;
 
     if (self.homeLogoImageView) {
-        self.homeLogoImageView.hidden = YES;
+        UIImage *logoImg = [CzedrTheme brandAuthLogoImage];
+        if (logoImg) {
+            self.homeLogoImageView.image = logoImg;
+            CGSize logoSize = [CzedrTheme brandAuthLogoDisplaySizeForPanelWidth:width panelHeight:viewH];
+            self.homeLogoImageView.frame = CGRectMake((width - logoSize.width) / 2.0, y, logoSize.width, logoSize.height);
+            self.homeLogoImageView.contentMode = UIViewContentModeScaleAspectFit;
+            self.homeLogoImageView.backgroundColor = [UIColor clearColor];
+            self.homeLogoImageView.hidden = NO;
+            y = CGRectGetMaxY(self.homeLogoImageView.frame) + 8.0;
+        } else {
+            self.homeLogoImageView.hidden = YES;
+        }
     }
 
     if (czedrIdLabel) {
