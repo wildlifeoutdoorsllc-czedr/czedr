@@ -1,8 +1,10 @@
 # Czedr — agent handoff (May 2026)
 
-**Read this first** when continuing work on the Czedr iOS login crash, TestFlight uploads, or Windows iPhone testing setup.
+**Read this first** when continuing work on the Czedr iOS app, TestFlight uploads, or Windows iPhone testing setup.
 
-Related docs: `docs/TEST-ACCOUNTS.md`, `docs/TESTFLIGHT_SETUP.md`, `IPHONE-LOGIN-HELP.txt`, `docs/PROJECT-CONVERSATION-NOTES.md`.
+**Workflow (2026):** `docs/DEVELOPMENT-WORKFLOW.md` — manual TestFlight only; `docs/IOS-BUILD.md` — build numbers; agent rule `.cursor/rules/czedr-workflow.mdc`.
+
+Related docs: `docs/TEST-ACCOUNTS.md`, `docs/TESTFLIGHT_SETUP.md`, `docs/IOS-SWIFTUI.md`, `IPHONE-LOGIN-HELP.txt`, `docs/PROJECT-CONVERSATION-NOTES.md`.
 
 ---
 
@@ -32,7 +34,7 @@ Related docs: `docs/TEST-ACCOUNTS.md`, `docs/TESTFLIGHT_SETUP.md`, `IPHONE-LOGIN
 | Fastlane | `fastlane/Fastfile` → `bundle exec fastlane ios beta` |
 | Repo variable | `CZEDR_API_BASE` — e.g. `http://192.168.68.51:8080` (baked into TestFlight builds at CI time) |
 
-**Commit policy:** User prefers commits only when asked; this session committed/pushed crash fixes and automation scripts.
+**Commit policy:** Commits only when user asks. **Push / TestFlight:** only when user asks to push or ship. TestFlight is **workflow_dispatch** only (not on every push). See `docs/DEVELOPMENT-WORKFLOW.md`.
 
 ---
 

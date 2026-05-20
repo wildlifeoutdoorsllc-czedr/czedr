@@ -1,6 +1,8 @@
 # Build Czedr on a cloud Mac and upload to TestFlight.
-# Trigger: Actions tab → "iOS TestFlight" → Run workflow
-# Docs: docs/TESTFLIGHT_SETUP.md
+# Trigger: MANUAL ONLY — Actions → "iOS TestFlight" → Run workflow
+#   or:  scripts/ship-testflight.ps1 -BuildNumber <N>
+# Push to czedrmaster does NOT start a build (see docs/DEVELOPMENT-WORKFLOW.md).
+# Docs: docs/TESTFLIGHT_SETUP.md, docs/IOS-BUILD.md
 
 name: iOS TestFlight
 
@@ -12,23 +14,9 @@ on:
         required: false
         default: ""
       build_number:
-        description: "iOS build number (CFBundleVersion), e.g. 50"
+        description: "iOS build number (CFBundleVersion); see docs/IOS-BUILD.md"
         required: false
-        default: "93"
-  push:
-    branches: [main, master, czedrmaster]
-    paths:
-      - ".github/workflows/ios-testflight.yml"
-      - "payooxe/**"
-      - "classes/**"
-      - "payooxe.xcodeproj/**"
-      - "fastlane/**"
-      - "Czedr*.h"
-      - "Czedr*.m"
-      - "Czedr*.swift"
-      - "SharedServiceController.*"
-      - "leftSwipeViewController.*"
-      - "ios/**"
+        default: "94"
 
 concurrency:
   group: ios-testflight-${{ github.ref }}

@@ -21,7 +21,8 @@ ios/CzedrSwift/
 
 ## TestFlight
 
-- Same workflow: `.github/workflows/ios-testflight.yml`
+- Manual ship only: `docs/DEVELOPMENT-WORKFLOW.md`, `scripts/ship-testflight.ps1`, build tracker `docs/IOS-BUILD.md`
+- Workflow: `.github/workflows/ios-testflight.yml` (not triggered by push)
 - API base still baked via `CzedrConfig.h` (`CZEDR_API_BASE`)
 - On device, sign-in screen shows **SwiftUI · Build N** under the logo
 - Test account: `docs/TEST-ACCOUNTS.md` (Alice, PIN `1` for transfers)

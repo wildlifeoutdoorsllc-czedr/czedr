@@ -86,7 +86,7 @@ Documented in `docs/SECURITY-UPGRADE-ROADMAP.md` and `docs/DEPLOY-HTTPS.md`:
 
 **Status:** **Option B started** — `ios/CzedrSwift/` (login, home, make payment, history, profile, menu shell). TestFlight **build 89+** ships SwiftUI when `CZEDR_USE_SWIFTUI` is `1`.
 
-**Next SwiftUI sprints:** Send Invoice, Pending, Link Card, Change PIN, forgot password, Moov deposit.
+**Next SwiftUI sprints:** Pay/cancel invoice (P2), Link Card, Change PIN, forgot password, Moov deposit. Send Invoice + Pending lists implemented locally (`beecb11`) — ship as build 94 when ready (`docs/IOS-BUILD.md`).
 
 ---
 

@@ -1,0 +1,32 @@
+---
+description: Czedr git, commit, push, and TestFlight workflow — maximize efficiency, no surprise builds
+alwaysApply: true
+---
+
+# Czedr workflow (agent)
+
+Read `docs/DEVELOPMENT-WORKFLOW.md` and `docs/IOS-BUILD.md` for current build numbers and backlog.
+
+## Defaults
+
+- **Commit** only when the user explicitly asks to commit.
+- **Never `git push`** unless the user asks (push, ship, deploy, TestFlight, or back up to GitHub).
+- **Never trigger TestFlight / `gh workflow run`** unless the user asks to ship or build for TestFlight.
+- **Batch work** — finish a coherent feature (or P1 backlog row) before suggesting a ship; avoid one-build-per-tiny-change.
+- **Do not bump** default `BUILD_NUMBER` in `.github/workflows/ios-testflight.yml` on every edit; bump only when shipping (update `docs/IOS-BUILD.md` too).
+
+## TestFlight
+
+- CI is **manual only** (`workflow_dispatch`). Pushing code does not upload a build.
+- To ship: user runs `scripts/ship-testflight.ps1 -BuildNumber N` or Actions UI with build **N** from `docs/IOS-BUILD.md` (**Next**).
+- After shipping, remind: update `docs/IOS-BUILD.md`, install from TestFlight, restart local API if needed.
+
+## End of session (brief)
+
+State: branch, unpushed commits, **Last shipped** vs **Next** build, top backlog item, whether a ship is recommended.
+
+## iOS focus
+
+- SwiftUI: `ios/CzedrSwift/`, `CZEDR_USE_SWIFTUI 1` in `CzedrConfig.h`
+- Screen status: `docs/IOS-SWIFTUI.md`
+- Test accounts: `docs/TEST-ACCOUNTS.md`
