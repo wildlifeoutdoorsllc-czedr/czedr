@@ -42,6 +42,14 @@
     return [UIColor colorWithRed:231.0/255.0 green:236.0/255.0 blue:243.0/255.0 alpha:1.0];
 }
 
++ (UIColor *)captionOnDark {
+    return [UIColor colorWithRed:176.0/255.0 green:181.0/255.0 blue:188.0/255.0 alpha:1.0];
+}
+
++ (UIColor *)balanceGreen {
+    return [UIColor colorWithRed:50.0/255.0 green:205.0/255.0 blue:90.0/255.0 alpha:1.0];
+}
+
 + (UIFont *)avenir:(CGFloat)size weight:(NSString *)weight {
     NSString *name = [weight isEqualToString:@"heavy"] ? @"Avenir-Heavy" : @"Avenir-Roman";
     UIFont *font = [UIFont fontWithName:name size:size];
@@ -63,12 +71,16 @@
 }
 
 + (void)applyGlobalAppearance {
+    UIColor *dark = [self darkBackground];
     [[UINavigationBar appearance] setBarTintColor:[self orangeField]];
     [[UINavigationBar appearance] setTintColor:[UIColor whiteColor]];
     [[UINavigationBar appearance] setTitleTextAttributes:@{
         NSForegroundColorAttributeName: [UIColor whiteColor],
         NSFontAttributeName: [self avenir:16.0 weight:@"heavy"],
     }];
+    [[UITableView appearance] setBackgroundColor:dark];
+    [[UITableViewCell appearance] setBackgroundColor:[self darkSurface]];
+    [[UILabel appearance] setBackgroundColor:[UIColor clearColor]];
 }
 
 + (BOOL)_isLegacyGreen:(UIColor *)color {
@@ -85,6 +97,14 @@
     }
     const CGFloat *c = CGColorGetComponents(color.CGColor);
     return c[0] < 0.08 && c[1] > 0.18 && c[1] < 0.30 && c[2] > 0.40 && c[2] < 0.55;
+}
+
++ (BOOL)_isWhiteishBackground:(UIColor *)color {
+    if (!color || CGColorGetNumberOfComponents(color.CGColor) < 3) {
+        return NO;
+    }
+    const CGFloat *c = CGColorGetComponents(color.CGColor);
+    return c[0] > 0.92 && c[1] > 0.92 && c[2] > 0.92;
 }
 
 + (BOOL)_isLegacyGreyButton:(UIColor *)color {
@@ -207,6 +227,22 @@
     tileView.backgroundColor = [self gridTile];
 }
 
++ (void)styleHomeBalanceCaptionLabel:(UILabel *)label {
+    if (!label) {
+        return;
+    }
+    label.textColor = [self captionOnDark];
+    label.backgroundColor = [UIColor clearColor];
+}
+
++ (void)styleHomeBalanceAmountLabel:(UILabel *)label {
+    if (!label) {
+        return;
+    }
+    label.textColor = [self balanceGreen];
+    label.backgroundColor = [UIColor clearColor];
+}
+
 + (UIImage *)brandSplashImage {
     UIImage *splash = [UIImage imageNamed:@"Czedr-splash-dark.png"];
     if (!splash) {
@@ -321,6 +357,35 @@
     [self _styleLabelsForDarkInView:rootView];
 }
 
++ (void)_applyDarkSurfacesInView:(UIView *)view {
+    if (!view) {
+        return;
+    }
+    UIColor *bg = view.backgroundColor;
+    if ([self _isWhiteishBackground:bg] || [self _isLegacyGreen:bg]) {
+        if ([view isKindOfClass:[UITableView class]] || [view isKindOfClass:[UIScrollView class]]) {
+            view.backgroundColor = [self darkBackground];
+        } else if (view.subviews.count > 2) {
+            view.backgroundColor = [self darkBackground];
+        } else {
+            view.backgroundColor = [self darkSurface];
+        }
+    }
+    for (UIView *sub in view.subviews) {
+        [self _applyDarkSurfacesInView:sub];
+    }
+}
+
++ (void)applyLoggedInDarkScreenToView:(UIView *)view {
+    if (!view) {
+        return;
+    }
+    view.backgroundColor = [self darkBackground];
+    [self applyDeckLookToView:view];
+    [self _applyDarkSurfacesInView:view];
+    [self _styleLabelsForDarkInView:view];
+}
+
 + (void)applyDeckLookToView:(UIView *)view {
     if (!view) {
         return;
@@ -375,13 +440,20 @@
                 if (hasButton && view.frame.size.height > 100 && view.frame.size.width > 100) {
                     [self styleGridTile:view];
                 } else {
-                    view.backgroundColor = [UIColor whiteColor];
+                    view.backgroundColor = [self darkBackground];
                 }
             } else {
-                view.backgroundColor = [UIColor whiteColor];
+                view.backgroundColor = [self darkBackground];
             }
         } else if ([self _isLegacyBlue:bg]) {
             [self styleGridTile:view];
+        }
+    }
+
+    if ([view isKindOfClass:[UILabel class]]) {
+        UILabel *label = (UILabel *)view;
+        if ([self _isWhiteishBackground:label.backgroundColor]) {
+            label.backgroundColor = [UIColor clearColor];
         }
     }
 

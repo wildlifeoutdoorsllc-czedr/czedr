@@ -68,7 +68,8 @@
     {
         _imageView.image=[UIImage imageNamed:@"pro_icon.png"];
     }
-    [CzedrTheme applyDeckLookToView:self.view];
+    self.view.backgroundColor = [CzedrTheme darkBackground];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
 }
 - (void)didReceiveMemoryWarning
 {
@@ -100,7 +101,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableVieww cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"Cell";
-    tableView.backgroundColor=[UIColor colorWithRed:50.0/255 green:50.0/255 blue:50.0/255 alpha:1.0];
+    tableView.backgroundColor = [CzedrTheme darkBackground];
 
     UITableViewCell *cell = [tableVieww dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil)
@@ -110,12 +111,12 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     cell.selected=NO;
-    cell.backgroundColor=[UIColor colorWithRed:50.0/255 green:50.0/255 blue:50.0/255 alpha:1.0];
+    cell.backgroundColor = [CzedrTheme darkSurface];
     cell.imageView.image=[UIImage imageNamed:[listOfArrayImages objectAtIndex:indexPath.row]];
     cell.textLabel.text=[listOfArray objectAtIndex:indexPath.row];
 
     cell.textLabel.font=[UIFont fontWithName:@"Avenir" size:13.0];
-    cell.textLabel.textColor=[UIColor whiteColor];
+    cell.textLabel.textColor = [CzedrTheme lightText];
     CALayer *separator = [CALayer layer];
     separator.backgroundColor = [UIColor blackColor].CGColor;
     separator.frame = CGRectMake(-5, 44, self.view.frame.size.width+5, .9);

@@ -24,7 +24,7 @@
     _name.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"name"];
      _emailAddress.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"email "];
      _contactNumber.text=[[[NSUserDefaults standardUserDefaults] valueForKey:@"userDataArray"] valueForKey:@"mobile_no"];
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
     [CzedrTheme styleEmailField:_emailAddress];
     [self refreshProfilePhoto];
 }

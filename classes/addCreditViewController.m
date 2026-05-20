@@ -231,7 +231,7 @@ replacementString:(NSString *)string
     [CzedrTheme applyPlaceholderAppearanceToTextField:_name color:placeholderColor font:nil];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_cvvNumber color:placeholderColor font:nil];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_cardNumber color:placeholderColor font:nil];
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
 }
 
 - (IBAction)backButton:(id)sender

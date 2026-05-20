@@ -104,7 +104,7 @@
     _sendInvoice.layer.cornerRadius=3;
     _sendInvoice.clipsToBounds = YES;
     _enterPin.textColor = [CzedrTheme taglineRed];
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
     [CzedrTheme styleCzedrIdField:_czedrId];
     
     payNowBool = false;

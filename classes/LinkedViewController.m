@@ -47,7 +47,7 @@
     } else {
         [self reloadCardsTable];
     }
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
 }
 
 -(void)reloadCardsTable

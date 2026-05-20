@@ -77,7 +77,7 @@
     {
         [backbtn setImage:[UIImage imageNamed:@"menu2.png"] forState:UIControlStateNormal];
     }
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
 }
 
 -(void)setRoundedView:(UIImageView *)roundedView toDiameter:(float)newSize;

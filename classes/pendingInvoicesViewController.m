@@ -54,7 +54,7 @@ static int sent_totalcount;
     {
         [self recevied_service];
     }
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
 }
 
 - (void)viewDidLoad

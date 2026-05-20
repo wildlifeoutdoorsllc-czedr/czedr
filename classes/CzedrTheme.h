@@ -27,6 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)darkSurface;
 /** Secondary text on dark backgrounds. */
 + (UIColor *)lightText;
+/** Caption / ID line on dark screens (light grey). */
++ (UIColor *)captionOnDark;
+/** Available balance amount on home (#32CD5A). */
++ (UIColor *)balanceGreen;
 
 + (UIFont *)avenir:(CGFloat)size weight:(NSString *)weight;
 
@@ -37,6 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** Walk view hierarchy and replace legacy green/blue Payooze colors with deck palette. */
 + (void)applyDeckLookToView:(UIView *)view;
+
+/** Logged-in screens: deck palette + charcoal background (no white panels). */
++ (void)applyLoggedInDarkScreenToView:(UIView *)view;
+
++ (void)styleHomeBalanceCaptionLabel:(UILabel *)label;
++ (void)styleHomeBalanceAmountLabel:(UILabel *)label;
 
 + (void)styleOrangeField:(UITextField *)field;
 /** Safe placeholder styling (avoids private _placeholderLabel KVC, which crashes on iOS 13+). */

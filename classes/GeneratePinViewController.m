@@ -85,7 +85,7 @@
     _pin7.clipsToBounds = YES;
     _pin8.layer.cornerRadius=3;
     _pin8.clipsToBounds = YES;
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
     [CzedrAppChrome refreshSessionBarForDrawer:self.mm_drawerController];
 }
 

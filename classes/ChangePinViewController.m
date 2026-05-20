@@ -60,7 +60,7 @@
     _pin11.clipsToBounds = YES;
     _pin12.layer.cornerRadius=3;
     _pin12.clipsToBounds = YES;
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
 }
 
 - (void)didReceiveMemoryWarning

@@ -42,7 +42,7 @@
 {
     if (czedrIdLabel) {
         czedrIdLabel.text = [self czedr_formattedCzedrIdLine];
-        czedrIdLabel.textColor = [CzedrTheme mutedText];
+        czedrIdLabel.textColor = [CzedrTheme captionOnDark];
         czedrIdLabel.textAlignment = NSTextAlignmentCenter;
     }
 }
@@ -62,6 +62,9 @@
             sub.frame = CGRectMake((tileW - iconW) / 2.0, 10.0, iconW, iconH);
             ((UIImageView *)sub).contentMode = UIViewContentModeScaleAspectFit;
         } else if ([sub isKindOfClass:[UILabel class]]) {
+            UILabel *tileLabel = (UILabel *)sub;
+            tileLabel.textColor = [UIColor whiteColor];
+            tileLabel.backgroundColor = [UIColor clearColor];
             sub.frame = CGRectMake(4.0, tileH - 30.0, tileW - 8.0, 26.0);
         } else if ([sub isKindOfClass:[UIButton class]]) {
             sub.frame = CGRectMake(0, 0, tileW, tileH);
@@ -161,15 +164,14 @@
     if (self.homeBalanceCaptionLabel) {
         self.homeBalanceCaptionLabel.text = NSLocalizedString(@"Available balance", nil);
         self.homeBalanceCaptionLabel.textAlignment = NSTextAlignmentCenter;
-        self.homeBalanceCaptionLabel.textColor = [CzedrTheme mutedText];
+        [CzedrTheme styleHomeBalanceCaptionLabel:self.homeBalanceCaptionLabel];
         self.homeBalanceCaptionLabel.font = [CzedrTheme avenir:15.0 weight:@"heavy"];
-        self.homeBalanceCaptionLabel.backgroundColor = [UIColor clearColor];
         self.homeBalanceCaptionLabel.hidden = NO;
     }
     if (self.homeBalanceLabel) {
         self.homeBalanceLabel.text = @"";
         self.homeBalanceLabel.textAlignment = NSTextAlignmentCenter;
-        self.homeBalanceLabel.textColor = [CzedrTheme redPrimary];
+        [CzedrTheme styleHomeBalanceAmountLabel:self.homeBalanceLabel];
         self.homeBalanceLabel.font = [CzedrTheme avenir:24.0 weight:@"heavy"];
         self.homeBalanceLabel.adjustsFontSizeToFitWidth = YES;
         self.homeBalanceLabel.minimumScaleFactor = 0.7;
@@ -211,10 +213,20 @@
     [super viewWillAppear:animated];
     payNowBool = false;
     self.navigationController.navigationBar.hidden=YES;
-    if (czedrIdLabel) {
-        czedrIdLabel.textColor = [CzedrTheme mutedText];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
+    if (_titleLbl) {
+        _titleLbl.textColor = [CzedrTheme lightText];
+        _titleLbl.backgroundColor = [UIColor clearColor];
     }
-    self.view.backgroundColor = [UIColor whiteColor];
+    if (czedrIdLabel) {
+        czedrIdLabel.textColor = [CzedrTheme captionOnDark];
+    }
+    if (self.homeBalanceCaptionLabel) {
+        [CzedrTheme styleHomeBalanceCaptionLabel:self.homeBalanceCaptionLabel];
+    }
+    if (self.homeBalanceLabel) {
+        [CzedrTheme styleHomeBalanceAmountLabel:self.homeBalanceLabel];
+    }
     NSString *tok = [[NSUserDefaults standardUserDefaults] valueForKey:@"auth_codeSaved"] ?: @"";
     [self syncReferralEarningsUIWithAuthToken:tok];
     [[NSUserDefaults standardUserDefaults]setValue:nil forKey:@"pmakepaymentclick"];
@@ -542,6 +554,7 @@
             float dollars = cents / 100.0f;
             if (strongSelf.homeBalanceLabel) {
                 strongSelf.homeBalanceLabel.text = [NSString stringWithFormat:@"$%.2f", dollars];
+                [CzedrTheme styleHomeBalanceAmountLabel:strongSelf.homeBalanceLabel];
             }
             [strongSelf czedr_layoutHomeHeader];
             [MBProgressHUD hideHUDForView:strongSelf.view animated:YES];

@@ -92,11 +92,11 @@
     _sendInvoice.layer.cornerRadius=3;
     _sendInvoice.clipsToBounds = YES;
     UIColor *placeholderColor = [UIColor whiteColor];
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
     [CzedrTheme styleCzedrIdField:_czedrId];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_czedrId color:placeholderColor font:nil];
     [CzedrTheme applyPlaceholderAppearanceToTextField:_amount color:placeholderColor font:nil];
-    [CzedrTheme applyDeckLookToView:self.view];
+    [CzedrTheme applyLoggedInDarkScreenToView:self.view];
   }
 
 -(BOOL)textFieldShouldBeginEditing:(UITextField *)textField

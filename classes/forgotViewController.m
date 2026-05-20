@@ -66,7 +66,6 @@
     _ResetPassword.layer.cornerRadius=3;
     _ResetPassword.clipsToBounds = YES;
     [CzedrTheme applyPlaceholderAppearanceToTextField:_emailAddress color:[UIColor whiteColor] font:nil];
-    [CzedrTheme applyDeckLookToView:self.view];
     [CzedrTheme styleEmailField:_emailAddress];
     [CzedrTheme applyAuthDarkScreen:self.view detailPanel:_Viewdetail1 logoView:nil];
 }

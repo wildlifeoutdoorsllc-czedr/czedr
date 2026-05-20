@@ -148,7 +148,6 @@
     _email.leftViewMode = UITextFieldViewModeAlways;
     _password.leftView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 14, 1)];
     _password.leftViewMode = UITextFieldViewModeAlways;
-    [CzedrTheme applyDeckLookToView:self.view];
     [CzedrTheme styleEmailField:_email];
     [CzedrTheme stylePasswordField:_password];
     [CzedrTheme styleOrangeField:_email];
