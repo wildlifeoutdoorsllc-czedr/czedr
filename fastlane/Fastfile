@@ -58,7 +58,7 @@ platform :ios do
       },
       output_directory: "./build",
       output_name: "Czedr",
-      xcargs: "DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')} IPHONEOS_DEPLOYMENT_TARGET=13.0",
+      xcargs: "DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')} IPHONEOS_DEPLOYMENT_TARGET=14.0",
       codesigning_identity: "Apple Distribution",
       skip_package_dependencies_resolution: true,
       disable_package_automatic_updates: true

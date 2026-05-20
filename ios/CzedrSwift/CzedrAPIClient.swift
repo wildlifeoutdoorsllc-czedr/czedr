@@ -143,7 +143,7 @@ final class CzedrAPIClient {
                 let rows = data["transactions"] as? [[String: Any]] ?? []
                 let mapped = rows.compactMap { row -> TransferRow? in
                     let id = (row["id"] as? String) ?? (row["id"] as? NSNumber)?.stringValue
-                    guard let id, !id.isEmpty else { return nil }
+                    guard let id = id, !id.isEmpty else { return nil }
                     return TransferRow(
                         id: id,
                         amountCents: Self.int64(row["amount_cents"]),

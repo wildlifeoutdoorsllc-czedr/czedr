@@ -40,7 +40,7 @@ struct LoginView: View {
                     .padding(.top, 40)
 
                 Text("Czedr")
-                    .font(.title2.bold())
+                    .font(.title.bold())
                     .foregroundColor(CzedrPalette.lightText)
 
                 Text(session.buildLabel)
@@ -180,7 +180,7 @@ struct LoggedInShell<Content: View>: View {
             HStack {
                 Button(action: { onMenu?() }) {
                     Image(systemName: "line.3.horizontal")
-                        .font(.title2)
+                        .font(.title)
                         .foregroundColor(CzedrPalette.lightText)
                         .frame(width: 44, height: 44)
                 }
@@ -195,7 +195,7 @@ struct LoggedInShell<Content: View>: View {
                         if let onBack { onBack() } else { presentationMode.wrappedValue.dismiss() }
                     }) {
                         Image(systemName: "chevron.left")
-                            .font(.title2)
+                            .font(.title)
                             .foregroundColor(CzedrPalette.lightText)
                             .frame(width: 44, height: 44)
                     }
@@ -238,7 +238,7 @@ struct HomeView: View {
                         .font(.subheadline)
                         .foregroundColor(CzedrPalette.caption)
                     Text(session.buildLabel)
-                        .font(.caption2)
+                        .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
 
                     Text("Available balance")
@@ -400,7 +400,7 @@ struct HistoryView: View {
                     Text("\(row.fromCzedrId) → \(row.toCzedrId)")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
-                    Text(row.createdAt).font(.caption2).foregroundColor(CzedrPalette.caption)
+                    Text(row.createdAt).font(.caption).foregroundColor(CzedrPalette.caption)
                 }
                 .listRowBackground(CzedrPalette.surface)
             }
