@@ -38,7 +38,8 @@ struct CzedrBrandLogoView: View {
 
     var body: some View {
         Group {
-            if let image = CzedrTheme.brandAuthLogoImage(), logoSize.width > 1, logoSize.height > 1 {
+            let image = CzedrTheme.brandAuthLogoImage()
+            if image.size.width > 0, image.size.height > 0, logoSize.width > 1, logoSize.height > 1 {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
