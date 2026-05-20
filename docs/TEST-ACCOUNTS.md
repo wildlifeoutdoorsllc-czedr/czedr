@@ -31,14 +31,14 @@ Leave that window open. The script prints **health** and **sandbox** URLs for th
 
 ---
 
-## Add $100 to Alice and Bob (PC)
+## Add $10,000 to Alice and Bob (PC)
 
 ```powershell
 cd D:\CZEDR\scripts
 .\fund-test-accounts.ps1
 ```
 
-Credits **$100** to each test account via the ledger API and prints balances. After Alice sends money to Bob, run again (or check REVENUE with `CZEDR_ADMIN_REPORT_TOKEN` in `.env`) to confirm the **$1.29** platform fee landed in the **REVENUE** account.
+Credits **$10,000** to each test account via the ledger API and prints balances. After Alice sends money to Bob, run again (or check REVENUE with `CZEDR_ADMIN_REPORT_TOKEN` in `.env`) to confirm the **$1.29** platform fee landed in the **REVENUE** account.
 
 ## Create or refresh test accounts (PC)
 

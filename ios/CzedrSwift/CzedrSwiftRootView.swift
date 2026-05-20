@@ -15,16 +15,31 @@ struct CzedrSwiftRootView: View {
             if session.isLoggedIn {
                 LoggedInNavigationView()
             } else {
-                LoginView()
+                AuthGateView()
             }
         }
         .preferredColorScheme(.dark)
     }
 }
 
-// MARK: - Login
+// MARK: - Auth (sign-in / sign-up)
+
+struct AuthGateView: View {
+    @State private var showSignUp = false
+
+    var body: some View {
+        Group {
+            if showSignUp {
+                SignUpView(showSignUp: $showSignUp)
+            } else {
+                LoginView(showSignUp: $showSignUp)
+            }
+        }
+    }
+}
 
 struct LoginView: View {
+    @Binding var showSignUp: Bool
     @EnvironmentObject var session: AppSession
     @State private var email = ""
     @State private var password = ""
@@ -59,6 +74,13 @@ struct LoginView: View {
                         .cornerRadius(6)
                 }
                 .disabled(session.isLoading)
+
+                Button(action: { showSignUp = true }) {
+                    Text("Create account")
+                        .font(.subheadline)
+                        .foregroundColor(CzedrPalette.caption)
+                }
+                .padding(.top, 8)
             }
             .padding(24)
         }
@@ -68,6 +90,110 @@ struct LoginView: View {
     private func signIn() {
         session.clearError()
         session.login(email: email, password: password, apiBaseOverride: apiBase)
+    }
+
+    private func field(_ label: String, text: Binding<String>, keyboard: UIKeyboardType = .default, secure: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label).font(.caption).foregroundColor(CzedrPalette.caption)
+            if secure {
+                SecureField(label, text: text)
+                    .textFieldStyle(CzedrFieldStyle())
+            } else {
+                TextField(label, text: text)
+                    .keyboardType(keyboard)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .textFieldStyle(CzedrFieldStyle())
+            }
+        }
+    }
+}
+
+struct SignUpView: View {
+    @Binding var showSignUp: Bool
+    @EnvironmentObject var session: AppSession
+    @State private var email = ""
+    @State private var password = ""
+    @State private var confirmPassword = ""
+    @State private var referrerCzedrId = ""
+    @State private var apiBase = ""
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                CzedrBrandLogoView(style: .signIn)
+                    .padding(.top, 24)
+
+                Text("Create your Czedr account")
+                    .font(.headline)
+                    .foregroundColor(CzedrPalette.lightText)
+
+                Text(session.buildLabel)
+                    .font(.caption)
+                    .foregroundColor(CzedrPalette.caption)
+
+                field("API base URL", text: $apiBase, keyboard: .URL)
+                    .onAppear { if apiBase.isEmpty { apiBase = session.defaultApiBase() } }
+                field("Email", text: $email, keyboard: .emailAddress)
+                field("Password (10+ characters)", text: $password, secure: true)
+                field("Confirm password", text: $confirmPassword, secure: true)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Referrer Czedr ID (optional)")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                    TextField("Who invited you?", text: $referrerCzedrId)
+                        .textFieldStyle(CzedrFieldStyle())
+                        .autocapitalization(.allCharacters)
+                        .disableAutocorrection(true)
+                    Text("Enter the Czedr ID of the person who sent you to the app.")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                }
+
+                if let err = session.errorMessage {
+                    Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
+                }
+
+                Button(action: signUp) {
+                    Text(session.isLoading ? "Creating account…" : "Sign up")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(CzedrPalette.redPrimary)
+                        .foregroundColor(.white)
+                        .cornerRadius(6)
+                }
+                .disabled(session.isLoading)
+
+                Button(action: { showSignUp = false; session.clearError() }) {
+                    Text("Already have an account? Sign in")
+                        .font(.subheadline)
+                        .foregroundColor(CzedrPalette.caption)
+                }
+                .padding(.top, 8)
+            }
+            .padding(24)
+        }
+        .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
+    }
+
+    private func signUp() {
+        session.clearError()
+        if password != confirmPassword {
+            session.errorMessage = "Passwords do not match"
+            return
+        }
+        if password.count < 10 {
+            session.errorMessage = "Password must be at least 10 characters"
+            return
+        }
+        session.register(
+            email: email,
+            password: password,
+            referrerCzedrId: referrerCzedrId,
+            apiBaseOverride: apiBase
+        )
     }
 
     private func field(_ label: String, text: Binding<String>, keyboard: UIKeyboardType = .default, secure: Bool = false) -> some View {

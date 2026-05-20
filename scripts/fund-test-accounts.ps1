@@ -1,4 +1,4 @@
-# Credit $100 to Alice and Bob; show balances and REVENUE fee ledger.
+# Credit $10,000 to Alice and Bob; show balances and REVENUE fee ledger.
 $root = Split-Path $PSScriptRoot -Parent
 Set-Location $root
 

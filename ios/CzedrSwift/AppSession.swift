@@ -50,6 +50,37 @@ final class AppSession: ObservableObject {
 
     func clearError() { errorMessage = nil }
 
+    func register(
+        email: String,
+        password: String,
+        referrerCzedrId: String,
+        apiBaseOverride: String
+    ) {
+        let base = apiBaseOverride.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? defaultApiBase()
+            : apiBaseOverride.trimmingCharacters(in: .whitespacesAndNewlines)
+        isLoading = true
+        errorMessage = nil
+        api.register(
+            email: email,
+            password: password,
+            referrerCzedrId: referrerCzedrId,
+            apiBase: base
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self.errorMessage = msg
+                case .ok(let payload):
+                    self.persistSession(token: payload.token, email: payload.email, czedrId: payload.czedrId, apiBase: base)
+                    self.refreshBalance()
+                }
+            }
+        }
+    }
+
     func login(email: String, password: String, apiBaseOverride: String) {
         let base = apiBaseOverride.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? defaultApiBase()

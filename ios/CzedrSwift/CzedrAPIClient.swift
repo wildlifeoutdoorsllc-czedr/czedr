@@ -50,21 +50,55 @@ final class CzedrAPIClient {
             case .err(let msg):
                 completion(.err(msg))
             case .ok(let data):
-                let auth = data["auth_code"] as? String ?? ""
-                if auth.isEmpty {
-                    completion(.err("No auth token in response"))
-                    return
-                }
-                let user = data["user"] as? [String: Any]
-                let em = (user?["email"] as? String) ?? (data["email"] as? String) ?? email
-                let cid = (user?["czedr_id"] as? String) ?? (data["czedr_id"] as? String) ?? (data["id"] as? String) ?? ""
-                if cid.isEmpty {
-                    completion(.err("No Czedr ID in response"))
-                    return
-                }
-                completion(.ok((auth, em, cid)))
+                completion(Self.parseAuthPayload(data, fallbackEmail: email))
             }
         }
+    }
+
+    func register(
+        email: String,
+        password: String,
+        referrerCzedrId: String?,
+        apiBase: String,
+        completion: @escaping (APIResult<(token: String, email: String, czedrId: String)>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        var body: [String: Any] = [
+            "email": email,
+            "password": password,
+        ]
+        let ref = referrerCzedrId?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() ?? ""
+        if !ref.isEmpty {
+            body["referrer_czedr_id"] = ref
+        }
+        postJSON(base: base, path: "/v1/auth/register", body: body, token: nil) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok(let data):
+                completion(Self.parseAuthPayload(data, fallbackEmail: email))
+            }
+        }
+    }
+
+    private static func parseAuthPayload(
+        _ data: [String: Any],
+        fallbackEmail: String
+    ) -> APIResult<(token: String, email: String, czedrId: String)> {
+        let auth = (data["auth_code"] as? String) ?? (data["auth_token"] as? String) ?? ""
+        if auth.isEmpty {
+            return .err("No auth token in response")
+        }
+        let user = data["user"] as? [String: Any]
+        let em = (user?["email"] as? String) ?? (data["email"] as? String) ?? fallbackEmail
+        let cid = (user?["czedr_id"] as? String) ?? (data["czedr_id"] as? String) ?? (data["id"] as? String) ?? ""
+        if cid.isEmpty {
+            return .err("No Czedr ID in response")
+        }
+        return .ok((auth, em, cid))
     }
 
     func logout(apiBase: String, token: String) {

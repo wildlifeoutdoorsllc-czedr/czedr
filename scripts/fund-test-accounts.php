@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Credit $100 to Alice and Bob test accounts and print balances + REVENUE fee ledger.
+ * Credit $10,000 to Alice and Bob test accounts and print balances + REVENUE fee ledger.
  * Run: php scripts/fund-test-accounts.php
  * Requires API at http://127.0.0.1:8080 and APP_ENV=local (or CZEDR_ALLOW_LEDGER_LOAD=1).
  */
@@ -29,7 +29,7 @@ function loadDotEnv(string $path): array
     return $vars;
 }
 $password = 'TestPass1234!';
-$loadCents = 10000;
+$loadCents = 1_000_000; // $10,000.00
 
 function api(string $method, string $path, ?array $body = null, ?string $token = null): array
 {
@@ -93,7 +93,7 @@ function loadAccount(string $email, string $password, int $cents): void
     $load = api('POST', '/v1/ledger/load', [
         'amount_cents' => $cents,
         'idempotency_key' => $key,
-        'memo' => 'Test fund $100',
+        'memo' => 'Test fund $10,000',
     ], $token);
     if (($load['json']['Status'] ?? '') !== 'true') {
         throw new RuntimeException("Ledger load failed for {$email}: " . $load['raw']);
@@ -122,7 +122,7 @@ $env = loadDotEnv($root . '/.env');
 $feeCents = (int) ($env['CZEDR_TRANSFER_FEE_CENTS'] ?? 129);
 echo "Platform transfer fee: $" . number_format($feeCents / 100, 2) . " (credited to REVENUE on each send)\n\n";
 
-echo "Loading \$100 per account...\n";
+echo "Loading \$10,000 per account...\n";
 loadAccount('alice@test.czedr', $password, $loadCents);
 loadAccount('bob@test.czedr', $password, $loadCents);
 
