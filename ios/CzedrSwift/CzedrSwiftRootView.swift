@@ -208,7 +208,7 @@ struct LoggedInPageLayout<Content: View>: View {
         VStack(spacing: 0) {
             ShellToolbar(title: title, showBack: showBack, onMenu: onMenu)
             CzedrBrandLogoView(style: .hero)
-                .padding(.vertical, 8)
+                .padding(.bottom, 4)
             content()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }

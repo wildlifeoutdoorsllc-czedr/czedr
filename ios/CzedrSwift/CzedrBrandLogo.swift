@@ -1,17 +1,17 @@
 //
 //  CzedrBrandLogo.swift
-//  Same asset + sizing as sign-in (CzedrTheme).
+//  Same asset as sign-in; hero uses large in-page sizing (matches legacy prominence).
 //
 
 import SwiftUI
 import UIKit
 
 enum CzedrLogoStyle {
-    /// Sign-in screen — large logo matching legacy ViewController.
+    /// Sign-in screen — full-width logo.
     case signIn
-    /// Toolbar strip on logged-in screens.
+    /// Toolbar strip (unused on current screens; kept for flexibility).
     case toolbar
-    /// In-page hero (home and inner screens).
+    /// Logged-in pages — large logo below toolbar (same visual weight as sign-in).
     case hero
 }
 
@@ -20,20 +20,40 @@ struct CzedrBrandLogoView: View {
 
     private var logoSize: CGSize {
         let panelW = UIScreen.main.bounds.width
+        let screenH = UIScreen.main.bounds.height
+        let image = CzedrTheme.brandAuthLogoImage()
+        guard image.size.width > 0, image.size.height > 0 else {
+            return CGSize(width: panelW - 48, height: 120)
+        }
+        let aspect = image.size.width / image.size.height
+
         switch style {
         case .signIn:
-            return CzedrTheme.brandAuthLogoDisplaySize(
-                forPanelWidth: panelW - 48,
-                panelHeight: 360
+            return Self.fitLogo(
+                aspect: aspect,
+                maxWidth: panelW - 40,
+                maxHeight: min(screenH * 0.38, 420)
+            )
+        case .hero:
+            // ~5–6× larger than the old 200pt panel cap (~52px tall).
+            return Self.fitLogo(
+                aspect: aspect,
+                maxWidth: panelW - 24,
+                maxHeight: min(screenH * 0.32, 380)
             )
         case .toolbar:
             return CzedrTheme.brandAuthLogoCompactDisplaySize(forPanelWidth: panelW)
-        case .hero:
-            return CzedrTheme.brandAuthLogoDisplaySize(
-                forPanelWidth: panelW - 32,
-                panelHeight: 200
-            )
         }
+    }
+
+    private static func fitLogo(aspect: CGFloat, maxWidth: CGFloat, maxHeight: CGFloat) -> CGSize {
+        var height = min(maxHeight, maxWidth / max(aspect, 0.5))
+        var width = height * aspect
+        if width > maxWidth {
+            width = maxWidth
+            height = width / max(aspect, 0.5)
+        }
+        return CGSize(width: width, height: height)
     }
 
     var body: some View {
@@ -52,6 +72,15 @@ struct CzedrBrandLogoView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: max(logoSize.height, style == .toolbar ? 44 : 72))
+        .frame(height: containerHeight)
+    }
+
+    private var containerHeight: CGFloat {
+        switch style {
+        case .toolbar:
+            return max(logoSize.height, 44)
+        case .signIn, .hero:
+            return logoSize.height + 12
+        }
     }
 }
