@@ -27,9 +27,11 @@ struct SendInvoiceScreen: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     HStack {
-                        TextField("Debtor Czedr ID", text: $debtorId)
-                            .textFieldStyle(CzedrFieldStyle())
-                            .autocapitalization(.allCharacters)
+                        CzedrPlaceholderTextField(
+                            placeholder: "Debtor Czedr ID",
+                            text: $debtorId,
+                            autocapitalization: .allCharacters
+                        )
                         Button("VALIDATE") { validate() }
                             .font(.caption.bold())
                             .padding(.horizontal, 10)
@@ -42,21 +44,24 @@ struct SendInvoiceScreen: View {
                         Text(validatedName).font(.footnote).foregroundColor(CzedrPalette.balanceGreen)
                     }
 
-                    TextField("Amount they owe ($)", text: $amount)
-                        .keyboardType(.decimalPad)
-                        .textFieldStyle(CzedrFieldStyle())
+                    CzedrPlaceholderTextField(
+                        placeholder: "Amount they owe ($)",
+                        text: $amount,
+                        keyboard: .decimalPad
+                    )
 
-                    TextField("Description", text: $description)
-                        .textFieldStyle(CzedrFieldStyle())
+                    CzedrPlaceholderTextField(placeholder: "Description", text: $description)
 
                     Text("ENTER YOUR CZEDR PIN")
                         .font(.caption.bold())
                         .foregroundColor(CzedrPalette.redPrimary)
                         .padding(.top, 8)
 
-                    SecureField("4-digit PIN", text: $pin)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(CzedrFieldStyle())
+                    CzedrPlaceholderSecureField(
+                        placeholder: "4-digit PIN",
+                        text: $pin,
+                        keyboard: .numberPad
+                    )
 
                     Button(action: sendInvoice) {
                         Text(session.isLoading ? "…" : "SEND INVOICE")

@@ -1,5 +1,5 @@
 ---
-description: Czedr git, commit, push, and TestFlight workflow — maximize efficiency, no surprise builds
+description: Czedr git, commit, push, and TestFlight workflow — ship after each iOS batch
 alwaysApply: true
 ---
 
@@ -10,20 +10,19 @@ Read `docs/DEVELOPMENT-WORKFLOW.md` and `docs/IOS-BUILD.md` for current build nu
 ## Defaults
 
 - **Commit** only when the user explicitly asks to commit.
-- **Never `git push`** unless the user asks (push, ship, deploy, TestFlight, or back up to GitHub).
-- **Never trigger TestFlight / `gh workflow run`** unless the user asks to ship or build for TestFlight.
-- **Batch work** — finish a coherent feature (or P1 backlog row) before suggesting a ship; avoid one-build-per-tiny-change.
+- **After iOS commits:** push to `origin/czedrmaster` and **ship the next build** from `docs/IOS-BUILD.md` using `scripts/ship-testflight.ps1 -BuildNumber N -WaitForPrevious` — user prefers fluid TestFlight updates without a separate “ship” step each time.
+- **Hold builds** only if the user says not to ship, or CI/upload is blocked (e.g. Apple 90382).
 - **Do not bump** default `BUILD_NUMBER` in `.github/workflows/ios-testflight.yml` on every edit; bump only when shipping (update `docs/IOS-BUILD.md` too).
 
 ## TestFlight
 
 - CI is **manual only** (`workflow_dispatch`). Pushing code does not upload a build.
-- To ship: user runs `scripts/ship-testflight.ps1 -BuildNumber N` or Actions UI with build **N** from `docs/IOS-BUILD.md` (**Next**).
-- After shipping, remind: update `docs/IOS-BUILD.md`, install from TestFlight, restart local API if needed.
+- Use `-WaitForPrevious` so the new build starts after the last workflow completes.
+- After shipping: update `docs/IOS-BUILD.md` (**Last shipped**, **Next**, **In progress**).
 
 ## End of session (brief)
 
-State: branch, unpushed commits, **Last shipped** vs **Next** build, top backlog item, whether a ship is recommended.
+State: branch, unpushed commits, **Last shipped** vs build in progress, TestFlight run URL if shipped.
 
 ## iOS focus
 

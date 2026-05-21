@@ -1,14 +1,16 @@
 # Ship Czedr iOS to TestFlight: push (optional) + manual workflow run.
 # Usage:
-#   .\ship-testflight.ps1 -BuildNumber 94
-#   .\ship-testflight.ps1 -BuildNumber 94 -SkipPush   # workflow only (already pushed)
-#   .\ship-testflight.ps1 -BuildNumber 94 -PushOnly  # push only, no CI
+#   .\ship-testflight.ps1 -BuildNumber 96
+#   .\ship-testflight.ps1 -BuildNumber 96 -WaitForPrevious   # wait for last CI run to finish first
+#   .\ship-testflight.ps1 -BuildNumber 96 -SkipPush
+#   .\ship-testflight.ps1 -BuildNumber 96 -PushOnly
 
 param(
     [Parameter(Mandatory = $true)]
     [int]$BuildNumber,
     [switch]$SkipPush,
-    [switch]$PushOnly
+    [switch]$PushOnly,
+    [switch]$WaitForPrevious
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,6 +52,22 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     Write-Host "  GitHub -> Actions -> iOS TestFlight -> Run workflow" -ForegroundColor Yellow
     Write-Host "  build_number = $BuildNumber" -ForegroundColor Yellow
     exit 0
+}
+
+if ($WaitForPrevious) {
+    Write-Host "Waiting for any in-progress iOS TestFlight workflow to finish..." -ForegroundColor Cyan
+    while ($true) {
+        $status = (gh run list --workflow=ios-testflight.yml --limit 1 --json status --jq '.[0].status' 2>$null)
+        if ($status -ne 'in_progress' -and $status -ne 'queued' -and $status -ne 'pending' -and $status -ne 'waiting') {
+            if ($status -eq 'completed') {
+                $conclusion = (gh run list --workflow=ios-testflight.yml --limit 1 --json conclusion --jq '.[0].conclusion' 2>$null)
+                Write-Host "Previous run: $conclusion" -ForegroundColor DarkGray
+            }
+            break
+        }
+        Write-Host "  Still running ($status) — checking again in 30s..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 30
+    }
 }
 
 Write-Host "Starting iOS TestFlight workflow (build $BuildNumber)..." -ForegroundColor Cyan

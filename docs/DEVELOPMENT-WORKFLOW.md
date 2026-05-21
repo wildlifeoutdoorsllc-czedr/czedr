@@ -7,10 +7,10 @@ How we work on this repo to stay fast locally and avoid wasted TestFlight / CI t
 | Rule | Why |
 |------|-----|
 | **Code locally, ship deliberately** | Every TestFlight build costs ~3 min CI + Apple processing + your install time. |
-| **Batch features before one build** | One build should carry a testable slice (e.g. Send Invoice + Pending), not every tiny commit. |
-| **Push ≠ build** | Pushing to `czedrmaster` does **not** trigger TestFlight (manual only). |
+| **Ship after each iOS batch** | User preference: commit → push → next TestFlight build (fluid installs). |
+| **Push ≠ build** | Pushing to `czedrmaster` does **not** auto-trigger CI (run `ship-testflight.ps1`). |
 | **Agent commits when you ask** | Keeps git history aligned with your intent. |
-| **Agent never pushes or ships unless you ask** | Use explicit words: *push*, *ship*, *TestFlight*, *build N*. |
+| **Agent ships iOS after commit** | Push + `ship-testflight.ps1 -WaitForPrevious` unless user says to hold builds. |
 
 ## Daily loop (Windows + iPhone)
 
@@ -22,7 +22,7 @@ How we work on this repo to stay fast locally and avoid wasted TestFlight / CI t
 2. **Test on device** with the **latest TestFlight** build (see `docs/IOS-BUILD.md` for number).
 3. **Implement** in `ios/CzedrSwift/` (SwiftUI default in `CzedrConfig.h`).
 4. **Commit** when you say so — often after a feature batch is done.
-5. **Ship** only when ready to install a new build (see below).
+5. **Ship** the next build from `docs/IOS-BUILD.md` after iOS commits (see pipeline below).
 
 ## Git
 
@@ -42,15 +42,18 @@ CI workflow: `.github/workflows/ios-testflight.yml` — **`workflow_dispatch` on
 
 ```powershell
 cd D:\CZEDR\scripts
-.\ship-testflight.ps1 -BuildNumber 94
+.\ship-testflight.ps1 -BuildNumber 96 -WaitForPrevious
 ```
 
 This will:
 
 1. Confirm you are on `czedrmaster` and working tree is clean (or warn).
-2. `git push` (unless `-SkipPush`).
-3. Run GitHub Actions **iOS TestFlight** with that build number.
-4. Remind you to run `RESTART-IPHONE-TESTING.cmd` after upload succeeds.
+2. **Wait** until the previous TestFlight workflow finishes (avoids overlapping Mac CI jobs).
+3. `git push` (unless `-SkipPush`).
+4. Run GitHub Actions **iOS TestFlight** with that build number.
+5. Remind you to run `RESTART-IPHONE-TESTING.cmd` after upload succeeds.
+
+**Agent default:** after iOS commits, push and ship the next build with `-WaitForPrevious`.
 
 **GitHub UI alternative:** Actions → **iOS TestFlight** → Run workflow → set **build_number** (e.g. `94`).
 

@@ -96,14 +96,9 @@ struct LoginView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.caption).foregroundColor(CzedrPalette.caption)
             if secure {
-                SecureField(label, text: text)
-                    .textFieldStyle(CzedrFieldStyle())
+                CzedrPlaceholderSecureField(placeholder: label, text: text, keyboard: keyboard)
             } else {
-                TextField(label, text: text)
-                    .keyboardType(keyboard)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .textFieldStyle(CzedrFieldStyle())
+                CzedrPlaceholderTextField(placeholder: label, text: text, keyboard: keyboard)
             }
         }
     }
@@ -142,10 +137,11 @@ struct SignUpView: View {
                     Text("Referrer Czedr ID (optional)")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
-                    TextField("Who invited you?", text: $referrerCzedrId)
-                        .textFieldStyle(CzedrFieldStyle())
-                        .autocapitalization(.allCharacters)
-                        .disableAutocorrection(true)
+                    CzedrPlaceholderTextField(
+                        placeholder: "Who invited you?",
+                        text: $referrerCzedrId,
+                        autocapitalization: .allCharacters
+                    )
                     Text("Enter the Czedr ID of the person who sent you to the app.")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
@@ -200,14 +196,9 @@ struct SignUpView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.caption).foregroundColor(CzedrPalette.caption)
             if secure {
-                SecureField(label, text: text)
-                    .textFieldStyle(CzedrFieldStyle())
+                CzedrPlaceholderSecureField(placeholder: label, text: text, keyboard: keyboard)
             } else {
-                TextField(label, text: text)
-                    .keyboardType(keyboard)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .textFieldStyle(CzedrFieldStyle())
+                CzedrPlaceholderTextField(placeholder: label, text: text, keyboard: keyboard)
             }
         }
     }
@@ -456,9 +447,11 @@ struct MakePaymentScreen: View {
             ScrollView {
                 VStack(spacing: 12) {
                     HStack {
-                        TextField("Recipient Czedr ID", text: $recipientId)
-                            .textFieldStyle(CzedrFieldStyle())
-                            .autocapitalization(.allCharacters)
+                        CzedrPlaceholderTextField(
+                            placeholder: "Recipient Czedr ID",
+                            text: $recipientId,
+                            autocapitalization: .allCharacters
+                        )
                         Button("VALIDATE") { validate() }
                             .font(.caption.bold())
                             .padding(.horizontal, 10)
@@ -470,20 +463,23 @@ struct MakePaymentScreen: View {
                     if !validatedName.isEmpty {
                         Text(validatedName).font(.footnote).foregroundColor(CzedrPalette.balanceGreen)
                     }
-                    TextField("Enter amount", text: $amount)
-                        .keyboardType(.decimalPad)
-                        .textFieldStyle(CzedrFieldStyle())
-                    TextField("Enter Description", text: $memo)
-                        .textFieldStyle(CzedrFieldStyle())
+                    CzedrPlaceholderTextField(
+                        placeholder: "Enter amount",
+                        text: $amount,
+                        keyboard: .decimalPad
+                    )
+                    CzedrPlaceholderTextField(placeholder: "Enter Description", text: $memo)
 
                     Text("ENTER YOUR CZEDR PIN")
                         .font(.caption.bold())
                         .foregroundColor(CzedrPalette.redPrimary)
                         .padding(.top, 8)
 
-                    SecureField("4-digit PIN", text: $pin)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(CzedrFieldStyle())
+                    CzedrPlaceholderSecureField(
+                        placeholder: "4-digit PIN",
+                        text: $pin,
+                        keyboard: .numberPad
+                    )
 
                     Button(action: pay) {
                         Text(session.isLoading ? "…" : "MAKE PAYMENT")
