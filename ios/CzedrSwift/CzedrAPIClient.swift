@@ -188,6 +188,7 @@ final class CzedrAPIClient {
         let cleaned = amountDollars.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "$", with: "")
             .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: " ", with: "")
         let body: [String: Any] = [
             "to_czedr_id": toCzedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased(),
             "rec_czedr_id": toCzedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased(),

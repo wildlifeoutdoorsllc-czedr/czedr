@@ -41,6 +41,7 @@
 		CZSW151F600100CZEDR /* CzedrInvoiceScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW141F600100CZEDR /* CzedrInvoiceScreens.swift */; };
 		CZSW171F600100CZEDR /* CzedrKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW161F600100CZEDR /* CzedrKeyboard.swift */; };
 		CZSW191F600100CZEDR /* CzedrFormFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW181F600100CZEDR /* CzedrFormFields.swift */; };
+		CZSW1B1F600100CZEDR /* CzedrMoney.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW1A1F600100CZEDR /* CzedrMoney.swift */; };
 		068F847E1B182B2E003652F0 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */; };
 		068F847F1B182B2E003652F0 /* AFHTTPRequestOperationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846E1B182B2E003652F0 /* AFHTTPRequestOperationManager.m */; };
 		068F84801B182B2E003652F0 /* AFHTTPSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F84701B182B2E003652F0 /* AFHTTPSessionManager.m */; };
@@ -242,6 +243,7 @@
 		CZSW141F600100CZEDR /* CzedrInvoiceScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrInvoiceScreens.swift; sourceTree = "<group>"; };
 		CZSW161F600100CZEDR /* CzedrKeyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrKeyboard.swift; sourceTree = "<group>"; };
 		CZSW181F600100CZEDR /* CzedrFormFields.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrFormFields.swift; sourceTree = "<group>"; };
+		CZSW1A1F600100CZEDR /* CzedrMoney.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrMoney.swift; sourceTree = "<group>"; };
 		068F846B1B182B2E003652F0 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
 		068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPRequestOperation.m; sourceTree = "<group>"; };
 		068F846D1B182B2E003652F0 /* AFHTTPRequestOperationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperationManager.h; sourceTree = "<group>"; };
@@ -711,6 +713,7 @@
 				CZSW141F600100CZEDR /* CzedrInvoiceScreens.swift */,
 				CZSW161F600100CZEDR /* CzedrKeyboard.swift */,
 				CZSW181F600100CZEDR /* CzedrFormFields.swift */,
+				CZSW1A1F600100CZEDR /* CzedrMoney.swift */,
 				CZSW031F600100CZEDR /* CzedrAPIClient.swift */,
 				CZSW051F600100CZEDR /* KeychainStore.swift */,
 				CZSW071F600100CZEDR /* AppSession.swift */,
@@ -1163,6 +1166,7 @@
 				CZSW151F600100CZEDR /* CzedrInvoiceScreens.swift in Sources */,
 				CZSW171F600100CZEDR /* CzedrKeyboard.swift in Sources */,
 				CZSW191F600100CZEDR /* CzedrFormFields.swift in Sources */,
+				CZSW1B1F600100CZEDR /* CzedrMoney.swift in Sources */,
 				AF3FBE1B1A9C70B600F8FE78 /* GCPlaceholderTextView.m in Sources */,
 				068F84B11B182B54003652F0 /* SBJsonWriter.m in Sources */,
 				068F84A51B182B54003652F0 /* NSObject+SBJson.m in Sources */,

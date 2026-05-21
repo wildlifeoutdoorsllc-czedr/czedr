@@ -129,7 +129,7 @@ final class AppSession: ObservableObject {
                     self.errorMessage = msg
                 case .ok(let bal):
                     self.balanceCents = bal.balanceCents
-                    self.balanceText = Self.formatMoney(cents: bal.balanceCents, currency: bal.currency)
+                    self.balanceText = CzedrMoney.format(cents: bal.balanceCents, currency: bal.currency)
                 }
             }
         }
@@ -150,7 +150,7 @@ final class AppSession: ObservableObject {
     }
 
     func sendTransfer(to: String, amountDollars: String, memo: String, pin: String) {
-        guard let cents = Self.parseCents(fromDollars: amountDollars) else {
+        guard let cents = CzedrMoney.parseDollarsToCents(amountDollars) else {
             errorMessage = "Enter a valid amount"
             return
         }
@@ -175,7 +175,7 @@ final class AppSession: ObservableObject {
     }
 
     func sendInvoice(to: String, amountDollars: String, description: String, pin: String) {
-        guard Self.parseCents(fromDollars: amountDollars) != nil else {
+        guard CzedrMoney.parseDollarsToCents(amountDollars) != nil else {
             errorMessage = "Enter a valid amount"
             return
         }
@@ -239,15 +239,6 @@ final class AppSession: ObservableObject {
     }
 
     static func formatMoney(cents: Int64, currency: String) -> String {
-        let amount = Double(cents) / 100.0
-        return String(format: "$%.2f %@", amount, currency)
-    }
-
-    static func parseCents(fromDollars s: String) -> Int64? {
-        let cleaned = s.trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: ",", with: "")
-        guard let value = Double(cleaned), value > 0 else { return nil }
-        return Int64((value * 100.0).rounded())
+        CzedrMoney.format(cents: cents, currency: currency)
     }
 }
