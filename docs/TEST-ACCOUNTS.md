@@ -10,9 +10,9 @@ Keep this file for later. Use two accounts to send money to each other in the **
 `UPDATE users SET role = 'staff' WHERE email = 'trusted-ops@yourorg.com' LIMIT 1;`  
 Apply migration **`database/migrations/008_user_role.sql`** (included in **`install-backend.ps1`**) before relying on this. Platform revenue totals stay **`CZEDR_ADMIN_REPORT_TOKEN`** + **`GET /v1/admin/revenue-ledger`** — that bearer secret is separate from app accounts.
 
-**Referrals (single-level):** At signup, pass optional **`referrer_czedr_id`** (or **`referred_by_czedr_id`**) with an existing member’s Czedr ID. When that new member **sends** a P2P payment, their referrer receives **`CZEDR_REFERRAL_REWARD_CENTS`** (default **17** = $0.17) minted from the system ledger—not taken from the payment or fee. Only **one** hop (no pyramids). Referral rewards are **normal ledger credits** (same balance as everything else). See totals with **`GET /v1/referrals/earnings`** (auth), the sandbox **Referral earnings** button, or in the native app use the **Referral earnings** bar at the bottom of the home screen (or tap the **balance** line when signed in).
+**Referrals (single-level):** At signup, **`referrer_czedr_id`** is **optional** (omit or leave blank for no referrer). When a referred member is involved in a P2P payment, their referrer can earn **`CZEDR_REFERRAL_REWARD_CENTS`** (default **17** = $0.17) per qualifying side—up to **two** rewards per transfer (sender’s referrer and recipient’s referrer). Payouts come from **CORPORATE** when the fee pool allows, otherwise **SYSTEM**. Only **one** hop (no pyramids). See **`GET /v1/referrals/earnings`** or the app **Referral earnings** bar on the home screen.
 
-**Platform fees (ops):** Transfers can credit internal user **`REVENUE`**. To read that ledger balance, set **`CZEDR_ADMIN_REPORT_TOKEN`** in `.env` and call **`GET /v1/admin/revenue-ledger`** with header **`Authorization: Bearer <token>`** or **`X-Czedr-Admin-Token`**. If the token env var is unset, that URL returns 404.
+**Platform fees (ops):** Transfer fees settle to internal **`CORPORATE`**; referral rewards are paid from CORPORATE when possible; net remains in CORPORATE. Set **`CZEDR_ADMIN_REPORT_TOKEN`** in `.env` and call **`GET /v1/admin/corporate-ledger`** (or legacy **`/v1/admin/revenue-ledger`**) with **`X-Czedr-Admin-Token`**. See **`docs/CORPORATE-LEDGER.md`**.
 
 ---
 
@@ -38,7 +38,7 @@ cd D:\CZEDR\scripts
 .\fund-test-accounts.ps1
 ```
 
-Credits **$10,000** to each test account via the ledger API and prints balances. After Alice sends money to Bob, run again (or check REVENUE with `CZEDR_ADMIN_REPORT_TOKEN` in `.env`) to confirm the **$1.29** platform fee landed in the **REVENUE** account.
+Credits **$10,000** to each test account via the ledger API and prints balances. After a referred user sends a payment, run `php scripts/test-corporate-ledger.php` (or **`GET /v1/admin/corporate-ledger`**) to confirm fees and net after referrals on **CORPORATE**.
 
 ## Create or refresh test accounts (PC)
 

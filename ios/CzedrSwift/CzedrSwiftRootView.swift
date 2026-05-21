@@ -142,7 +142,7 @@ struct SignUpView: View {
                         text: $referrerCzedrId,
                         autocapitalization: .allCharacters
                     )
-                    Text("Enter the Czedr ID of the person who sent you to the app.")
+                    Text("Leave blank if no one referred you. Each referred member can earn their referrer $0.17 when they send or receive payments.")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
                 }

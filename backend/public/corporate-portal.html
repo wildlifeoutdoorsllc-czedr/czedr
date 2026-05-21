@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Czedr Corporate Ledger</title>
+  <style>
+    :root {
+      --orange:#f58220; --red:#e31e24; --charcoal:#58595b;
+      --bg:#2a2a2c; --card:#353538; --ok:#3dd68c; --err:#f87171;
+      --text:#e7ecf3; --muted:#a0a2a5;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Avenir Next",-apple-system,BlinkMacSystemFont,sans-serif;
+      background:var(--bg); color:var(--text);
+      padding:max(16px,env(safe-area-inset-top)) 16px 32px; line-height:1.45; max-width:520px; margin-inline:auto; }
+    h1 { font-size:1.25rem; margin:0 0 4px; }
+    .sub { color:var(--muted); font-size:0.82rem; margin-bottom:14px; }
+    .card { background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; border:1px solid #454548; }
+    label { display:block; font-size:0.75rem; color:var(--muted); margin-bottom:4px; }
+    input { width:100%; font-size:16px; padding:10px 12px; border-radius:6px; border:none;
+      background:var(--orange); color:#fff; margin-bottom:10px; }
+    input::placeholder { color:rgba(255,255,255,.85); }
+    button { width:100%; font-size:16px; padding:10px 12px; border-radius:6px; border:none;
+      background:var(--red); color:#fff; margin-bottom:8px; font-weight:600; cursor:pointer; }
+    button.secondary { background:var(--charcoal); }
+    .metric { font-size:1.65rem; font-weight:700; color:var(--ok); margin:4px 0; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .grid .card { margin:0; }
+    .grid h3 { margin:0 0 6px; font-size:0.72rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+    .grid .metric { font-size:1.1rem; }
+    .err { color:var(--err); font-size:0.85rem; }
+    .flow { font-size:0.8rem; color:var(--muted); }
+    .flow li { margin-bottom:4px; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <h1>Corporate ledger</h1>
+  <p class="sub">Read-only view of the <strong>CORPORATE</strong> platform account. Only you should have the admin token configured on the server (<code>CZEDR_ADMIN_REPORT_TOKEN</code>).</p>
+
+  <div id="gate" class="card">
+    <label>Admin token (stored in this browser only)</label>
+    <input id="adminToken" type="password" placeholder="Paste your admin token" autocomplete="off">
+    <button type="button" id="unlockBtn">Unlock portal</button>
+    <button type="button" class="secondary hidden" id="lockBtn">Lock</button>
+    <p id="gateErr" class="err hidden"></p>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <div class="card">
+      <h2 style="margin:0 0 8px;font-size:1rem">Balance</h2>
+      <div id="balance" class="metric">—</div>
+      <p class="sub" style="margin:8px 0 0">Net platform revenue after referral payouts from the fee pool.</p>
+    </div>
+    <div class="grid">
+      <div class="card"><h3>Fees collected</h3><div id="fees" class="metric">—</div></div>
+      <div class="card"><h3>Referrals paid</h3><div id="referrals" class="metric">—</div></div>
+      <div class="card"><h3>Net (fees − referrals)</h3><div id="net" class="metric">—</div></div>
+      <div class="card"><h3>Per transfer</h3><div id="perXfer" class="metric" style="font-size:.95rem">—</div></div>
+    </div>
+    <div class="card flow">
+      <strong>Per payment flow</strong>
+      <ol>
+        <li>Sender pays recipient the payment amount.</li>
+        <li>Sender pays the <span id="feeLabel">$1.29</span> fee → credited to <strong>CORPORATE</strong>.</li>
+        <li>Up to two <span id="refLabel">$0.17</span> referral rewards are paid from CORPORATE to referrers (when applicable).</li>
+        <li>Remainder stays in CORPORATE (e.g. $1.29 − $0.34 = $0.95 when both referrers qualify).</li>
+      </ol>
+    </div>
+    <button type="button" class="secondary" id="refreshBtn">Refresh</button>
+    <p id="dashErr" class="err hidden"></p>
+    <p class="sub">Last updated: <span id="updatedAt">—</span></p>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'czedr_corporate_admin_token';
+    const gate = document.getElementById('gate');
+    const dashboard = document.getElementById('dashboard');
+    const adminTokenInput = document.getElementById('adminToken');
+    const gateErr = document.getElementById('gateErr');
+    const dashErr = document.getElementById('dashErr');
+    const lockBtn = document.getElementById('lockBtn');
+
+    function fmt(cents) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((cents || 0) / 100);
+    }
+
+    function showErr(el, msg) {
+      el.textContent = msg || '';
+      el.classList.toggle('hidden', !msg);
+    }
+
+    function getToken() {
+      return (sessionStorage.getItem(STORAGE_KEY) || adminTokenInput.value || '').trim();
+    }
+
+    function lock() {
+      sessionStorage.removeItem(STORAGE_KEY);
+      adminTokenInput.value = '';
+      dashboard.classList.add('hidden');
+      lockBtn.classList.add('hidden');
+      gate.classList.remove('hidden');
+    }
+
+    async function loadReport() {
+      const token = getToken();
+      if (!token) {
+        showErr(gateErr, 'Enter your admin token.');
+        return;
+      }
+      showErr(gateErr, '');
+      showErr(dashErr, '');
+      const res = await fetch('/v1/admin/corporate-ledger', {
+        headers: { 'X-Czedr-Admin-Token': token, 'Accept': 'application/json' },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.Status !== 'true') {
+        const msg = json.Message || ('HTTP ' + res.status);
+        if (res.status === 401) {
+          lock();
+          showErr(gateErr, 'Invalid admin token.');
+        } else if (res.status === 404) {
+          showErr(gateErr, 'Admin API disabled. Set CZEDR_ADMIN_REPORT_TOKEN on the server.');
+        } else {
+          showErr(dashErr, msg);
+        }
+        return;
+      }
+      const d = json.Data || {};
+      document.getElementById('balance').textContent = fmt(d.balance_cents);
+      document.getElementById('fees').textContent = fmt(d.fees_collected_cents);
+      document.getElementById('referrals').textContent = fmt(d.referrals_paid_cents);
+      document.getElementById('net').textContent = fmt(d.net_after_referrals_cents);
+      const fee = d.transfer_fee_cents ?? 129;
+      const ref = d.referral_reward_cents ?? 17;
+      document.getElementById('perXfer').textContent = fmt(fee) + ' fee / ' + fmt(ref) + ' ref';
+      document.getElementById('feeLabel').textContent = fmt(fee);
+      document.getElementById('refLabel').textContent = fmt(ref);
+      document.getElementById('updatedAt').textContent = new Date().toLocaleString();
+      sessionStorage.setItem(STORAGE_KEY, token);
+      gate.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      lockBtn.classList.remove('hidden');
+    }
+
+    document.getElementById('unlockBtn').addEventListener('click', loadReport);
+    document.getElementById('refreshBtn').addEventListener('click', loadReport);
+    document.getElementById('lockBtn').addEventListener('click', lock);
+
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      adminTokenInput.value = saved;
+      loadReport();
+    }
+  </script>
+</body>
+</html>

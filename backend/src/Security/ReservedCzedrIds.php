@@ -3,14 +3,13 @@ declare(strict_types=1);
 
 namespace Czedr\Security;
 
+use Czedr\Ledger\PlatformAccounts;
+
 /** Platform and system ledger identities — never assignable at registration. */
 final class ReservedCzedrIds
 {
     /** @var list<string> */
-    public const RESERVED = [
-        'SYSTEM',
-        'REVENUE',
-    ];
+    public const RESERVED = PlatformAccounts::reservedCzedrIds();
 
     public static function assertAvailable(?string $czedrId): void
     {

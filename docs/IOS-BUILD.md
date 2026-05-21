@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **97** — white field text + placeholders (`b686f68`) |
-| **Next ship build number** | **98** |
-| **In progress** | — |
+| **Last shipped (TestFlight)** | **100** — US comma money formatting |
+| **Next ship build number** | **102** (after 101 completes) |
+| **In progress** | **101** — optional referrer copy on signup |
 
 ## Ship pipeline (user preference)
 
@@ -24,8 +24,12 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
-| 97 | White text and placeholders on orange fields (legacy match) |
-| 96 | Charcoal placeholder text on orange fields |
+| 101 | Signup: referrer optional helper text |
+| 100 | US comma money formatting |
+| 99 | Make Payment Description field |
+| 98 | Visible placeholders + dark text on orange fields |
+| 97 | White field text attempt |
+| 96 | Charcoal placeholder text |
 | 95 | Keyboard dismiss (✕ bar, tap outside) |
 | 94 | Send Invoice, centered home balance, manual TestFlight |
 | 93 | SwiftUI signup, referrer, demo fund script |

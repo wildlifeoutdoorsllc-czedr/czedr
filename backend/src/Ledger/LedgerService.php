@@ -15,6 +15,8 @@ use PDO;
 final class LedgerService
 {
     private const REFERRAL_REWARD_MEMO = 'Referral reward (referee payment)';
+    private const REFERRAL_CORPORATE_MEMO = 'Referral payout (platform fee)';
+    private const SERVICE_FEE_MEMO = 'Czedr service fee';
 
     public function __construct(private readonly AuditService $audit)
     {
@@ -51,7 +53,8 @@ final class LedgerService
 
     /**
      * P2P transfer: recipient receives the full payment amount in cents. The sender is debited
-     * that amount plus the platform fee from {@see self::transferFeeCents()} (fee credited to REVENUE).
+     * that amount plus the platform fee from {@see self::transferFeeCents()} (fee credited to CORPORATE;
+     * eligible referral rewards are paid from CORPORATE, net remainder stays in CORPORATE).
      *
      * @return array<string, mixed>
      */
@@ -66,6 +69,9 @@ final class LedgerService
     ): array {
         if ($amountCents <= 0) {
             throw new \InvalidArgumentException('Amount must be positive');
+        }
+        if (PlatformAccounts::isPlatformCzedrId($toCzedrId)) {
+            throw new \InvalidArgumentException('Invalid recipient Czedr ID');
         }
         $toUser = $this->userIdByCzedrId($toCzedrId);
         if ($toUser === $fromUserId) {
@@ -92,8 +98,9 @@ final class LedgerService
     }
 
     /**
-     * Referrer reward (USD cents) minted to the referee's single-level referrer when the referee sends a P2P payment.
-     * Set CZEDR_REFERRAL_REWARD_CENTS=0 to disable. Default 17 ($0.17).
+     * Referrer reward (USD cents) per eligible party when a P2P payment completes: the sender's referrer
+     * (if the sender signed up with a referrer) and the recipient's referrer (if the recipient signed up
+     * with a referrer). Up to two rewards per transfer. Set CZEDR_REFERRAL_REWARD_CENTS=0 to disable.
      */
     public static function referralRewardCents(): int
     {
@@ -102,39 +109,81 @@ final class LedgerService
     }
 
     /**
-     * Read-only: platform fee balance for `czedr_id` REVENUE. Does not create that user or ledger rows.
+     * Read-only: corporate ledger (`czedr_id` CORPORATE) — fees in, referral payouts out, net balance.
+     *
+     * @return array<string, mixed>
+     */
+    public function getCorporateLedgerReport(): array
+    {
+        $pdo = ConnectionFactory::saturn();
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE czedr_id = :cid LIMIT 1');
+        $stmt->execute(['cid' => PlatformAccounts::CORPORATE]);
+        $userId = $stmt->fetchColumn();
+        if (!$userId) {
+            return [
+                'czedr_id' => PlatformAccounts::CORPORATE,
+                'corporate_user_exists' => false,
+                'balance_cents' => 0,
+                'fees_collected_cents' => 0,
+                'fees_collected_count' => 0,
+                'referrals_paid_cents' => 0,
+                'referrals_paid_count' => 0,
+                'net_after_referrals_cents' => 0,
+                'currency' => 'USD',
+                'transfer_fee_cents' => self::transferFeeCents(),
+                'referral_reward_cents' => self::referralRewardCents(),
+            ];
+        }
+        $uid = (string) $userId;
+        $balance = $this->getBalanceCents($uid);
+
+        $feeAgg = $pdo->prepare(
+            'SELECT COALESCE(SUM(amount_cents), 0), COUNT(*)
+             FROM ledger_transactions
+             WHERE to_user_id = :uid AND memo = :memo'
+        );
+        $feeAgg->execute(['uid' => $uid, 'memo' => self::SERVICE_FEE_MEMO]);
+        $feeRow = $feeAgg->fetch(PDO::FETCH_NUM);
+        $feesCollected = (int) ($feeRow[0] ?? 0);
+        $feeCount = (int) ($feeRow[1] ?? 0);
+
+        $refAgg = $pdo->prepare(
+            'SELECT COALESCE(SUM(amount_cents), 0), COUNT(*)
+             FROM ledger_transactions
+             WHERE from_user_id = :uid AND memo = :memo'
+        );
+        $refAgg->execute(['uid' => $uid, 'memo' => self::REFERRAL_CORPORATE_MEMO]);
+        $refRow = $refAgg->fetch(PDO::FETCH_NUM);
+        $referralsPaid = (int) ($refRow[0] ?? 0);
+        $refCount = (int) ($refRow[1] ?? 0);
+
+        return [
+            'czedr_id' => PlatformAccounts::CORPORATE,
+            'corporate_user_exists' => true,
+            'balance_cents' => $balance,
+            'fees_collected_cents' => $feesCollected,
+            'fees_collected_count' => $feeCount,
+            'referrals_paid_cents' => $referralsPaid,
+            'referrals_paid_count' => $refCount,
+            'net_after_referrals_cents' => $feesCollected - $referralsPaid,
+            'currency' => 'USD',
+            'transfer_fee_cents' => self::transferFeeCents(),
+            'referral_reward_cents' => self::referralRewardCents(),
+        ];
+    }
+
+    /**
+     * @deprecated Use {@see getCorporateLedgerReport()}; kept for existing admin clients.
      *
      * @return array<string, mixed>
      */
     public function getRevenueLedgerReport(): array
     {
-        $pdo = ConnectionFactory::saturn();
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE czedr_id = :cid LIMIT 1');
-        $stmt->execute(['cid' => 'REVENUE']);
-        $userId = $stmt->fetchColumn();
-        if (!$userId) {
-            return [
-                'czedr_id' => 'REVENUE',
-                'revenue_user_exists' => false,
-                'balance_cents' => 0,
-                'credits_to_revenue_count' => 0,
-                'currency' => 'USD',
-                'transfer_fee_cents' => self::transferFeeCents(),
-            ];
-        }
-        $uid = (string) $userId;
-        $balance = $this->getBalanceCents($uid);
-        $cnt = $pdo->prepare('SELECT COUNT(*) FROM ledger_transactions WHERE to_user_id = :uid');
-        $cnt->execute(['uid' => $uid]);
+        $corp = $this->getCorporateLedgerReport();
+        $corp['legacy_endpoint'] = true;
+        $corp['note'] = 'Fees settle to CORPORATE; revenue-ledger returns corporate totals.';
 
-        return [
-            'czedr_id' => 'REVENUE',
-            'revenue_user_exists' => true,
-            'balance_cents' => $balance,
-            'credits_to_revenue_count' => (int) $cnt->fetchColumn(),
-            'currency' => 'USD',
-            'transfer_fee_cents' => self::transferFeeCents(),
-        ];
+        return $corp;
     }
 
     /**
@@ -204,29 +253,31 @@ final class LedgerService
             return $this->attachFeeMetaFromDb($pdo, $dup);
         }
 
-        $referrerForReward = null;
-        $referralTxnId = null;
+        $referralPayouts = [];
         $paidReferralCents = 0;
 
         $pdo->beginTransaction();
         try {
-            $revenueUserId = $feeCents > 0 ? $this->revenueUserId($pdo) : null;
+            $corporateUserId = $feeCents > 0 ? $this->corporateUserId($pdo) : null;
 
+            $referralCandidates = [];
             if ($referralRewardCents > 0) {
-                $refStmt = $pdo->prepare('SELECT referred_by_user_id FROM users WHERE id = :id FOR UPDATE');
-                $refStmt->execute(['id' => $fromUserId]);
-                $rb = $refStmt->fetchColumn();
-                if ($rb && (string) $rb !== $fromUserId && $this->isEligibleReferrer($pdo, (string) $rb)) {
-                    $referrerForReward = (string) $rb;
+                $senderReferrer = $this->resolveReferredByReferrer($pdo, $fromUserId);
+                if ($senderReferrer !== null) {
+                    $referralCandidates[] = ['referrer_id' => $senderReferrer, 'role' => 'sender'];
+                }
+                $recipientReferrer = $this->resolveReferredByReferrer($pdo, $toUserId);
+                if ($recipientReferrer !== null) {
+                    $referralCandidates[] = ['referrer_id' => $recipientReferrer, 'role' => 'recipient'];
                 }
             }
 
             $lockIds = [$fromUserId, $toUserId];
-            if ($revenueUserId !== null) {
-                $lockIds[] = $revenueUserId;
+            if ($corporateUserId !== null) {
+                $lockIds[] = $corporateUserId;
             }
-            if ($referrerForReward !== null) {
-                $lockIds[] = $referrerForReward;
+            foreach ($referralCandidates as $candidate) {
+                $lockIds[] = $candidate['referrer_id'];
             }
             $this->lockAccountsForUpdate($pdo, $lockIds);
 
@@ -246,27 +297,31 @@ final class LedgerService
             );
 
             $feeTxnId = null;
-            if ($feeCents > 0 && $revenueUserId !== null) {
+            if ($feeCents > 0 && $corporateUserId !== null) {
                 $feeTxnId = $this->executeLedgerMovement(
                     $pdo,
                     $fromUserId,
-                    $revenueUserId,
+                    $corporateUserId,
                     $feeCents,
                     $this->feeIdempotencyKey($idempotencyKey),
-                    'Czedr service fee',
+                    self::SERVICE_FEE_MEMO,
                 );
             }
 
-            if ($referrerForReward !== null && $referralRewardCents > 0) {
-                $refKey = $this->referralRewardIdempotencyKey($mainTxnId);
-                $referralTxnId = $this->executeSystemMintInTx(
+            foreach ($referralCandidates as $candidate) {
+                $payout = $this->payReferralRewardInTx(
                     $pdo,
-                    $referrerForReward,
+                    $corporateUserId,
+                    $feeCents,
                     $referralRewardCents,
-                    $refKey,
-                    self::REFERRAL_REWARD_MEMO,
+                    $mainTxnId,
+                    $candidate['referrer_id'],
+                    $candidate['role'],
                 );
-                $paidReferralCents = $referralRewardCents;
+                if ($payout !== null) {
+                    $referralPayouts[] = $payout;
+                    $paidReferralCents += $referralRewardCents;
+                }
             }
 
             $pdo->commit();
@@ -281,14 +336,16 @@ final class LedgerService
             'to_user_id' => $toUserId,
             'fee_transaction_id' => $feeTxnId,
             'referral_reward_cents' => $paidReferralCents,
-            'referral_transaction_id' => $referralTxnId,
+            'referral_payout_count' => count($referralPayouts),
         ]);
 
-        if ($referralTxnId !== null && $referrerForReward !== null) {
-            $this->audit->log($referrerForReward, 'ledger.referral_reward', 'ledger_transaction', $referralTxnId, $ip, $userAgent, [
-                'referee_user_id' => $fromUserId,
+        foreach ($referralPayouts as $payout) {
+            $this->audit->log($payout['referrer_id'], 'ledger.referral_reward', 'ledger_transaction', $payout['transaction_id'], $ip, $userAgent, [
+                'party_role' => $payout['role'],
+                'payer_user_id' => $fromUserId,
+                'payee_user_id' => $toUserId,
                 'payment_transaction_id' => $mainTxnId,
-                'amount_cents' => $paidReferralCents,
+                'amount_cents' => $referralRewardCents,
             ]);
         }
 
@@ -299,7 +356,7 @@ final class LedgerService
             throw new \RuntimeException('Ledger transaction missing after commit');
         }
 
-        return $this->attachFeeMeta($row, $feeCents, $feeTxnId, $paidReferralCents, $referralTxnId);
+        return $this->attachFeeMeta($row, $feeCents, $feeTxnId, $paidReferralCents, $referralPayouts);
     }
 
     /**
@@ -326,38 +383,141 @@ final class LedgerService
      */
     private function mergeReferralMetaFromDb(PDO $pdo, string $mainTxnId, array $mainRow): array
     {
-        $rk = $this->referralRewardIdempotencyKey($mainTxnId);
-        $st = $pdo->prepare('SELECT id, amount_cents FROM ledger_transactions WHERE idempotency_key = :k LIMIT 1');
-        $st->execute(['k' => $rk]);
-        $refRow = $st->fetch(PDO::FETCH_ASSOC);
-        if ($refRow) {
-            $mainRow['referral_reward_cents'] = (int) $refRow['amount_cents'];
-            $mainRow['referral_transaction_id'] = (string) $refRow['id'];
+        $keys = [
+            $this->referralRewardIdempotencyKey($mainTxnId, 'sender'),
+            $this->referralRewardIdempotencyKey($mainTxnId, 'recipient'),
+            $this->referralRewardIdempotencyKeyLegacy($mainTxnId),
+        ];
+        $placeholders = implode(',', array_fill(0, count($keys), '?'));
+        $st = $pdo->prepare(
+            "SELECT id, amount_cents, idempotency_key FROM ledger_transactions WHERE idempotency_key IN ({$placeholders})"
+        );
+        $st->execute($keys);
+        $payouts = [];
+        $total = 0;
+        while ($refRow = $st->fetch(PDO::FETCH_ASSOC)) {
+            $cents = (int) $refRow['amount_cents'];
+            $total += $cents;
+            $payouts[] = [
+                'transaction_id' => (string) $refRow['id'],
+                'amount_cents' => $cents,
+            ];
+        }
+        if ($total > 0) {
+            $mainRow['referral_reward_cents'] = $total;
+            $mainRow['referral_payout_count'] = count($payouts);
+            if (count($payouts) === 1) {
+                $mainRow['referral_transaction_id'] = $payouts[0]['transaction_id'];
+            }
+            $mainRow['referral_payouts'] = $payouts;
         }
 
         return $mainRow;
     }
 
     /**
+     * @param list<array{referrer_id: string, role: string, transaction_id: string, source: string}> $referralPayouts
      * @param array<string, mixed> $mainRow
      * @return array<string, mixed>
      */
-    private function attachFeeMeta(array $mainRow, int $feeCents, ?string $feeTxnId, int $referralRewardCents = 0, ?string $referralTxnId = null): array
+    private function attachFeeMeta(array $mainRow, int $feeCents, ?string $feeTxnId, int $paidReferralCents = 0, array $referralPayouts = []): array
     {
         $mainRow['fee_cents'] = $feeCents;
         $mainRow['fee_paid_by'] = 'sender';
         $mainRow['total_debit_cents'] = (int) $mainRow['amount_cents'] + $feeCents;
         if ($feeTxnId !== null) {
             $mainRow['fee_transaction_id'] = $feeTxnId;
+            $mainRow['corporate_czedr_id'] = PlatformAccounts::CORPORATE;
         }
-        if ($referralRewardCents > 0) {
-            $mainRow['referral_reward_cents'] = $referralRewardCents;
-        }
-        if ($referralTxnId !== null) {
-            $mainRow['referral_transaction_id'] = $referralTxnId;
+        if ($paidReferralCents > 0) {
+            $mainRow['referral_reward_cents'] = $paidReferralCents;
+            $mainRow['referral_payout_count'] = count($referralPayouts);
+            $mainRow['corporate_net_cents'] = max(0, $feeCents - $paidReferralCents);
+            $mainRow['referral_payouts'] = $referralPayouts;
+            if (count($referralPayouts) === 1) {
+                $mainRow['referral_transaction_id'] = $referralPayouts[0]['transaction_id'];
+            }
+        } elseif ($feeCents > 0) {
+            $mainRow['corporate_net_cents'] = $feeCents;
         }
 
         return $mainRow;
+    }
+
+    private function resolveReferredByReferrer(PDO $pdo, string $userId): ?string
+    {
+        $stmt = $pdo->prepare('SELECT referred_by_user_id FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $userId]);
+        $rb = $stmt->fetchColumn();
+        if (!$rb || (string) $rb === $userId) {
+            return null;
+        }
+        $referrerId = (string) $rb;
+
+        return $this->isEligibleReferrer($pdo, $referrerId) ? $referrerId : null;
+    }
+
+    /**
+     * @return array{referrer_id: string, role: string, transaction_id: string, source: string}|null
+     */
+    private function payReferralRewardInTx(
+        PDO $pdo,
+        ?string $corporateUserId,
+        int $feeCents,
+        int $referralRewardCents,
+        string $mainTxnId,
+        string $referrerUserId,
+        string $role,
+    ): ?array {
+        $refKey = $this->referralRewardIdempotencyKey($mainTxnId, $role);
+        $check = $pdo->prepare('SELECT id FROM ledger_transactions WHERE idempotency_key = :k LIMIT 1');
+        $check->execute(['k' => $refKey]);
+        $existing = $check->fetchColumn();
+        if ($existing) {
+            return [
+                'referrer_id' => $referrerUserId,
+                'role' => $role,
+                'transaction_id' => (string) $existing,
+                'source' => 'existing',
+            ];
+        }
+
+        $txnId = null;
+        $source = 'system';
+        if ($corporateUserId !== null && $feeCents >= $referralRewardCents) {
+            $corpBal = $this->lockedBalance($pdo, $corporateUserId);
+            if ($corpBal >= $referralRewardCents) {
+                $txnId = $this->executeLedgerMovement(
+                    $pdo,
+                    $corporateUserId,
+                    $referrerUserId,
+                    $referralRewardCents,
+                    $refKey,
+                    self::REFERRAL_CORPORATE_MEMO,
+                );
+                $source = 'corporate';
+            }
+        }
+        if ($txnId === null) {
+            $txnId = $this->executeSystemMintInTx(
+                $pdo,
+                $referrerUserId,
+                $referralRewardCents,
+                $refKey,
+                self::REFERRAL_REWARD_MEMO,
+            );
+            if ($txnId === null) {
+                return null;
+            }
+            $source = 'system';
+        }
+
+        return [
+            'referrer_id' => $referrerUserId,
+            'role' => $role,
+            'transaction_id' => $txnId,
+            'source' => $source,
+        ];
     }
 
     private function feeIdempotencyKey(string $baseKey): string
@@ -365,7 +525,13 @@ final class LedgerService
         return hash('sha256', 'czedr-fee-v1|' . $baseKey);
     }
 
-    private function referralRewardIdempotencyKey(string $mainTxnId): string
+    private function referralRewardIdempotencyKey(string $mainTxnId, string $role): string
+    {
+        return hash('sha256', 'czedr-referral-v2|' . $mainTxnId . '|' . $role);
+    }
+
+    /** @deprecated v1 key for transfers before dual-party referrals */
+    private function referralRewardIdempotencyKeyLegacy(string $mainTxnId): string
     {
         return hash('sha256', 'czedr-referral-v1|' . $mainTxnId);
     }
@@ -380,7 +546,7 @@ final class LedgerService
         }
         $cid = strtoupper(trim((string) ($row['czedr_id'] ?? '')));
 
-        return !in_array($cid, ['SYSTEM', 'REVENUE'], true);
+        return !PlatformAccounts::isPlatformCzedrId($cid);
     }
 
     /**
@@ -455,26 +621,37 @@ final class LedgerService
         return $txnId;
     }
 
-    private function revenueUserId(PDO $pdo): string
+    private function corporateUserId(PDO $pdo): string
     {
-        static $id = null;
-        if ($id !== null) {
-            return $id;
+        return $this->ensurePlatformUserId($pdo, PlatformAccounts::CORPORATE, 'corporate@czedr.internal');
+    }
+
+    private function ensurePlatformUserId(PDO $pdo, string $czedrId, string $email): string
+    {
+        static $cache = [];
+        if (isset($cache[$czedrId])) {
+            return $cache[$czedrId];
         }
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE czedr_id = \'REVENUE\' LIMIT 1');
-        $stmt->execute();
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE czedr_id = :cid LIMIT 1');
+        $stmt->execute(['cid' => $czedrId]);
         $row = $stmt->fetchColumn();
         if ($row) {
-            $id = (string) $row;
+            $cache[$czedrId] = (string) $row;
 
-            return $id;
+            return $cache[$czedrId];
         }
         $id = Uuid::v4();
         $pdo->prepare(
             'INSERT INTO users (id, czedr_id, email, password_hash, status)
-             VALUES (:id, \'REVENUE\', \'revenue@czedr.internal\', :hash, \'active\')'
-        )->execute(['id' => $id, 'hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_ARGON2ID)]);
+             VALUES (:id, :cid, :email, :hash, \'active\')'
+        )->execute([
+            'id' => $id,
+            'cid' => $czedrId,
+            'email' => $email,
+            'hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_ARGON2ID),
+        ]);
         $this->ensureAccount($id);
+        $cache[$czedrId] = $id;
 
         return $id;
     }

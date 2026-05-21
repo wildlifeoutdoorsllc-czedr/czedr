@@ -103,6 +103,23 @@ final class App
             JsonResponse::ok($this->ledger->getRevenueLedgerReport());
         });
 
+        $this->router->get('/v1/admin/corporate-ledger', function (Request $r) {
+            $secret = Env::get('CZEDR_ADMIN_REPORT_TOKEN');
+            if ($secret === null || $secret === '') {
+                JsonResponse::error('Not found', 404);
+                return;
+            }
+            $provided = (string) ($r->headers['X-CZEDR-ADMIN-TOKEN'] ?? '');
+            if ($provided === '') {
+                $provided = (string) ($r->bearerToken() ?? '');
+            }
+            if ($provided === '' || !hash_equals($secret, $provided)) {
+                JsonResponse::error('Unauthorized', 401);
+                return;
+            }
+            JsonResponse::ok($this->ledger->getCorporateLedgerReport());
+        });
+
         $this->router->get('/v1/dev/setup', function (Request $r) {
             if (!Env::isLocal()) {
                 JsonResponse::error('Not found', 404);

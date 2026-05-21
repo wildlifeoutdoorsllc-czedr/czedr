@@ -6,6 +6,7 @@ namespace Czedr\Auth;
 use Czedr\Audit\AuditService;
 use Czedr\Database\ConnectionFactory;
 use Czedr\Ledger\LedgerService;
+use Czedr\Ledger\PlatformAccounts;
 use Czedr\Security\ReservedCzedrIds;
 use Czedr\Support\Env;
 use Czedr\Support\Uuid;
@@ -117,7 +118,7 @@ final class AuthService
             return null;
         }
         $cid = strtoupper(trim($referrerCzedrId));
-        if (in_array($cid, ['SYSTEM', 'REVENUE'], true)) {
+        if (PlatformAccounts::isPlatformCzedrId($cid)) {
             throw new \InvalidArgumentException('Invalid referrer Czedr ID');
         }
 
@@ -145,7 +146,7 @@ final class AuthService
             $this->audit->log(null, 'auth.login_failed', 'user', null, $ip, $userAgent, ['email' => $email]);
             throw new \InvalidArgumentException('Invalid credentials');
         }
-        if (in_array((string) ($user['czedr_id'] ?? ''), ['SYSTEM', 'REVENUE'], true)) {
+        if (PlatformAccounts::isPlatformCzedrId((string) ($user['czedr_id'] ?? ''))) {
             $this->audit->log(null, 'auth.login_failed', 'user', null, $ip, $userAgent, ['email' => $email, 'reason' => 'internal_ledger_user']);
             throw new \InvalidArgumentException('Invalid credentials');
         }
@@ -387,7 +388,7 @@ final class AuthService
     {
         $staff = $this->isStaff($viewerUserId);
         $cidKey = strtoupper(trim($targetCzedrId));
-        if ($cidKey === '' || in_array($cidKey, ['SYSTEM', 'REVENUE'], true)) {
+        if ($cidKey === '' || PlatformAccounts::isPlatformCzedrId($cidKey)) {
             throw new \InvalidArgumentException('Invalid Czedr Id');
         }
         $pdo = ConnectionFactory::saturn();
