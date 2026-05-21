@@ -1,6 +1,6 @@
 //
 //  CzedrFormFields.swift
-//  Orange fields with charcoal placeholder text (not white).
+//  Orange fields with light text and placeholders (matches legacy CzedrTheme).
 //
 
 import SwiftUI

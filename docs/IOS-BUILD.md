@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **95** — keyboard ✕ + tap to dismiss (`34c15f4`) |
-| **Next ship build number** | **97** (after 96 completes) |
-| **In progress** | **96** — charcoal placeholders on orange fields |
+| **Last shipped (TestFlight)** | **96** — charcoal placeholders (superseded by 97) |
+| **Next ship build number** | **98** (after 97 completes) |
+| **In progress** | **97** — white field text + placeholders (legacy CzedrTheme match) |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 97 | White text and placeholders on orange fields (legacy match) |
 | 96 | Charcoal placeholder text on orange fields |
 | 95 | Keyboard dismiss (✕ bar, tap outside) |
 | 94 | Send Invoice, centered home balance, manual TestFlight |

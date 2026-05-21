@@ -15,6 +15,8 @@ enum CzedrPalette {
     static let lightText = Color(red: 231 / 255, green: 236 / 255, blue: 243 / 255)
     static let caption = Color(red: 176 / 255, green: 181 / 255, blue: 188 / 255)
     static let balanceGreen = Color(red: 50 / 255, green: 205 / 255, blue: 90 / 255)
-    /// Hint text on orange inputs (charcoal — matches buttons, readable on orange).
-    static let fieldPlaceholder = charcoalButton
+    /// Typed text on orange inputs (legacy CzedrTheme: white on orange).
+    static let fieldText = lightText
+    /// Hint text on orange inputs (legacy: white at 85% opacity).
+    static let fieldPlaceholder = lightText.opacity(0.85)
 }

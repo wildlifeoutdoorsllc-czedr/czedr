@@ -209,7 +209,7 @@ struct CzedrFieldStyle: TextFieldStyle {
         configuration
             .padding(12)
             .background(CzedrPalette.orangeField)
-            .foregroundColor(.black)
+            .foregroundColor(CzedrPalette.fieldText)
             .cornerRadius(4)
     }
 }
