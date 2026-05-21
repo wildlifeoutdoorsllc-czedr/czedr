@@ -42,3 +42,10 @@ No Plaid, Yodlee, or **bank passwords** — see `docs/BANK-LINK-MICRODEPOSITS.md
 ## iOS
 
 **Profile → + My Bank** — link or confirm micro-deposits. Not required for home or payments.
+
+## Outreach documents
+
+| Audience | Document |
+|----------|----------|
+| Attorney (Texas MSB, FBO, disclosures) | `docs/CZEDR-ATTORNEY-BRIEF.md` |
+| Banks / CUs (Frost, ACH origination pitch) | `docs/CZEDR-TREASURY-BANK-PITCH.md` |
