@@ -440,7 +440,7 @@ struct MakePaymentScreen: View {
     @State private var recipientId = ""
     @State private var validatedName = ""
     @State private var amount = ""
-    @State private var memo = "Payment"
+    @State private var memo = ""
     @State private var pin = ""
 
     var body: some View {
@@ -469,7 +469,7 @@ struct MakePaymentScreen: View {
                         text: $amount,
                         keyboard: .decimalPad
                     )
-                    CzedrPlaceholderTextField(placeholder: "Enter Description", text: $memo)
+                    CzedrPlaceholderTextField(placeholder: "Description", text: $memo)
 
                     Text("ENTER YOUR CZEDR PIN")
                         .font(.caption.bold())

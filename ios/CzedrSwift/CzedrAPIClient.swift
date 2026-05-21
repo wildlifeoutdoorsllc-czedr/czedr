@@ -157,7 +157,7 @@ final class CzedrAPIClient {
             "to_czedr_id": toCzedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased(),
             "amount_cents": amountCents,
             "idempotency_key": "ios-\(UUID().uuidString)",
-            "memo": memo.isEmpty ? "Payment" : memo,
+            "memo": memo.isEmpty ? "Description" : memo,
             "user_pin": pin,
         ]
         postJSON(base: base, path: "/v1/transfers", body: body, token: token) { result in
