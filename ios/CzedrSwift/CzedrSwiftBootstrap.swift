@@ -16,6 +16,8 @@ import UIKit
     }
 
     @objc public static func present(in window: UIWindow) {
+        CzedrKeyboard.installGlobalAccessoryBar()
+
         let root = UIHostingController(
             rootView: CzedrSwiftRootView().environmentObject(session)
         )
@@ -25,6 +27,7 @@ import UIKit
             blue: 44 / 255,
             alpha: 1
         )
+        root.view.czedr_installKeyboardDismissTap()
         window.rootViewController = root
     }
 }

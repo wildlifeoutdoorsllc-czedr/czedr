@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **93** — signup + referrer (`763c06d`) |
-| **Next ship build number** | **94** |
-| **Pending local (not pushed)** | `beecb11` — Send Invoice + Pending Invoices |
+| **Next ship build number** | **95** (after 94 completes) |
+| **In progress** | **94** — Send Invoice, centered home balance, manual CI workflow (`49ae848`) |
 
 ## Ship checklist
 
