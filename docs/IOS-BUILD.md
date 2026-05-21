@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **93** — signup + referrer (`763c06d`) |
-| **Next ship build number** | **95** (after 94 completes) |
-| **In progress** | **94** — Send Invoice, centered home balance, manual CI workflow (`49ae848`) |
+| **Last shipped (TestFlight)** | **94** — Send Invoice, centered home, manual CI (`49ae848`) |
+| **Next ship build number** | **96** (after 95 completes) |
+| **In progress** | **95** — keyboard ✕ toolbar + tap to dismiss (`34c15f4`) |
 
 ## Ship checklist
 
@@ -21,6 +21,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Build | Notes |
 |-------|--------|
+| 95 | Keyboard dismiss (✕ bar, tap outside) |
+| 94 | Send Invoice, centered home balance, manual TestFlight |
 | 93 | SwiftUI signup, referrer, demo fund script |
 | 92 | Larger hero logo |
 | 91 | Single toolbar + logo per screen |
