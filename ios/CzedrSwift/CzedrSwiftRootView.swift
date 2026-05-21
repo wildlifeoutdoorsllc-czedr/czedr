@@ -204,12 +204,13 @@ struct SignUpView: View {
     }
 }
 
+/// Legacy style for fields not using `CzedrPlaceholderTextField` — prefer that helper.
 struct CzedrFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .padding(12)
-            .background(CzedrPalette.orangeField)
             .foregroundColor(CzedrPalette.fieldText)
+            .background(CzedrPalette.orangeField)
             .cornerRadius(4)
     }
 }

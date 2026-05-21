@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **96** — charcoal placeholders (superseded by 97) |
-| **Next ship build number** | **98** (after 97 completes) |
-| **In progress** | **97** — white field text + placeholders (legacy CzedrTheme match) |
+| **Last shipped (TestFlight)** | **97** — white field text + placeholders (`b686f68`) |
+| **Next ship build number** | **98** |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 

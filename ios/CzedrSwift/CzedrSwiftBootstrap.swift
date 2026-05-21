@@ -17,6 +17,7 @@ import UIKit
 
     @objc public static func present(in window: UIWindow) {
         CzedrKeyboard.installGlobalAccessoryBar()
+        CzedrKeyboard.installFieldTextAppearance()
 
         let root = UIHostingController(
             rootView: CzedrSwiftRootView().environmentObject(session)

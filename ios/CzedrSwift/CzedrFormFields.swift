@@ -1,6 +1,6 @@
 //
 //  CzedrFormFields.swift
-//  Orange fields with light text and placeholders (matches legacy CzedrTheme).
+//  Orange fields — placeholder drawn on top; dark text for contrast.
 //
 
 import SwiftUI
@@ -14,18 +14,22 @@ struct CzedrPlaceholderTextField: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
+            TextField("", text: $text)
+                .keyboardType(keyboard)
+                .autocapitalization(autocapitalization)
+                .disableAutocorrection(disableAutocorrection)
+                .padding(12)
+                .foregroundColor(CzedrPalette.fieldText)
+
             if text.isEmpty {
                 Text(placeholder)
                     .foregroundColor(CzedrPalette.fieldPlaceholder)
                     .padding(.horizontal, 12)
                     .allowsHitTesting(false)
             }
-            TextField("", text: $text)
-                .keyboardType(keyboard)
-                .autocapitalization(autocapitalization)
-                .disableAutocorrection(disableAutocorrection)
-                .textFieldStyle(CzedrFieldStyle())
         }
+        .background(CzedrPalette.orangeField)
+        .cornerRadius(4)
     }
 }
 
@@ -36,15 +40,19 @@ struct CzedrPlaceholderSecureField: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
+            SecureField("", text: $text)
+                .keyboardType(keyboard)
+                .padding(12)
+                .foregroundColor(CzedrPalette.fieldText)
+
             if text.isEmpty {
                 Text(placeholder)
                     .foregroundColor(CzedrPalette.fieldPlaceholder)
                     .padding(.horizontal, 12)
                     .allowsHitTesting(false)
             }
-            SecureField("", text: $text)
-                .keyboardType(keyboard)
-                .textFieldStyle(CzedrFieldStyle())
         }
+        .background(CzedrPalette.orangeField)
+        .cornerRadius(4)
     }
 }
