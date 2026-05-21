@@ -70,13 +70,10 @@ final class MoovAchService
      */
     public function startBankLink(string $userId, string $email, string $displayName): array
     {
-        $acct = $this->ensureMoovAccount($userId, $email, $displayName);
-        $session = $this->moov->createBankLinkSession((string) $acct['moov_account_id']);
-
-        return [
-            'link_url' => (string) ($session['linkURL'] ?? $session['link_url'] ?? ''),
-            'expires_at' => $session['expiresAt'] ?? $session['expires_at'] ?? null,
-        ];
+        throw new \RuntimeException(
+            'Hosted bank login is disabled. Use POST /v1/funding/bank-link/start with routing and account '
+            . 'numbers, then confirm two micro-deposits. See docs/BANK-LINK-MICRODEPOSITS.md.'
+        );
     }
 
     /**

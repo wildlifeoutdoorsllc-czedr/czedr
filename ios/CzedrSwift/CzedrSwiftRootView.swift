@@ -366,6 +366,12 @@ struct HomeScreen: View {
                             .font(.system(size: 32, weight: .semibold))
                             .foregroundColor(CzedrPalette.balanceGreen)
                             .multilineTextAlignment(.center)
+                        NavigationLink(destination: MyBankScreen(showMenu: $showMenu)) {
+                            Text("+ My Bank (optional)")
+                                .font(.caption)
+                                .foregroundColor(CzedrPalette.caption)
+                        }
+                        .padding(.top, 4)
                     }
                     .frame(maxWidth: .infinity)
 
@@ -553,6 +559,15 @@ struct ProfileScreen: View {
                 row("Czedr ID", session.czedrId)
                 row("API", session.apiBase)
                 row("Build", session.buildLabel)
+                NavigationLink(destination: MyBankScreen(showMenu: $showMenu)) {
+                    Text("+ My Bank")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(CzedrPalette.orangeField)
+                        .foregroundColor(CzedrPalette.fieldText)
+                        .cornerRadius(6)
+                }
                 Spacer()
                 Button(action: { session.logout() }) {
                     Text("Sign out")

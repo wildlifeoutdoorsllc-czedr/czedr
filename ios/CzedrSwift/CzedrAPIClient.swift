@@ -211,6 +211,90 @@ final class CzedrAPIClient {
         }
     }
 
+    func fetchFundingStatus(
+        apiBase: String,
+        token: String,
+        completion: @escaping (APIResult<(message: String, banks: [BankLinkRow])>) -> Void
+    ) {
+        authedGetObject(
+            base: apiBase,
+            path: "/v1/funding/status",
+            token: token,
+            map: { data in
+                let msg = data["user_message"] as? String ?? ""
+                let banksRaw = data["banks"] as? [[String: Any]] ?? []
+                let banks = banksRaw.compactMap { row -> BankLinkRow? in
+                    guard let id = row["id"] as? String else { return nil }
+                    return BankLinkRow(
+                        id: id,
+                        last4: row["last4"] as? String ?? "",
+                        accountType: row["account_type"] as? String ?? "checking",
+                        status: row["status"] as? String ?? ""
+                    )
+                }
+                return .ok((msg, banks))
+            },
+            completion: completion
+        )
+    }
+
+    func startBankLink(
+        apiBase: String,
+        token: String,
+        routing: String,
+        account: String,
+        holderName: String,
+        accountType: String,
+        completion: @escaping (APIResult<BankLinkStartResult>) -> Void
+    ) {
+        let body: [String: Any] = [
+            "routing_number": routing,
+            "account_number": account,
+            "account_holder_name": holderName,
+            "account_type": accountType,
+        ]
+        postJSON(base: apiBase, path: "/v1/funding/bank-link/start", body: body, token: token) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok(let data):
+                guard let id = data["bank_link_id"] as? String else {
+                    completion(.err("Invalid response"))
+                    return
+                }
+                let a = data["micro_cents_a"] as? Int ?? (data["micro_cents_a"] as? NSNumber)?.intValue
+                let b = data["micro_cents_b"] as? Int ?? (data["micro_cents_b"] as? NSNumber)?.intValue
+                completion(.ok(BankLinkStartResult(
+                    bankLinkId: id,
+                    message: data["message"] as? String ?? "Bank link started",
+                    microCentsA: a,
+                    microCentsB: b
+                )))
+            }
+        }
+    }
+
+    func confirmBankLink(
+        apiBase: String,
+        token: String,
+        bankLinkId: String,
+        amount1Cents: Int,
+        amount2Cents: Int,
+        completion: @escaping (APIResult<Void>) -> Void
+    ) {
+        let body: [String: Any] = [
+            "bank_link_id": bankLinkId,
+            "amount_1_cents": amount1Cents,
+            "amount_2_cents": amount2Cents,
+        ]
+        postJSON(base: apiBase, path: "/v1/funding/bank-link/confirm", body: body, token: token) { result in
+            switch result {
+            case .err(let msg): completion(.err(msg))
+            case .ok: completion(.ok(()))
+            }
+        }
+    }
+
     func fetchHistory(apiBase: String, token: String, completion: @escaping (APIResult<[TransferRow]>) -> Void) {
         authedGetObject(
             base: apiBase,

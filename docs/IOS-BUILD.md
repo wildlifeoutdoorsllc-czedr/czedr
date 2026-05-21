@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **101** — optional referrer copy on signup |
-| **Next ship build number** | **103** (after 102 completes) |
-| **In progress** | **102** — vertical red PIN boxes (Make Payment, Send Invoice) |
+| **Last shipped (TestFlight)** | **102** — vertical red PIN boxes |
+| **Next ship build number** | **104** (after 103 completes) |
+| **In progress** | **103** — + My Bank (micro-deposit, ledger-first) |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 103 | + My Bank optional link; micro-deposit; no bank password |
 | 102 | PIN entry: four vertical red slots + masked dots |
 | 101 | Signup: referrer optional helper text |
 | 100 | US comma money formatting |

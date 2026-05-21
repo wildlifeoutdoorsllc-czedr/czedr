@@ -210,6 +210,68 @@ final class AppSession: ObservableObject {
         }
     }
 
+    func fetchFundingStatus(completion: @escaping (String, [BankLinkRow]) -> Void) {
+        api.fetchFundingStatus(apiBase: apiBase, token: token) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .err(let msg):
+                    self?.errorMessage = msg
+                    completion("", [])
+                case .ok(let payload):
+                    completion(payload.message, payload.banks)
+                }
+            }
+        }
+    }
+
+    func startBankLink(
+        routing: String,
+        account: String,
+        holderName: String,
+        accountType: String,
+        completion: @escaping (APIResult<BankLinkStartResult>) -> Void
+    ) {
+        isLoading = true
+        errorMessage = nil
+        api.startBankLink(
+            apiBase: apiBase,
+            token: token,
+            routing: routing,
+            account: account,
+            holderName: holderName,
+            accountType: accountType
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self?.errorMessage = msg
+                    completion(.err(msg))
+                case .ok(let payload):
+                    self?.actionMessage = payload.message
+                    completion(.ok(payload))
+                }
+            }
+        }
+    }
+
+    func confirmBankLink(bankLinkId: String, amount1Cents: Int, amount2Cents: Int, completion: @escaping () -> Void) {
+        isLoading = true
+        errorMessage = nil
+        api.confirmBankLink(apiBase: apiBase, token: token, bankLinkId: bankLinkId, amount1Cents: amount1Cents, amount2Cents: amount2Cents) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self?.errorMessage = msg
+                case .ok:
+                    self?.actionMessage = "Bank verified"
+                    completion()
+                }
+            }
+        }
+    }
+
     func fetchHistory(completion: @escaping ([TransferRow]) -> Void) {
         isLoading = true
         api.fetchHistory(apiBase: apiBase, token: token) { [weak self] result in

@@ -1,6 +1,8 @@
 # Moov ACH funding — design for Czedr
 
-Add real **bank → Czedr balance** funding on top of the existing **internal ledger**, without changing P2P transfers. Money only appears in `ledger_accounts` after Moov reports the ACH debit **completed**.
+Add real **bank → Czedr balance** funding on top of the existing **internal ledger**, without changing P2P transfers. Money only appears in `ledger_accounts` after the ACH debit **settles**.
+
+**Bank linking:** Czedr does **not** use Plaid, Yodlee, MX, or any product that collects **online banking usernames/passwords**. Members link banks only via **micro-deposit verification** — see **`docs/BANK-LINK-MICRODEPOSITS.md`**.
 
 ---
 
@@ -32,7 +34,7 @@ sequenceDiagram
         App->>API: POST /v1/funding/moov/bank-link
         API->>Moov: Create link session
         Moov-->>App: Link URL (Safari / in-app)
-        U->>Bank: Plaid-style link / micro-deposits
+        U->>Bank: Two micro-deposits (no bank login)
         Moov->>API: Webhook bankAccount.updated
     end
     U->>App: Enter amount, Confirm
@@ -65,7 +67,9 @@ All routes except the webhook require Bearer / `auth_code` (same as other v1).
 |--------|------|---------|
 | `GET` | `/v1/funding/status` | `{ enabled, moov_ready, banks[], pending_deposits[] }` |
 | `POST` | `/v1/funding/moov/onboarding` | Ensure Moov **account** exists for user; return `moov_account_id` |
-| `POST` | `/v1/funding/moov/bank-link` | Start bank link; return `{ link_url, expires_at }` (Moov Drops / link session) |
+| `POST` | `/v1/funding/bank-link/start` | Micro-deposit link (routing + account; **no password**) |
+| `POST` | `/v1/funding/bank-link/confirm` | Confirm two deposit amounts |
+| `POST` | `/v1/funding/moov/bank-link` | **Disabled** — returns error; do not use hosted bank login |
 | `GET` | `/v1/funding/moov/banks` | Linked banks: `id`, `last4`, `name`, `is_default` |
 | `POST` | `/v1/funding/moov/deposit` | Body: `amount_cents`, `bank_account_id?`, `idempotency_key` → `{ deposit_id, status: pending }` |
 | `GET` | `/v1/funding/moov/deposits` | List user deposits (for history UI) |

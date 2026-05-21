@@ -15,6 +15,8 @@ use Czedr\Legacy\LegacyCompat;
 use Czedr\Ledger\LedgerService;
 use Czedr\Cards\CardLinkService;
 use Czedr\Media\ProfileMediaService;
+use Czedr\Funding\FundingStatusService;
+use Czedr\Funding\MicroDepositBankLinkService;
 use Czedr\Moov\MoovAchService;
 use Czedr\Moov\MoovConfig;
 use Czedr\Moov\MoovHttpClient;
@@ -37,6 +39,8 @@ final class App
     private ProfileMediaService $profileMedia;
     private CardLinkService $cardLinks;
     private MoovAchService $moovAch;
+    private MicroDepositBankLinkService $microDepositBankLink;
+    private FundingStatusService $fundingStatus;
     private SignupChallengeService $signupChallenges;
     private PasswordResetService $passwordReset;
     private RateLimiter $rateLimiter;
@@ -50,6 +54,8 @@ final class App
         $this->profileMedia = new ProfileMediaService();
         $this->cardLinks = new CardLinkService($this->profileMedia);
         $this->moovAch = new MoovAchService(new MoovHttpClient(), $this->ledger);
+        $this->microDepositBankLink = new MicroDepositBankLinkService();
+        $this->fundingStatus = new FundingStatusService($this->microDepositBankLink);
         $this->signupChallenges = new SignupChallengeService();
         $this->passwordReset = new PasswordResetService($this->audit);
         $this->auth = new AuthService($this->audit, $this->ledger);
@@ -528,11 +534,37 @@ final class App
     private function registerFundingRoutes(): void
     {
         $this->router->get('/v1/funding/status', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            $this->fundingJson(fn () => $this->moovAch->statusForUser($uid));
+            $this->bankLinkJson(fn () => $this->fundingStatus->statusForUser($uid));
+        }));
+
+        $this->router->post('/v1/funding/bank-link/start', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $this->bankLinkJson(fn () => $this->microDepositBankLink->startLink(
+                $uid,
+                (string) ($r->body['routing_number'] ?? ''),
+                (string) ($r->body['account_number'] ?? ''),
+                (string) ($r->body['account_type'] ?? 'checking'),
+                (string) ($r->body['account_holder_name'] ?? ''),
+            ));
+        }));
+
+        $this->router->post('/v1/funding/bank-link/confirm', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $this->bankLinkJson(fn () => $this->microDepositBankLink->confirmMicroDeposits(
+                $uid,
+                (string) ($r->body['bank_link_id'] ?? ''),
+                (int) ($r->body['amount_1_cents'] ?? 0),
+                (int) ($r->body['amount_2_cents'] ?? 0),
+            ));
+        }));
+
+        $this->router->get('/v1/funding/banks', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            $this->bankLinkJson(fn () => [
+                'bank_link_method' => MicroDepositBankLinkService::linkMethod(),
+                'banks' => $this->microDepositBankLink->listBanks($uid),
+            ]);
         }));
 
         $this->router->post('/v1/funding/moov/onboarding', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            $this->fundingJson(function () use ($uid) {
+            $this->achRailJson(function () use ($uid) {
                 $user = $this->auth->userProfile($uid);
 
                 return $this->moovAch->ensureMoovAccount(
@@ -544,7 +576,7 @@ final class App
         }));
 
         $this->router->post('/v1/funding/moov/bank-link', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            $this->fundingJson(function () use ($uid) {
+            $this->bankLinkJson(function () use ($uid) {
                 $user = $this->auth->userProfile($uid);
 
                 return $this->moovAch->startBankLink(
@@ -556,11 +588,11 @@ final class App
         }));
 
         $this->router->get('/v1/funding/moov/banks', fn (Request $r) => $this->withAuth($r, function (string $uid) {
-            $this->fundingJson(fn () => ['banks' => $this->moovAch->listBanks($uid)]);
+            $this->bankLinkJson(fn () => ['banks' => $this->microDepositBankLink->listBanks($uid)]);
         }));
 
         $this->router->post('/v1/funding/moov/deposit', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
-            $this->fundingJson(function () use ($uid, $r) {
+            $this->achRailJson(function () use ($uid, $r) {
                 return $this->moovAch->initiateDeposit(
                     $uid,
                     (int) ($r->body['amount_cents'] ?? 0),
@@ -599,13 +631,10 @@ final class App
         });
     }
 
+    /** Bank link + status — always available (micro-deposit, no credential aggregators). */
     /** @param callable(): array<string, mixed> $fn */
-    private function fundingJson(callable $fn): void
+    private function bankLinkJson(callable $fn): void
     {
-        if (!MoovConfig::isEnabled()) {
-            JsonResponse::error('ACH funding is not configured', 503);
-            return;
-        }
         try {
             JsonResponse::ok($fn());
         } catch (\InvalidArgumentException $e) {
@@ -613,6 +642,20 @@ final class App
         } catch (\RuntimeException $e) {
             JsonResponse::error($e->getMessage(), 503);
         }
+    }
+
+    /** ACH cash in/out — only when rail is configured (optional; P2P does not need this). */
+    /** @param callable(): array<string, mixed> $fn */
+    private function achRailJson(callable $fn): void
+    {
+        if (!MoovConfig::isEnabled()) {
+            JsonResponse::error(
+                'ACH cash in/out is not enabled on this server. You can still pay and receive on Czedr using your balance.',
+                503
+            );
+            return;
+        }
+        $this->bankLinkJson($fn);
     }
 
     private function legacyCardLink(Request $request): void
