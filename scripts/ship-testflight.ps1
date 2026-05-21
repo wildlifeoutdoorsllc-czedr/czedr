@@ -65,7 +65,7 @@ if ($WaitForPrevious) {
             }
             break
         }
-        Write-Host "  Still running ($status) — checking again in 30s..." -ForegroundColor DarkGray
+        Write-Host "  Still running ($status) - checking again in 30s..." -ForegroundColor DarkGray
         Start-Sleep -Seconds 30
     }
 }
