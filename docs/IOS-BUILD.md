@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **100** — US comma money formatting |
-| **Next ship build number** | **102** (after 101 completes) |
-| **In progress** | **101** — optional referrer copy on signup |
+| **Last shipped (TestFlight)** | **101** — optional referrer copy on signup |
+| **Next ship build number** | **103** (after 102 completes) |
+| **In progress** | **102** — vertical red PIN boxes (Make Payment, Send Invoice) |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 102 | PIN entry: four vertical red slots + masked dots |
 | 101 | Signup: referrer optional helper text |
 | 100 | US comma money formatting |
 | 99 | Make Payment Description field |

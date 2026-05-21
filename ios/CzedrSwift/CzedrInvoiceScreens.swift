@@ -49,19 +49,12 @@ struct SendInvoiceScreen: View {
                         text: $amount,
                         keyboard: .decimalPad
                     )
+                    .frame(minHeight: 56)
 
                     CzedrPlaceholderTextField(placeholder: "Description", text: $description)
 
-                    Text("ENTER YOUR CZEDR PIN")
-                        .font(.caption.bold())
-                        .foregroundColor(CzedrPalette.redPrimary)
-                        .padding(.top, 8)
-
-                    CzedrPlaceholderSecureField(
-                        placeholder: "4-digit PIN",
-                        text: $pin,
-                        keyboard: .numberPad
-                    )
+                    CzedrPinEntryView(pin: $pin)
+                        .padding(.top, 12)
 
                     Button(action: sendInvoice) {
                         Text(session.isLoading ? "…" : "SEND INVOICE")
