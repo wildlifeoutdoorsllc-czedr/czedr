@@ -83,6 +83,7 @@ struct SendInvoiceScreen: View {
 
     private func sendInvoice() {
         session.clearError()
+        CzedrKeyboard.dismiss()
         session.sendInvoice(
             to: debtorId,
             amountDollars: amount,

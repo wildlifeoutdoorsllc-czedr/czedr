@@ -60,7 +60,21 @@ extension UIView {
         if objc_getAssociatedObject(self, &UIView.dismissTapKey) != nil { return }
         let tap = UITapGestureRecognizer(target: KeyboardDismissTarget.shared, action: #selector(KeyboardDismissTarget.dismissKeyboard))
         tap.cancelsTouchesInView = false
+        tap.delegate = KeyboardDismissTarget.shared
         addGestureRecognizer(tap)
         objc_setAssociatedObject(self, &UIView.dismissTapKey, tap, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+}
+
+extension KeyboardDismissTarget: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        var view: UIView? = touch.view
+        while let current = view {
+            if current.tag == CzedrPinEntryTag.container {
+                return false
+            }
+            view = current.superview
+        }
+        return true
     }
 }

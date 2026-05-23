@@ -509,6 +509,7 @@ struct MakePaymentScreen: View {
 
     private func pay() {
         session.clearError()
+        CzedrKeyboard.dismiss()
         session.sendTransfer(to: recipientId, amountDollars: amount, memo: memo, pin: pin)
     }
 }
