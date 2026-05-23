@@ -159,10 +159,53 @@ We anticipate counsel will recommend or oversee:
 | Legal entity name | _[fill in]_ |
 | State of formation | _[fill in]_ |
 | EIN | _[fill in]_ |
-| Principal address (Texas) | _[fill in]_ |
+| Principal address (Texas) | _[fill in]_ — e.g. Arlington, TX area |
 | Authorized contact | _[fill in]_ |
 | Website / app name | Czedr |
 | Target launch geography | Texas-first; national app distribution possible |
+| Primary bank (treasury) | Frost Bank (existing relationship) |
+
+---
+
+## 11. Counsel (fill when engaged)
+
+**Selected regulatory counsel (MSB / fintech / Texas):**
+
+| Field | Value |
+|-------|--------|
+| Firm | _[fill in after engagement]_ |
+| Attorney | _[fill in]_ |
+| Email / phone | _[fill in]_ |
+| Engagement date | _[fill in]_ |
+| Scope | e.g. Phase 0 opinion, TX MSB path, FinCEN/AML program, Frost coordination |
+
+**Bank / transaction counsel (optional, for Frost agreements):**
+
+| Field | Value |
+|-------|--------|
+| Firm | _[fill in]_ |
+| Attorney | _[fill in]_ |
+| Email / phone | _[fill in]_ |
+
+### DFW-area candidates (not endorsed — interview and choose)
+
+Listed for convenience; Arlington has few dedicated MSB specialists—most practice from Fort Worth or Dallas (~20–40 minutes).
+
+| Firm / attorney | Office | Focus | Contact |
+|-----------------|--------|--------|---------|
+| **Law Offices of Alan Abergel, P.C. (LOAA)** — Alan Abergel | Fort Worth | Texas money transmission / MSB, FinCEN, fintech, TX Dept. of Banking | [abergellaw.com](https://finance-laws.com/texas-money-transmission-license-attorney) · 817-304-9540 · alan@abergellaw.com |
+| **Haynes Boone** — Financial Regulatory / FinTech practice | Dallas | FinTech, financial regulatory, AML/BSA, bank matters | [haynesboone.com](https://www.haynesboone.com/experience/practices-and-industries/finance/financial-regulatory) |
+| **Bajaria & Forgerson Law Group** | Dallas (LBJ corridor) | Banking law, compliance (pair with MSB counsel for Frost) | [bflawgroup.com](https://bflawgroup.com/banking) · 214-888-3070 |
+
+### Texas / national candidates (remote consult common)
+
+| Firm / attorney | Office | Focus | Contact |
+|-----------------|--------|--------|---------|
+| **Pillsbury** — Daniel C. Wood | Austin | Former **Texas Department of Banking**; money transmission, payments, AML | [pillsburylaw.com](https://www.pillsburylaw.com/en/lawyers/daniel-wood.html) |
+| **Farley Law PLLC** | Austin (+ Lubbock) | Fintech payments, licensing, BaaS / sponsor-bank deals | [farleylawpllc.com/fintech](https://farleylawpllc.com/fintech/) · 737-263-3574 |
+| **McDermott** — Donald J. Mosher | New York (national) | Nationwide money transmitter licensing (if multi-state later) | [mcdermottlaw.com](https://www.mcdermottlaw.com/people/donald-j-mosher/) |
+
+**Referral service:** [State Bar of Texas Lawyer Referral](https://www.texasbar.com/AM/Template.cfm?Section=Lawyer_Referral_Information_Service&Template=/CustomSource/MemberDirectory/LRIS_Landing.cfm) — ask for money services business / money transmission / fintech.
 
 ---
 

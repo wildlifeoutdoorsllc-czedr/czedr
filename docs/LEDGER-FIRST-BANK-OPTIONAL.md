@@ -47,5 +47,5 @@ No Plaid, Yodlee, or **bank passwords** — see `docs/BANK-LINK-MICRODEPOSITS.md
 
 | Audience | Document |
 |----------|----------|
-| Attorney (Texas MSB, FBO, disclosures) | `docs/CZEDR-ATTORNEY-BRIEF.md` |
+| Attorney (Texas MSB, FBO, disclosures) | `docs/CZEDR-ATTORNEY-BRIEF.md` — includes §11 counsel placeholders and DFW candidate list |
 | Banks / CUs (Frost, ACH origination pitch) | `docs/CZEDR-TREASURY-BANK-PITCH.md` |
