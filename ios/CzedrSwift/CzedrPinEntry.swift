@@ -8,7 +8,7 @@ import UIKit
 
 /// UIKit tag so tap-to-dismiss keyboard does not steal touches from PIN entry.
 enum CzedrPinEntryTag {
-    static let container = 0xCZED_0010
+    static let container = 0xC2ED_0010
 }
 
 /// Shared PIN UI: red label + four tall vertical red boxes; UIKit field captures digits reliably.
