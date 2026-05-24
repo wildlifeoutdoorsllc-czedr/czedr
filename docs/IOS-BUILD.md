@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **107** — home menu UIKit button, Set PIN flow |
-| **Next ship build number** | **108** |
-| **In progress** | — |
+| **Next ship build number** | **109** |
+| **In progress** | **108** — menu Logout visible in list (scrollable) |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 108 | Logout inside menu List (always scrollable, not clipped) |
 | 107 | UIKit menu button on home; Set PIN screen before payments |
 | 106 | Menu Logout at bottom; fix home hamburger menu |
 | 105 | Make Payment Success screen after submit |

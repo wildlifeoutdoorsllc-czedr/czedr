@@ -237,50 +237,50 @@ struct MenuSheet: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                List {
-                    NavigationLink(destination: HomeScreen(openedFromMenu: true)) {
-                        Text("Home")
-                    }
-                    NavigationLink(destination: MakePaymentScreen(openedFromMenu: true)) {
-                        Text("Make Payment")
-                    }
-                    NavigationLink(destination: HistoryScreen(openedFromMenu: true)) {
-                        Text("History")
-                    }
-                    NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
-                        Text("Profile")
-                    }
-                    if !session.hasPinSet {
-                        NavigationLink(destination: SetPinScreen()) {
-                            Text("Set PIN")
-                                .foregroundColor(CzedrPalette.redPrimary)
-                        }
-                    }
-                    NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
-                        Text("Send Invoice")
-                    }
-                    NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", openedFromMenu: true)) {
-                        Text("Pending Invoices")
-                    }
-                    NavigationLink(destination: PlaceholderScreen(title: "Link Card", openedFromMenu: true)) {
-                        Text("Link Card")
+            List {
+                NavigationLink(destination: HomeScreen(openedFromMenu: true)) {
+                    Text("Home")
+                }
+                NavigationLink(destination: MakePaymentScreen(openedFromMenu: true)) {
+                    Text("Make Payment")
+                }
+                NavigationLink(destination: HistoryScreen(openedFromMenu: true)) {
+                    Text("History")
+                }
+                NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
+                    Text("Profile")
+                }
+                if !session.hasPinSet {
+                    NavigationLink(destination: SetPinScreen()) {
+                        Text("Set PIN")
+                            .foregroundColor(CzedrPalette.redPrimary)
                     }
                 }
-                .listStyle(PlainListStyle())
+                NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
+                    Text("Send Invoice")
+                }
+                NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", openedFromMenu: true)) {
+                    Text("Pending Invoices")
+                }
+                NavigationLink(destination: PlaceholderScreen(title: "Link Card", openedFromMenu: true)) {
+                    Text("Link Card")
+                }
 
-                Button(action: {
-                    session.dismissMenu()
-                    session.logout()
-                }) {
-                    Text("Logout")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .foregroundColor(CzedrPalette.redPrimary)
+                Section {
+                    Button(action: {
+                        session.dismissMenu()
+                        session.logout()
+                    }) {
+                        Text("Logout")
+                            .font(.headline)
+                            .foregroundColor(CzedrPalette.redPrimary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .background(CzedrPalette.surface)
             }
+            .listStyle(PlainListStyle())
             .navigationBarTitle("Menu", displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") { session.dismissMenu() })
         }
