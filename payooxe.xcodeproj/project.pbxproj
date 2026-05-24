@@ -45,6 +45,8 @@
 		CZSW1D1F600100CZEDR /* CzedrPinEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */; };
 		CZSW1F1F600100CZEDR /* CzedrFundingScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW1E1F600100CZEDR /* CzedrFundingScreens.swift */; };
 		CZSW221F600100CZEDR /* CzedrPaymentSuccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW211F600100CZEDR /* CzedrPaymentSuccess.swift */; };
+		CZSW241F600100CZEDR /* CzedrMenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW231F600100CZEDR /* CzedrMenuButton.swift */; };
+		CZSW261F600100CZEDR /* CzedrPinScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW251F600100CZEDR /* CzedrPinScreens.swift */; };
 		068F847E1B182B2E003652F0 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */; };
 		068F847F1B182B2E003652F0 /* AFHTTPRequestOperationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846E1B182B2E003652F0 /* AFHTTPRequestOperationManager.m */; };
 		068F84801B182B2E003652F0 /* AFHTTPSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F84701B182B2E003652F0 /* AFHTTPSessionManager.m */; };
@@ -250,6 +252,8 @@
 		CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPinEntry.swift; sourceTree = "<group>"; };
 		CZSW1E1F600100CZEDR /* CzedrFundingScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrFundingScreens.swift; sourceTree = "<group>"; };
 		CZSW211F600100CZEDR /* CzedrPaymentSuccess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPaymentSuccess.swift; sourceTree = "<group>"; };
+		CZSW231F600100CZEDR /* CzedrMenuButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrMenuButton.swift; sourceTree = "<group>"; };
+		CZSW251F600100CZEDR /* CzedrPinScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPinScreens.swift; sourceTree = "<group>"; };
 		068F846B1B182B2E003652F0 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
 		068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPRequestOperation.m; sourceTree = "<group>"; };
 		068F846D1B182B2E003652F0 /* AFHTTPRequestOperationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperationManager.h; sourceTree = "<group>"; };
@@ -723,6 +727,8 @@
 				CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */,
 				CZSW1E1F600100CZEDR /* CzedrFundingScreens.swift */,
 				CZSW211F600100CZEDR /* CzedrPaymentSuccess.swift */,
+				CZSW231F600100CZEDR /* CzedrMenuButton.swift */,
+				CZSW251F600100CZEDR /* CzedrPinScreens.swift */,
 				CZSW031F600100CZEDR /* CzedrAPIClient.swift */,
 				CZSW051F600100CZEDR /* KeychainStore.swift */,
 				CZSW071F600100CZEDR /* AppSession.swift */,
@@ -1179,6 +1185,8 @@
 				CZSW1D1F600100CZEDR /* CzedrPinEntry.swift in Sources */,
 				CZSW1F1F600100CZEDR /* CzedrFundingScreens.swift in Sources */,
 				CZSW221F600100CZEDR /* CzedrPaymentSuccess.swift in Sources */,
+				CZSW241F600100CZEDR /* CzedrMenuButton.swift in Sources */,
+				CZSW261F600100CZEDR /* CzedrPinScreens.swift in Sources */,
 				AF3FBE1B1A9C70B600F8FE78 /* GCPlaceholderTextView.m in Sources */,
 				068F84B11B182B54003652F0 /* SBJsonWriter.m in Sources */,
 				068F84A51B182B54003652F0 /* NSObject+SBJson.m in Sources */,

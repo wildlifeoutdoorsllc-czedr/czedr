@@ -19,6 +19,10 @@ struct CzedrSwiftRootView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $session.isMenuPresented) {
+            MenuSheet()
+                .environmentObject(session)
+        }
     }
 }
 
@@ -225,10 +229,6 @@ struct LoggedInNavigationView: View {
             HomeScreen()
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .sheet(isPresented: $session.isMenuPresented) {
-            MenuSheet()
-                .environmentObject(session)
-        }
     }
 }
 
@@ -250,6 +250,12 @@ struct MenuSheet: View {
                     }
                     NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
                         Text("Profile")
+                    }
+                    if !session.hasPinSet {
+                        NavigationLink(destination: SetPinScreen()) {
+                            Text("Set PIN")
+                                .foregroundColor(CzedrPalette.redPrimary)
+                        }
                     }
                     NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
                         Text("Send Invoice")
@@ -293,14 +299,12 @@ struct ShellToolbar: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button(action: { onMenu?() }) {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.title)
-                        .foregroundColor(CzedrPalette.lightText)
+                if let onMenu {
+                    CzedrMenuBarButton(onTap: onMenu)
                         .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                } else {
+                    Color.clear.frame(width: 44, height: 44)
                 }
-                .buttonStyle(PlainButtonStyle())
                 Spacer()
                 if showBack {
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
@@ -345,6 +349,7 @@ struct LoggedInPageLayout<Content: View>: View {
                 .padding(.bottom, 4)
             content()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .clipped()
         }
         .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
         .navigationBarHidden(true)
@@ -396,6 +401,22 @@ struct HomeScreen: View {
                                 .foregroundColor(CzedrPalette.caption)
                         }
                     }
+                    if !session.hasPinSet {
+                        NavigationLink(destination: SetPinScreen()) {
+                            HStack {
+                                Image(systemName: "lock.fill")
+                                Text("Set your 4-digit PIN to send payments")
+                                    .font(.footnote.bold())
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                            }
+                            .foregroundColor(CzedrPalette.redPrimary)
+                            .padding(12)
+                            .background(CzedrPalette.surface)
+                            .cornerRadius(8)
+                        }
+                    }
+
                     if let err = session.errorMessage {
                         Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
                     }
@@ -493,8 +514,24 @@ struct MakePaymentScreen: View {
 
                     CzedrPlaceholderTextField(placeholder: "Description", text: $memo)
 
-                    CzedrPinEntryView(pin: $pin)
-                        .padding(.top, 12)
+                    if !session.hasPinSet {
+                        Text("Set a 4-digit PIN in Profile before you can send money.")
+                            .font(.footnote)
+                            .foregroundColor(CzedrPalette.redPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        NavigationLink(destination: SetPinScreen()) {
+                            Text("SET PIN NOW")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(CzedrPalette.redPrimary)
+                                .foregroundColor(.white)
+                                .cornerRadius(6)
+                        }
+                    } else {
+                        CzedrPinEntryView(pin: $pin)
+                            .padding(.top, 12)
+                    }
 
                     Button(action: pay) {
                         Text(session.isLoading ? "…" : "MAKE PAYMENT")
@@ -505,7 +542,7 @@ struct MakePaymentScreen: View {
                             .foregroundColor(CzedrPalette.lightText)
                             .cornerRadius(6)
                     }
-                    .disabled(session.isLoading)
+                    .disabled(session.isLoading || !session.hasPinSet)
                     .padding(.top, 8)
 
                     if let err = session.errorMessage {
@@ -628,6 +665,21 @@ struct ProfileScreen: View {
                         .background(CzedrPalette.orangeField)
                         .foregroundColor(CzedrPalette.fieldText)
                         .cornerRadius(6)
+                }
+                if session.hasPinSet {
+                    Text("Payment PIN is set")
+                        .font(.subheadline)
+                        .foregroundColor(CzedrPalette.balanceGreen)
+                } else {
+                    NavigationLink(destination: SetPinScreen()) {
+                        Text("Set PIN")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(CzedrPalette.orangeField)
+                            .foregroundColor(CzedrPalette.fieldText)
+                            .cornerRadius(6)
+                    }
                 }
                 Spacer()
                 Button(action: { session.logout() }) {

@@ -16,6 +16,7 @@ final class AppSession: ObservableObject {
     @Published var errorMessage: String?
     @Published var actionMessage: String?
     @Published var isMenuPresented = false
+    @Published var hasPinSet = false
 
     private var token = ""
     private let api = CzedrAPIClient()
@@ -37,6 +38,7 @@ final class AppSession: ObservableObject {
         errorMessage = nil
         actionMessage = nil
         isMenuPresented = false
+        hasPinSet = false
     }
 
     func presentMenu() {
@@ -84,7 +86,13 @@ final class AppSession: ObservableObject {
                 case .err(let msg):
                     self.errorMessage = msg
                 case .ok(let payload):
-                    self.persistSession(token: payload.token, email: payload.email, czedrId: payload.czedrId, apiBase: base)
+                    self.persistSession(
+                        token: payload.token,
+                        email: payload.email,
+                        czedrId: payload.czedrId,
+                        apiBase: base,
+                        hasPinSet: payload.hasPinSet
+                    )
                     self.refreshBalance()
                 }
             }
@@ -105,8 +113,36 @@ final class AppSession: ObservableObject {
                 case .err(let msg):
                     self.errorMessage = msg
                 case .ok(let payload):
-                    self.persistSession(token: payload.token, email: payload.email, czedrId: payload.czedrId, apiBase: base)
+                    self.persistSession(
+                        token: payload.token,
+                        email: payload.email,
+                        czedrId: payload.czedrId,
+                        apiBase: base,
+                        hasPinSet: payload.hasPinSet
+                    )
                     self.refreshBalance()
+                }
+            }
+        }
+    }
+
+    func setAccountPin(_ pin: String, onSuccess: @escaping () -> Void) {
+        if pin.count != 4 {
+            errorMessage = "PIN must be 4 digits"
+            return
+        }
+        isLoading = true
+        api.setPin(apiBase: apiBase, token: token, pin: pin) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self.errorMessage = msg
+                case .ok:
+                    self.hasPinSet = true
+                    self.errorMessage = nil
+                    onSuccess()
                 }
             }
         }
@@ -126,6 +162,7 @@ final class AppSession: ObservableObject {
         errorMessage = nil
         actionMessage = nil
         isMenuPresented = false
+        hasPinSet = false
     }
 
     func refreshBalance() {
@@ -319,11 +356,18 @@ final class AppSession: ObservableObject {
         }
     }
 
-    private func persistSession(token: String, email: String, czedrId: String, apiBase: String) {
+    private func persistSession(
+        token: String,
+        email: String,
+        czedrId: String,
+        apiBase: String,
+        hasPinSet: Bool
+    ) {
         self.token = token
         self.email = email
         self.czedrId = czedrId
         self.apiBase = apiBase
+        self.hasPinSet = hasPinSet
         KeychainStore.set(token, key: KeychainStore.Keys.token)
         KeychainStore.set(email, key: KeychainStore.Keys.email)
         KeychainStore.set(czedrId, key: KeychainStore.Keys.czedrId)

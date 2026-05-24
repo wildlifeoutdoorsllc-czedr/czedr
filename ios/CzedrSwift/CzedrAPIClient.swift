@@ -38,7 +38,12 @@ final class CzedrAPIClient {
         self.session = session
     }
 
-    func login(email: String, password: String, apiBase: String, completion: @escaping (APIResult<(token: String, email: String, czedrId: String)>) -> Void) {
+    func login(
+        email: String,
+        password: String,
+        apiBase: String,
+        completion: @escaping (APIResult<(token: String, email: String, czedrId: String, hasPinSet: Bool)>) -> Void
+    ) {
         guard let base = Self.normalizeBase(apiBase) else {
             completion(.err("Invalid API base URL"))
             return
@@ -64,7 +69,7 @@ final class CzedrAPIClient {
         password: String,
         referrerCzedrId: String?,
         apiBase: String,
-        completion: @escaping (APIResult<(token: String, email: String, czedrId: String)>) -> Void
+        completion: @escaping (APIResult<(token: String, email: String, czedrId: String, hasPinSet: Bool)>) -> Void
     ) {
         guard let base = Self.normalizeBase(apiBase) else {
             completion(.err("Invalid API base URL"))
@@ -91,7 +96,7 @@ final class CzedrAPIClient {
     private static func parseAuthPayload(
         _ data: [String: Any],
         fallbackEmail: String
-    ) -> APIResult<(token: String, email: String, czedrId: String)> {
+    ) -> APIResult<(token: String, email: String, czedrId: String, hasPinSet: Bool)> {
         let auth = (data["auth_code"] as? String) ?? (data["auth_token"] as? String) ?? ""
         if auth.isEmpty {
             return .err("No auth token in response")
@@ -102,7 +107,29 @@ final class CzedrAPIClient {
         if cid.isEmpty {
             return .err("No Czedr ID in response")
         }
-        return .ok((auth, em, cid))
+        let pinFlag = (data["user_pin"] as? String) ?? (user?["user_pin"] as? String) ?? "0"
+        return .ok((auth, em, cid, pinFlag == "1"))
+    }
+
+    func setPin(
+        apiBase: String,
+        token: String,
+        pin: String,
+        completion: @escaping (APIResult<Void>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        let body: [String: Any] = ["user_pin": pin]
+        postJSON(base: base, path: "/v1/auth/pin/set", body: body, token: token) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok:
+                completion(.ok(()))
+            }
+        }
     }
 
     func logout(apiBase: String, token: String) {
