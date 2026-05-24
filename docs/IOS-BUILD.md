@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **108** — menu Logout visible in list (scrollable) |
-| **Next ship build number** | **109** |
-| **In progress** | — |
+| **Next ship build number** | **110** |
+| **In progress** | **109** — remove PIN keyboard white bubble |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 109 | Remove floating ✕ bubble on PIN number pad |
 | 108 | Logout inside menu List (always scrollable, not clipped) |
 | 107 | UIKit menu button on home; Set PIN screen before payments |
 | 106 | Menu Logout at bottom; fix home hamburger menu |

@@ -79,6 +79,8 @@ private struct CzedrPinCaptureField: UIViewRepresentable {
         field.tag = CzedrPinEntryTag.container
         field.translatesAutoresizingMaskIntoConstraints = false
         field.keyboardType = .numberPad
+        // No global ✕ accessory bar — it renders as a floating white bubble beside the number pad.
+        field.inputAccessoryView = nil
         field.textContentType = .oneTimeCode
         field.autocorrectionType = .no
         field.spellCheckingType = .no
