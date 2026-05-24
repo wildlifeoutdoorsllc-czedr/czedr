@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **105** — Make Payment Success screen |
+| **Last shipped (TestFlight)** | **106** — menu Logout + home menu fix |
 | **Next ship build number** | **107** |
-| **In progress** | **106** — menu Logout + home menu fix |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
