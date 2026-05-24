@@ -8,7 +8,6 @@ import SwiftUI
 // MARK: - + My Bank
 
 struct MyBankScreen: View {
-    @Binding var showMenu: Bool
     @EnvironmentObject var session: AppSession
     @State private var statusMessage = ""
     @State private var banks: [BankLinkRow] = []
@@ -24,7 +23,7 @@ struct MyBankScreen: View {
     @State private var devHintB = ""
 
     var body: some View {
-        LoggedInPageLayout(title: "+ My Bank", showBack: true, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: "+ My Bank", showBack: true, onMenu: { session.presentMenu() }) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(statusMessage)

@@ -14,13 +14,13 @@ struct PaymentSuccessDetails: Equatable {
 }
 
 struct PaymentSuccessScreen: View {
-    @Binding var showMenu: Bool
+    @EnvironmentObject var session: AppSession
     let details: PaymentSuccessDetails
     @Binding var isPresented: Bool
     var onDone: () -> Void
 
     var body: some View {
-        LoggedInPageLayout(title: "Success", showBack: false, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: "Success", showBack: false, onMenu: { session.presentMenu() }) {
             VStack(spacing: 20) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 72))

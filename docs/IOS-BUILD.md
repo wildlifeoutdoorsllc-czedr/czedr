@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **105** — Make Payment Success screen |
-| **Next ship build number** | **106** |
-| **In progress** | — |
+| **Next ship build number** | **107** |
+| **In progress** | **106** — menu Logout + home menu fix |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 106 | Menu Logout at bottom; fix home hamburger menu |
 | 105 | Make Payment Success screen after submit |
 | 104 | Fix PIN tap/focus (UIKit capture field) |
 | 103 | + My Bank optional link; micro-deposit; no bank password |

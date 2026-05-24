@@ -73,6 +73,9 @@ extension KeyboardDismissTarget: UIGestureRecognizerDelegate {
             if current.tag == CzedrPinEntryTag.container {
                 return false
             }
+            if current is UIControl {
+                return false
+            }
             view = current.superview
         }
         return true

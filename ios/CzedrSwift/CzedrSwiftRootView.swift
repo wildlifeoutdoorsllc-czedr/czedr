@@ -219,51 +219,64 @@ struct CzedrFieldStyle: TextFieldStyle {
 
 struct LoggedInNavigationView: View {
     @EnvironmentObject var session: AppSession
-    @State private var showMenu = false
 
     var body: some View {
         NavigationView {
-            HomeScreen(showMenu: $showMenu)
+            HomeScreen()
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .sheet(isPresented: $showMenu) {
-            MenuSheet(showMenu: $showMenu)
+        .sheet(isPresented: $session.isMenuPresented) {
+            MenuSheet()
                 .environmentObject(session)
         }
     }
 }
 
 struct MenuSheet: View {
-    @Binding var showMenu: Bool
     @EnvironmentObject var session: AppSession
 
     var body: some View {
         NavigationView {
-            List {
-                NavigationLink(destination: HomeScreen(showMenu: $showMenu, openedFromMenu: true)) {
-                    Text("Home")
+            VStack(spacing: 0) {
+                List {
+                    NavigationLink(destination: HomeScreen(openedFromMenu: true)) {
+                        Text("Home")
+                    }
+                    NavigationLink(destination: MakePaymentScreen(openedFromMenu: true)) {
+                        Text("Make Payment")
+                    }
+                    NavigationLink(destination: HistoryScreen(openedFromMenu: true)) {
+                        Text("History")
+                    }
+                    NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
+                        Text("Profile")
+                    }
+                    NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
+                        Text("Send Invoice")
+                    }
+                    NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", openedFromMenu: true)) {
+                        Text("Pending Invoices")
+                    }
+                    NavigationLink(destination: PlaceholderScreen(title: "Link Card", openedFromMenu: true)) {
+                        Text("Link Card")
+                    }
                 }
-                NavigationLink(destination: MakePaymentScreen(showMenu: $showMenu, openedFromMenu: true)) {
-                    Text("Make Payment")
+                .listStyle(PlainListStyle())
+
+                Button(action: {
+                    session.dismissMenu()
+                    session.logout()
+                }) {
+                    Text("Logout")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .foregroundColor(CzedrPalette.redPrimary)
                 }
-                NavigationLink(destination: HistoryScreen(showMenu: $showMenu, openedFromMenu: true)) {
-                    Text("History")
-                }
-                NavigationLink(destination: ProfileScreen(showMenu: $showMenu, openedFromMenu: true)) {
-                    Text("Profile")
-                }
-                NavigationLink(destination: SendInvoiceScreen(showMenu: $showMenu, openedFromMenu: true)) {
-                    Text("Send Invoice")
-                }
-                NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", showMenu: $showMenu, openedFromMenu: true)) {
-                    Text("Pending Invoices")
-                }
-                NavigationLink(destination: PlaceholderScreen(title: "Link Card", showMenu: $showMenu, openedFromMenu: true)) {
-                    Text("Link Card")
-                }
+                .background(CzedrPalette.surface)
             }
             .navigationBarTitle("Menu", displayMode: .inline)
-            .navigationBarItems(trailing: Button("Done") { showMenu = false })
+            .navigationBarItems(trailing: Button("Done") { session.dismissMenu() })
         }
     }
 }
@@ -285,7 +298,9 @@ struct ShellToolbar: View {
                         .font(.title)
                         .foregroundColor(CzedrPalette.lightText)
                         .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(PlainButtonStyle())
                 Spacer()
                 if showBack {
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
@@ -301,6 +316,7 @@ struct ShellToolbar: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .background(CzedrPalette.surface)
+            .zIndex(1)
 
             if !title.isEmpty {
                 Text(title)
@@ -338,14 +354,11 @@ struct LoggedInPageLayout<Content: View>: View {
 // MARK: - Home
 
 struct HomeScreen: View {
-    @Binding var showMenu: Bool
     var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
 
-    private var openMenu: () -> Void { { showMenu = true } }
-
     var body: some View {
-        LoggedInPageLayout(title: "", showBack: openedFromMenu, onMenu: openMenu) {
+        LoggedInPageLayout(title: "", showBack: openedFromMenu, onMenu: { session.presentMenu() }) {
             ScrollView {
                 VStack(spacing: 16) {
                     VStack(spacing: 8) {
@@ -366,7 +379,7 @@ struct HomeScreen: View {
                             .font(.system(size: 32, weight: .semibold))
                             .foregroundColor(CzedrPalette.balanceGreen)
                             .multilineTextAlignment(.center)
-                        NavigationLink(destination: MyBankScreen(showMenu: $showMenu)) {
+                        NavigationLink(destination: MyBankScreen()) {
                             Text("+ My Bank (optional)")
                                 .font(.caption)
                                 .foregroundColor(CzedrPalette.caption)
@@ -389,24 +402,24 @@ struct HomeScreen: View {
 
                     VStack(spacing: 12) {
                         HStack(spacing: 12) {
-                            NavigationLink(destination: MakePaymentScreen(showMenu: $showMenu)) {
+                            NavigationLink(destination: MakePaymentScreen()) {
                                 tileContent("Make Payment", "dollarsign.circle")
                             }
-                            NavigationLink(destination: SendInvoiceScreen(showMenu: $showMenu)) {
+                            NavigationLink(destination: SendInvoiceScreen()) {
                                 tileContent("Send Invoice", "doc.text")
                             }
                         }
                         HStack(spacing: 12) {
-                            NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", showMenu: $showMenu)) {
+                            NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices")) {
                                 tileContent("Pending", "clock")
                             }
-                            NavigationLink(destination: HistoryScreen(showMenu: $showMenu)) {
+                            NavigationLink(destination: HistoryScreen()) {
                                 tileContent("History", "list.bullet")
                             }
                         }
                     }
 
-                    NavigationLink(destination: ProfileScreen(showMenu: $showMenu)) {
+                    NavigationLink(destination: ProfileScreen()) {
                         Text("My Profile")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -440,7 +453,6 @@ struct HomeScreen: View {
 // MARK: - Make Payment
 
 struct MakePaymentScreen: View {
-    @Binding var showMenu: Bool
     var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
     @State private var recipientId = ""
@@ -452,7 +464,7 @@ struct MakePaymentScreen: View {
     @State private var successDetails: PaymentSuccessDetails?
 
     var body: some View {
-        LoggedInPageLayout(title: "Make Payment", showBack: true, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: "Make Payment", showBack: true, onMenu: { session.presentMenu() }) {
             ScrollView {
                 VStack(spacing: 12) {
                     HStack {
@@ -522,7 +534,6 @@ struct MakePaymentScreen: View {
     private var successDestination: some View {
         if let details = successDetails {
             PaymentSuccessScreen(
-                showMenu: $showMenu,
                 details: details,
                 isPresented: $showSuccess,
                 onDone: resetForm
@@ -568,13 +579,12 @@ struct MakePaymentScreen: View {
 // MARK: - History
 
 struct HistoryScreen: View {
-    @Binding var showMenu: Bool
     var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
     @State private var rows: [TransferRow] = []
 
     var body: some View {
-        LoggedInPageLayout(title: "History", showBack: true, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: "History", showBack: true, onMenu: { session.presentMenu() }) {
             List(rows) { row in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(AppSession.formatMoney(cents: row.amountCents, currency: row.currency))
@@ -600,18 +610,17 @@ struct HistoryScreen: View {
 // MARK: - Profile
 
 struct ProfileScreen: View {
-    @Binding var showMenu: Bool
     var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
 
     var body: some View {
-        LoggedInPageLayout(title: "Profile", showBack: true, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: "Profile", showBack: true, onMenu: { session.presentMenu() }) {
             VStack(alignment: .leading, spacing: 16) {
                 row("Email", session.email)
                 row("Czedr ID", session.czedrId)
                 row("API", session.apiBase)
                 row("Build", session.buildLabel)
-                NavigationLink(destination: MyBankScreen(showMenu: $showMenu)) {
+                NavigationLink(destination: MyBankScreen()) {
                     Text("+ My Bank")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
@@ -644,11 +653,11 @@ struct ProfileScreen: View {
 
 struct PlaceholderScreen: View {
     let title: String
-    @Binding var showMenu: Bool
     var openedFromMenu: Bool = false
+    @EnvironmentObject var session: AppSession
 
     var body: some View {
-        LoggedInPageLayout(title: title, showBack: true, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: title, showBack: true, onMenu: { session.presentMenu() }) {
             Text("Coming in the next SwiftUI sprint")
                 .foregroundColor(CzedrPalette.caption)
                 .padding(16)

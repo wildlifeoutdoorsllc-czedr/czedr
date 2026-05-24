@@ -15,6 +15,7 @@ final class AppSession: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var actionMessage: String?
+    @Published var isMenuPresented = false
 
     private var token = ""
     private let api = CzedrAPIClient()
@@ -35,6 +36,15 @@ final class AppSession: ObservableObject {
         isLoading = false
         errorMessage = nil
         actionMessage = nil
+        isMenuPresented = false
+    }
+
+    func presentMenu() {
+        isMenuPresented = true
+    }
+
+    func dismissMenu() {
+        isMenuPresented = false
     }
 
     var buildLabel: String {
@@ -115,6 +125,7 @@ final class AppSession: ObservableObject {
         isLoggedIn = false
         errorMessage = nil
         actionMessage = nil
+        isMenuPresented = false
     }
 
     func refreshBalance() {

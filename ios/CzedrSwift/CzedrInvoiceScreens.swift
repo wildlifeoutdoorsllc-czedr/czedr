@@ -8,7 +8,6 @@ import SwiftUI
 // MARK: - Send Invoice
 
 struct SendInvoiceScreen: View {
-    @Binding var showMenu: Bool
     var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
     @State private var debtorId = ""
@@ -18,7 +17,7 @@ struct SendInvoiceScreen: View {
     @State private var pin = ""
 
     var body: some View {
-        LoggedInPageLayout(title: "Send Invoice", showBack: true, onMenu: { showMenu = true }) {
+        LoggedInPageLayout(title: "Send Invoice", showBack: true, onMenu: { session.presentMenu() }) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Request payment from someone who owes you.")
