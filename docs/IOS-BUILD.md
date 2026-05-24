@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **103** — + My Bank (micro-deposit, ledger-first) |
-| **Next ship build number** | **105** (after 104 completes) |
-| **In progress** | **104** — fix PIN entry on Make Payment / Send Invoice |
+| **Last shipped (TestFlight)** | **104** — PIN entry fix (UIKit capture field) |
+| **Next ship build number** | **106** |
+| **In progress** | **105** — Make Payment Success screen |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 105 | Make Payment Success screen after submit |
 | 104 | Fix PIN tap/focus (UIKit capture field) |
 | 103 | + My Bank optional link; micro-deposit; no bank password |
 | 102 | PIN entry: four vertical red slots + masked dots |

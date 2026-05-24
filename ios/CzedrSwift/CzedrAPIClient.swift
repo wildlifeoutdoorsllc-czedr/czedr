@@ -27,6 +27,10 @@ struct TransferRow: Identifiable {
     let status: String
 }
 
+struct PaymentTransferResult {
+    let transactionId: String?
+}
+
 final class CzedrAPIClient {
     private let session: URLSession
 
@@ -147,7 +151,7 @@ final class CzedrAPIClient {
         amountCents: Int64,
         memo: String,
         pin: String,
-        completion: @escaping (APIResult<Void>) -> Void
+        completion: @escaping (APIResult<PaymentTransferResult>) -> Void
     ) {
         guard let base = Self.normalizeBase(apiBase) else {
             completion(.err("Invalid API base URL"))
@@ -162,8 +166,11 @@ final class CzedrAPIClient {
         ]
         postJSON(base: base, path: "/v1/transfers", body: body, token: token) { result in
             switch result {
-            case .err(let msg): completion(.err(msg))
-            case .ok: completion(.ok(()))
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok(let data):
+                let txnId = data["id"] as? String
+                completion(.ok(PaymentTransferResult(transactionId: txnId)))
             }
         }
     }

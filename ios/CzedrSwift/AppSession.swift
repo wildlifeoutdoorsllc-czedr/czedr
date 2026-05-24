@@ -149,7 +149,14 @@ final class AppSession: ObservableObject {
         }
     }
 
-    func sendTransfer(to: String, amountDollars: String, memo: String, pin: String) {
+    func sendTransfer(
+        to: String,
+        amountDollars: String,
+        memo: String,
+        pin: String,
+        recipientName: String = "",
+        onSuccess: @escaping (PaymentSuccessDetails) -> Void
+    ) {
         guard let cents = CzedrMoney.parseDollarsToCents(amountDollars) else {
             errorMessage = "Enter a valid amount"
             return
@@ -158,17 +165,30 @@ final class AppSession: ObservableObject {
             errorMessage = "PIN must be 4 digits"
             return
         }
+        let recipientId = to.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if recipientId.isEmpty {
+            errorMessage = "Enter recipient Czedr ID"
+            return
+        }
         isLoading = true
-        api.transfer(apiBase: apiBase, token: token, toCzedrId: to, amountCents: cents, memo: memo, pin: pin) { [weak self] result in
+        api.transfer(apiBase: apiBase, token: token, toCzedrId: recipientId, amountCents: cents, memo: memo, pin: pin) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
                 self.isLoading = false
                 switch result {
                 case .err(let msg):
                     self.errorMessage = msg
-                case .ok:
-                    self.actionMessage = "Payment sent"
+                case .ok(let transfer):
                     self.refreshBalance()
+                    onSuccess(
+                        PaymentSuccessDetails(
+                            transactionId: transfer.transactionId,
+                            recipientCzedrId: recipientId,
+                            recipientName: recipientName,
+                            amountCents: cents,
+                            memo: memo.trimmingCharacters(in: .whitespacesAndNewlines)
+                        )
+                    )
                 }
             }
         }

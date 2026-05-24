@@ -9,8 +9,8 @@ Read `docs/DEVELOPMENT-WORKFLOW.md` and `docs/IOS-BUILD.md` for current build nu
 
 ## Defaults
 
-- **Commit** only when the user explicitly asks to commit.
-- **After iOS commits:** push to `origin/czedrmaster` and **ship the next build** from `docs/IOS-BUILD.md` using `scripts/ship-testflight.ps1 -BuildNumber N -WaitForPrevious` — user prefers fluid TestFlight updates without a separate “ship” step each time.
+- **Commit** only when the user explicitly asks to commit — **except** iOS/TestFlight batches: commit the iOS change set as part of shipping.
+- **After each iOS change batch:** commit (if needed), push to `origin/czedrmaster`, and **upload the next build to Apple (TestFlight)** via `scripts/ship-testflight.ps1 -BuildNumber N -WaitForPrevious` — do not wait for a separate “ship” message.
 - **Hold builds** only if the user says not to ship, or CI/upload is blocked (e.g. Apple 90382).
 - **Do not bump** default `BUILD_NUMBER` in `.github/workflows/ios-testflight.yml` on every edit; bump only when shipping (update `docs/IOS-BUILD.md` too).
 

@@ -448,6 +448,8 @@ struct MakePaymentScreen: View {
     @State private var amount = ""
     @State private var memo = ""
     @State private var pin = ""
+    @State private var showSuccess = false
+    @State private var successDetails: PaymentSuccessDetails?
 
     var body: some View {
         LoggedInPageLayout(title: "Make Payment", showBack: true, onMenu: { showMenu = true }) {
@@ -493,10 +495,40 @@ struct MakePaymentScreen: View {
                     }
                     .disabled(session.isLoading)
                     .padding(.top, 8)
+
+                    if let err = session.errorMessage {
+                        Text(err)
+                            .font(.footnote)
+                            .foregroundColor(CzedrPalette.redPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
+            .background(
+                NavigationLink(
+                    destination: successDestination,
+                    isActive: $showSuccess
+                ) {
+                    EmptyView()
+                }
+                .hidden()
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var successDestination: some View {
+        if let details = successDetails {
+            PaymentSuccessScreen(
+                showMenu: $showMenu,
+                details: details,
+                isPresented: $showSuccess,
+                onDone: resetForm
+            )
+        } else {
+            EmptyView()
         }
     }
 
@@ -510,7 +542,26 @@ struct MakePaymentScreen: View {
     private func pay() {
         session.clearError()
         CzedrKeyboard.dismiss()
-        session.sendTransfer(to: recipientId, amountDollars: amount, memo: memo, pin: pin)
+        session.sendTransfer(
+            to: recipientId,
+            amountDollars: amount,
+            memo: memo,
+            pin: pin,
+            recipientName: validatedName
+        ) { details in
+            successDetails = details
+            showSuccess = true
+        }
+    }
+
+    private func resetForm() {
+        recipientId = ""
+        validatedName = ""
+        amount = ""
+        memo = ""
+        pin = ""
+        successDetails = nil
+        session.clearError()
     }
 }
 
