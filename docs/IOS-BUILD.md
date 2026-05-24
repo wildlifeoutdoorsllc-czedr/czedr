@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **108** — menu Logout visible in list (scrollable) |
+| **Last shipped (TestFlight)** | **109** — remove PIN keyboard white bubble |
 | **Next ship build number** | **110** |
-| **In progress** | **109** — remove PIN keyboard white bubble |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
