@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **104** — PIN entry fix (UIKit capture field) |
+| **Last shipped (TestFlight)** | **105** — Make Payment Success screen |
 | **Next ship build number** | **106** |
-| **In progress** | **105** — Make Payment Success screen |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
