@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **107** — home menu UIKit button, Set PIN flow |
+| **Last shipped (TestFlight)** | **108** — menu Logout visible in list (scrollable) |
 | **Next ship build number** | **109** |
-| **In progress** | **108** — menu Logout visible in list (scrollable) |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
