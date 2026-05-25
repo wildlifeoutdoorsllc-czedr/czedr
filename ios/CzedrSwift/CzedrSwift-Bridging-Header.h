@@ -5,4 +5,5 @@
 
 #import "CzedrConfig.h"
 #import "CzedrRuntimeConfig.h"
+#import "CzedrLanAPIFinder.h"
 #import "CzedrTheme.h"

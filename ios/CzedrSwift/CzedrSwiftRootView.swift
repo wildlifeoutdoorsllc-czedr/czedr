@@ -48,6 +48,7 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var apiBase = ""
+    @State private var apiDiscoveryStatus = ""
 
     var body: some View {
         ScrollView {
@@ -60,7 +61,7 @@ struct LoginView: View {
                     .foregroundColor(CzedrPalette.caption)
 
                 field("API base URL", text: $apiBase, keyboard: .URL)
-                    .onAppear { if apiBase.isEmpty { apiBase = session.defaultApiBase() } }
+                apiDiscoveryHint
                 field("Email", text: $email, keyboard: .emailAddress)
                 field("Password", text: $password, secure: true)
 
@@ -89,6 +90,36 @@ struct LoginView: View {
             .padding(24)
         }
         .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
+        .onAppear(perform: discoverApiServer)
+    }
+
+    private var apiDiscoveryHint: some View {
+        Group {
+            if !apiDiscoveryStatus.isEmpty {
+                Text(apiDiscoveryStatus)
+                    .font(.caption)
+                    .foregroundColor(
+                        apiDiscoveryStatus.contains("found") || apiDiscoveryStatus.contains("Found")
+                            ? CzedrPalette.balanceGreen
+                            : CzedrPalette.caption
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func discoverApiServer() {
+        if apiBase.isEmpty { apiBase = session.defaultApiBase() }
+        apiDiscoveryStatus = "Looking for your PC on Wi‑Fi…"
+        session.discoverApiBase { result in
+            switch result {
+            case .success(let base):
+                apiBase = base
+                apiDiscoveryStatus = "Server found: \(base)"
+            case .failure(let msg):
+                apiDiscoveryStatus = msg
+            }
+        }
     }
 
     private func signIn() {
@@ -116,6 +147,7 @@ struct SignUpView: View {
     @State private var confirmPassword = ""
     @State private var referrerCzedrId = ""
     @State private var apiBase = ""
+    @State private var apiDiscoveryStatus = ""
 
     var body: some View {
         ScrollView {
@@ -132,7 +164,7 @@ struct SignUpView: View {
                     .foregroundColor(CzedrPalette.caption)
 
                 field("API base URL", text: $apiBase, keyboard: .URL)
-                    .onAppear { if apiBase.isEmpty { apiBase = session.defaultApiBase() } }
+                apiDiscoveryHint
                 field("Email", text: $email, keyboard: .emailAddress)
                 field("Password (10+ characters)", text: $password, secure: true)
                 field("Confirm password", text: $confirmPassword, secure: true)
@@ -176,6 +208,36 @@ struct SignUpView: View {
             .padding(24)
         }
         .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
+        .onAppear(perform: discoverApiServer)
+    }
+
+    private var apiDiscoveryHint: some View {
+        Group {
+            if !apiDiscoveryStatus.isEmpty {
+                Text(apiDiscoveryStatus)
+                    .font(.caption)
+                    .foregroundColor(
+                        apiDiscoveryStatus.contains("found") || apiDiscoveryStatus.contains("Found")
+                            ? CzedrPalette.balanceGreen
+                            : CzedrPalette.caption
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func discoverApiServer() {
+        if apiBase.isEmpty { apiBase = session.defaultApiBase() }
+        apiDiscoveryStatus = "Looking for your PC on Wi‑Fi…"
+        session.discoverApiBase { result in
+            switch result {
+            case .success(let base):
+                apiBase = base
+                apiDiscoveryStatus = "Server found: \(base)"
+            case .failure(let msg):
+                apiDiscoveryStatus = msg
+            }
+        }
     }
 
     private func signUp() {

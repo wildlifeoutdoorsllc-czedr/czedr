@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **109** — remove PIN keyboard white bubble |
-| **Next ship build number** | **110** |
-| **In progress** | — |
+| **Next ship build number** | **111** |
+| **In progress** | **110** — Wi‑Fi API auto-discovery on sign-up/login |
 
 ## Ship pipeline (user preference)
 

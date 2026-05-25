@@ -62,22 +62,83 @@ final class AppSession: ObservableObject {
 
     func clearError() { errorMessage = nil }
 
+    /// Scans Wi‑Fi for the PC running the Czedr API (same as legacy login).
+    func discoverApiBase(completion: @escaping (Result<String, String>) -> Void) {
+        CzedrLanAPIFinder.resolve { base, error in
+            DispatchQueue.main.async {
+                if let base, !base.isEmpty {
+                    self.apiBase = base
+                    KeychainStore.set(base, key: KeychainStore.Keys.apiBase)
+                    completion(.success(base))
+                } else {
+                    completion(.failure(error?.localizedDescription ?? "Could not find your Czedr server on Wi‑Fi."))
+                }
+            }
+        }
+    }
+
+    private func resolveApiBaseThen(
+        override: String,
+        completion: @escaping (Result<String, String>) -> Void
+    ) {
+        let trimmed = override.trimmingCharacters(in: .whitespacesAndNewlines)
+        let attempt: (String) -> Void = { candidate in
+            CzedrLanAPIFinder.testBaseURL(candidate) { reachable in
+                DispatchQueue.main.async {
+                    if reachable {
+                        self.apiBase = candidate
+                        KeychainStore.set(candidate, key: KeychainStore.Keys.apiBase)
+                        completion(.success(candidate))
+                    } else {
+                        self.discoverApiBase(completion: completion)
+                    }
+                }
+            }
+        }
+        if trimmed.isEmpty {
+            discoverApiBase(completion: completion)
+        } else {
+            attempt(trimmed)
+        }
+    }
+
     func register(
         email: String,
         password: String,
         referrerCzedrId: String,
         apiBaseOverride: String
     ) {
-        let base = apiBaseOverride.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? defaultApiBase()
-            : apiBaseOverride.trimmingCharacters(in: .whitespacesAndNewlines)
         isLoading = true
         errorMessage = nil
+        resolveApiBaseThen(override: apiBaseOverride) { [weak self] resolved in
+            guard let self else { return }
+            switch resolved {
+            case .failure(let msg):
+                self.isLoading = false
+                self.errorMessage = msg
+                return
+            case .success(let base):
+                self.performRegister(
+                    email: email,
+                    password: password,
+                    referrerCzedrId: referrerCzedrId,
+                    apiBase: base
+                )
+            }
+        }
+    }
+
+    private func performRegister(
+        email: String,
+        password: String,
+        referrerCzedrId: String,
+        apiBase: String
+    ) {
         api.register(
             email: email,
             password: password,
             referrerCzedrId: referrerCzedrId,
-            apiBase: base
+            apiBase: apiBase
         ) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
@@ -100,11 +161,22 @@ final class AppSession: ObservableObject {
     }
 
     func login(email: String, password: String, apiBaseOverride: String) {
-        let base = apiBaseOverride.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? defaultApiBase()
-            : apiBaseOverride.trimmingCharacters(in: .whitespacesAndNewlines)
         isLoading = true
         errorMessage = nil
+        resolveApiBaseThen(override: apiBaseOverride) { [weak self] resolved in
+            guard let self else { return }
+            switch resolved {
+            case .failure(let msg):
+                self.isLoading = false
+                self.errorMessage = msg
+                return
+            case .success(let base):
+                self.performLogin(email: email, password: password, apiBase: base)
+            }
+        }
+    }
+
+    private func performLogin(email: String, password: String, apiBase: String) {
         api.login(email: email, password: password, apiBase: base) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }

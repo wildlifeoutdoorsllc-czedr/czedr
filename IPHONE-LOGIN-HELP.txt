@@ -11,7 +11,8 @@ CZEDR — iPhone login (simple steps)
 2) On your iPhone (same Wi‑Fi as the PC), open Safari and go to the
    address shown in that window, for example:
 
-   http://192.168.68.51:8080/v1/health
+   http://YOUR_PC_LAN_IP:8080/v1/health
+   (run START-IPHONE-TESTING.cmd — it prints your PC's address, e.g. 192.168.68.56)
 
    You should see text starting with {"Status":"true"
 
