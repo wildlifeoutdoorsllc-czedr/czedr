@@ -8,8 +8,11 @@ use Czedr\Ledger\PlatformAccounts;
 /** Platform and system ledger identities — never assignable at registration. */
 final class ReservedCzedrIds
 {
-    /** @var list<string> */
-    public const RESERVED = PlatformAccounts::reservedCzedrIds();
+    /** @return list<string> */
+    private static function reserved(): array
+    {
+        return PlatformAccounts::reservedCzedrIds();
+    }
 
     public static function assertAvailable(?string $czedrId): void
     {
@@ -17,7 +20,7 @@ final class ReservedCzedrIds
             return;
         }
         $normalized = strtoupper(trim($czedrId));
-        if (in_array($normalized, self::RESERVED, true)) {
+        if (in_array($normalized, self::reserved(), true)) {
             throw new \InvalidArgumentException('This Czedr ID is not available');
         }
     }

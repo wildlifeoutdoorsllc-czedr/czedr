@@ -427,7 +427,7 @@ final class CzedrAPIClient {
     ) {
         switch result {
         case .failure(let err):
-            completion(.err(err.localizedDescription))
+            completion(.err(Self.friendlyNetworkError(err)))
         case .success(let data):
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 completion(.err("Invalid JSON"))
@@ -475,5 +475,24 @@ final class CzedrAPIClient {
         if let n = value as? NSNumber { return n.int64Value }
         if let s = value as? String, let n = Int64(s) { return n }
         return 0
+    }
+
+    private static func friendlyNetworkError(_ err: Error) -> String {
+        let ns = err as NSError
+        if ns.domain == NSURLErrorDomain {
+            switch ns.code {
+            case NSURLErrorCannotConnectToHost, NSURLErrorNetworkConnectionLost,
+                 NSURLErrorNotConnectedToInternet, NSURLErrorTimedOut,
+                 NSURLErrorCannotFindHost:
+                return "Cannot reach the API server. Use your PC's current Wi‑Fi address (run scripts\\start-php-server.ps1), same Wi‑Fi as the phone, and open /v1/health in Safari first."
+            default:
+                break
+            }
+        }
+        let msg = err.localizedDescription
+        if msg.localizedCaseInsensitiveContains("connect") {
+            return "Cannot reach the API server. Check the API base URL, keep the PHP server running on your PC, and use the same Wi‑Fi."
+        }
+        return msg
     }
 }
