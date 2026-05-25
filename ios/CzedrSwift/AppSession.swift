@@ -156,7 +156,7 @@ final class AppSession: ObservableObject {
                         token: payload.token,
                         email: payload.email,
                         czedrId: payload.czedrId,
-                        apiBase: base,
+                        apiBase: apiBase,
                         hasPinSet: payload.hasPinSet
                     )
                     self.refreshBalance()
@@ -182,7 +182,7 @@ final class AppSession: ObservableObject {
     }
 
     private func performLogin(email: String, password: String, apiBase: String) {
-        api.login(email: email, password: password, apiBase: base) { [weak self] result in
+        api.login(email: email, password: password, apiBase: apiBase) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
                 self.isLoading = false
@@ -194,7 +194,7 @@ final class AppSession: ObservableObject {
                         token: payload.token,
                         email: payload.email,
                         czedrId: payload.czedrId,
-                        apiBase: base,
+                        apiBase: apiBase,
                         hasPinSet: payload.hasPinSet
                     )
                     self.refreshBalance()
