@@ -18,6 +18,28 @@ sealed class ApiResult<out T> {
     data class Err(val message: String) : ApiResult<Nothing>()
 }
 
+data class AuthPayload(
+    val token: String,
+    val email: String,
+    val czedrId: String,
+    val hasPinSet: Boolean,
+)
+
+data class TransferResult(
+    val transactionId: String?,
+)
+
+data class TransferRow(
+    val id: String,
+    val amountCents: Long,
+    val currency: String,
+    val memo: String,
+    val createdAt: String,
+    val fromCzedrId: String,
+    val toCzedrId: String,
+    val status: String,
+)
+
 private class ApiHttpException(val code: Int, message: String) : Exception(message)
 
 class CzedrApi(private val sessionStore: SessionStore) {
@@ -34,38 +56,71 @@ class CzedrApi(private val sessionStore: SessionStore) {
         email: String,
         password: String,
         apiBaseOverride: String?,
-    ): ApiResult<Triple<String, String, String>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val base = normalizeBase(apiBaseOverride ?: sessionStore.getApiBaseUrl())
-                ?: return@runCatching ApiResult.Err("Invalid API base URL")
-            val body = JSONObject()
+    ): ApiResult<AuthPayload> = withContext(Dispatchers.IO) {
+        postAuth("/v1/auth/login", apiBaseOverride) {
+            JSONObject()
                 .put("user_email", email)
                 .put("email", email)
                 .put("user_pwd", password)
                 .put("password", password)
-                .toString()
-                .toRequestBody(jsonMedia)
-            val req = Request.Builder()
-                .url("$base/v1/auth/login")
-                .post(body)
-                .build()
-            parseObjectEnvelope(execute(req)) { data ->
-                val auth = data.optString("auth_code")
-                if (auth.isBlank()) return@parseObjectEnvelope ApiResult.Err("No auth token in response")
-                val user = data.optJSONObject("user")
-                val em = user?.optString("email").orEmpty().ifBlank { data.optString("email") }
-                val cid = user?.optString("czedr_id").orEmpty()
-                    .ifBlank { data.optString("czedr_id") }
-                    .ifBlank { data.optString("id") }
-                if (cid.isBlank()) return@parseObjectEnvelope ApiResult.Err("No Czedr ID in response")
-                ApiResult.Ok(Triple(auth, em, cid))
-            }
-        }.getOrElse { e ->
-            when (e) {
-                is ApiHttpException -> ApiResult.Err(e.message ?: "HTTP ${e.code}")
-                else -> ApiResult.Err(e.message ?: "Network error")
-            }
         }
+    }
+
+    suspend fun register(
+        email: String,
+        password: String,
+        referrerCzedrId: String?,
+        apiBaseOverride: String?,
+    ): ApiResult<AuthPayload> = withContext(Dispatchers.IO) {
+        postAuth("/v1/auth/register", apiBaseOverride) {
+            val body = JSONObject()
+                .put("email", email)
+                .put("password", password)
+            val ref = referrerCzedrId?.trim()?.uppercase().orEmpty()
+            if (ref.isNotEmpty()) body.put("referrer_czedr_id", ref)
+            body
+        }
+    }
+
+    suspend fun setPin(pin: String): ApiResult<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            val base = normalizeBase(sessionStore.getApiBaseUrl())
+                ?: return@runCatching ApiResult.Err("Invalid API base URL")
+            val token = sessionStore.getToken()
+            if (token.isBlank()) return@runCatching ApiResult.Err("Not signed in")
+            val body = JSONObject().put("user_pin", pin).toString().toRequestBody(jsonMedia)
+            val req = Request.Builder()
+                .url("$base/v1/auth/pin/set")
+                .post(body)
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+            parseObjectEnvelope(execute(req)) { ApiResult.Ok(Unit) }
+        }.getOrElse { e -> apiError(e) }
+    }
+
+    private suspend fun postAuth(
+        path: String,
+        apiBaseOverride: String?,
+        buildBody: () -> JSONObject,
+    ): ApiResult<AuthPayload> = runCatching {
+        val base = normalizeBase(apiBaseOverride ?: sessionStore.getApiBaseUrl())
+            ?: return@runCatching ApiResult.Err("Invalid API base URL")
+        val body = buildBody().toString().toRequestBody(jsonMedia)
+        val req = Request.Builder().url("$base$path").post(body).build()
+        parseObjectEnvelope(execute(req)) { data -> parseAuthPayload(data) }
+    }.getOrElse { e -> apiError(e) }
+
+    private fun parseAuthPayload(data: JSONObject): ApiResult<AuthPayload> {
+        val auth = data.optString("auth_code").ifBlank { data.optString("auth_token") }
+        if (auth.isBlank()) return ApiResult.Err("No auth token in response")
+        val user = data.optJSONObject("user")
+        val em = user?.optString("email").orEmpty().ifBlank { data.optString("email") }
+        val cid = user?.optString("czedr_id").orEmpty()
+            .ifBlank { data.optString("czedr_id") }
+            .ifBlank { data.optString("id") }
+        if (cid.isBlank()) return ApiResult.Err("No Czedr ID in response")
+        val pinFlag = data.optString("user_pin").ifBlank { user?.optString("user_pin").orEmpty() }
+        return ApiResult.Ok(AuthPayload(auth, em, cid, pinFlag == "1"))
     }
 
     suspend fun logout() = withContext(Dispatchers.IO) {
@@ -127,7 +182,7 @@ class CzedrApi(private val sessionStore: SessionStore) {
         amountCents: Long,
         memo: String,
         pin: String,
-    ): ApiResult<Unit> = withContext(Dispatchers.IO) {
+    ): ApiResult<TransferResult> = withContext(Dispatchers.IO) {
         runCatching {
             val base = normalizeBase(sessionStore.getApiBaseUrl())
                 ?: return@runCatching ApiResult.Err("Invalid API base URL")
@@ -146,13 +201,39 @@ class CzedrApi(private val sessionStore: SessionStore) {
                 .post(body)
                 .addHeader("Authorization", "Bearer $token")
                 .build()
-            parseObjectEnvelope(execute(req)) { ApiResult.Ok(Unit) }
-        }.getOrElse { e ->
-            when (e) {
-                is ApiHttpException -> ApiResult.Err(e.message ?: "HTTP ${e.code}")
-                else -> ApiResult.Err(e.message ?: "Network error")
+            parseObjectEnvelope(execute(req)) { data ->
+                ApiResult.Ok(TransferResult(data.optString("id").ifBlank { data.optString("transaction_id") }))
+            }
+        }.getOrElse { e -> apiError(e) }
+    }
+
+    suspend fun fetchHistory(): ApiResult<List<TransferRow>> = withContext(Dispatchers.IO) {
+        authedGetObject("/v1/transfers/history") { data ->
+            val rows = data.optJSONArray("transactions") ?: JSONArray()
+            buildList {
+                for (i in 0 until rows.length()) {
+                    val row = rows.optJSONObject(i) ?: continue
+                    val id = row.optString("id").ifBlank { continue }
+                    add(
+                        TransferRow(
+                            id = id,
+                            amountCents = row.optLong("amount_cents"),
+                            currency = row.optString("currency", "USD"),
+                            memo = row.optString("memo"),
+                            createdAt = row.optString("created_at"),
+                            fromCzedrId = row.optString("from_czedr_id"),
+                            toCzedrId = row.optString("to_czedr_id"),
+                            status = row.optString("status"),
+                        ),
+                    )
+                }
             }
         }
+    }
+
+    private fun apiError(e: Throwable): ApiResult<Nothing> = when (e) {
+        is ApiHttpException -> ApiResult.Err(e.message ?: "HTTP ${e.code}")
+        else -> ApiResult.Err(e.message ?: "Network error")
     }
 
     private fun encodeQuery(s: String): String = java.net.URLEncoder.encode(s, Charsets.UTF_8.name())

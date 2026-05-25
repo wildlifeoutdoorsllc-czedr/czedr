@@ -13,7 +13,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "110"
         // Emulator → host PC API (same Wi‑Fi device: use machine IP in Build → Edit field or BuildConfig below)
         buildConfigField("String", "API_BASE_DEFAULT", "\"http://10.0.2.2:8080\"")
     }
@@ -59,6 +59,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("androidx.datastore:datastore-preferences:1.1.1")

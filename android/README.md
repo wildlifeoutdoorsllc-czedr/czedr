@@ -1,25 +1,55 @@
 # Czedr Android
 
-Native **Kotlin + Jetpack Compose** client for the same JSON API used by iOS (`/v1/...`).
+Native **Kotlin + Jetpack Compose** client aligned with **iOS TestFlight build 110** (same JSON API on `/v1/...`).
+
+## Parity with iOS build 110
+
+| Feature | Android |
+|---------|---------|
+| Wi‑Fi API auto-discovery | Yes (`LanApiFinder`) |
+| Sign in / Sign up | Yes |
+| API base URL field + status | Yes |
+| Home balance + tiles | Yes |
+| Make Payment + PIN | Yes |
+| Payment success screen | Yes |
+| History | Yes |
+| Menu drawer + Logout | Yes |
+| Set PIN | Yes |
+| Build label | **Android · Build 110** |
+| Send Invoice / Pending | Placeholder |
 
 ## Requirements
 
-- Android Studio Koala or newer (or a JDK 17 + Android SDK with the same Gradle/AGP as the root `build.gradle.kts`)
+- Android Studio Koala+ (JDK 17, Android SDK 34)
+- API running: `scripts\start-php-server.ps1` from repo root
 
-## Run against your API
+## Run
 
-1. From repo root run **`scripts\start-php-server.ps1`** (serves on **0.0.0.0:8080** — use the URLs it prints).
-2. **Android emulator**: API base **`http://10.0.2.2:8080`** (default in the app).
-3. **Physical device**: same Wi‑Fi as the PC; API base **`http://YOUR_PC_LAN_IP:8080`** (the script prints your LAN IP). Allow Windows Firewall for port **8080** if prompted.
+1. Start the API on your PC (`START-IPHONE-TESTING.cmd` or `scripts\start-php-server.ps1`).
+2. Open the **`android/`** folder in Android Studio → Sync Gradle → Run.
+3. **Emulator:** default API base `http://10.0.2.2:8080` (host machine).
+4. **Physical device:** same Wi‑Fi as PC; discovery should find `http://192.168.x.x:8080`, or enter the URL from the script output.
 
-Cleartext HTTP is enabled for local dev (`usesCleartextTraffic`). Use HTTPS in production and turn that off.
+Cleartext HTTP is enabled for local dev only (`usesCleartextTraffic`).
 
-## Auth note
+## Auth
 
-This MVP uses **`POST /v1/auth/login`** (email + password JSON). iOS production builds use **`/v1/auth/login-secure`** (image-derived crypto); that flow is not implemented here yet.
+Uses **`POST /v1/auth/login`** and **`POST /v1/auth/register`** (plain JSON), same as the SwiftUI iOS client on LAN. Production servers may require `*-secure` endpoints — see `docs/PRODUCTION-SECURITY-CHECKLIST.md`.
 
-## Project layout
+## Layout
 
-- `app/src/main/java/com/czedr/app/` — UI, `MainViewModel`, `CzedrApi` (OkHttp), `SessionStore` (DataStore)
+- `data/api/CzedrApi.kt` — HTTP client
+- `data/network/LanApiFinder.kt` — subnet health scan
+- `data/session/SessionStore.kt` — DataStore session
+- `ui/CzedrScreens.kt` — Compose UI + navigation
+- `ui/MainViewModel.kt` — state
 
-Open the **`android/`** folder in Android Studio, sync Gradle, then Run.
+## Emulator (Windows)
+
+See **`docs/ANDROID-EMULATOR-WINDOWS.md`**. Prefer **Czedr_API30** on Intel Celeron-class PCs.
+
+```powershell
+cd D:\CZEDR\scripts
+.\start-php-server.ps1
+.\start-android-emulator.ps1
+```
