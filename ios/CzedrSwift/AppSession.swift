@@ -5,6 +5,10 @@
 import Foundation
 import Combine
 
+struct ApiResolveError: Error {
+    let message: String
+}
+
 final class AppSession: ObservableObject {
     @Published private(set) var isLoggedIn = false
     @Published var email = ""
@@ -63,7 +67,7 @@ final class AppSession: ObservableObject {
     func clearError() { errorMessage = nil }
 
     /// Scans Wi‑Fi for the PC running the Czedr API (same as legacy login).
-    func discoverApiBase(completion: @escaping (Result<String, String>) -> Void) {
+    func discoverApiBase(completion: @escaping (Result<String, ApiResolveError>) -> Void) {
         CzedrLanAPIFinder.resolve { base, error in
             DispatchQueue.main.async {
                 if let base, !base.isEmpty {
@@ -71,7 +75,8 @@ final class AppSession: ObservableObject {
                     KeychainStore.set(base, key: KeychainStore.Keys.apiBase)
                     completion(.success(base))
                 } else {
-                    completion(.failure(error?.localizedDescription ?? "Could not find your Czedr server on Wi‑Fi."))
+                    let msg = error?.localizedDescription ?? "Could not find your Czedr server on Wi‑Fi."
+                    completion(.failure(ApiResolveError(message: msg)))
                 }
             }
         }
@@ -79,7 +84,7 @@ final class AppSession: ObservableObject {
 
     private func resolveApiBaseThen(
         override: String,
-        completion: @escaping (Result<String, String>) -> Void
+        completion: @escaping (Result<String, ApiResolveError>) -> Void
     ) {
         let trimmed = override.trimmingCharacters(in: .whitespacesAndNewlines)
         let attempt: (String) -> Void = { candidate in
@@ -113,9 +118,9 @@ final class AppSession: ObservableObject {
         resolveApiBaseThen(override: apiBaseOverride) { [weak self] resolved in
             guard let self else { return }
             switch resolved {
-            case .failure(let msg):
+            case .failure(let err):
                 self.isLoading = false
-                self.errorMessage = msg
+                self.errorMessage = err.message
                 return
             case .success(let base):
                 self.performRegister(
@@ -166,9 +171,9 @@ final class AppSession: ObservableObject {
         resolveApiBaseThen(override: apiBaseOverride) { [weak self] resolved in
             guard let self else { return }
             switch resolved {
-            case .failure(let msg):
+            case .failure(let err):
                 self.isLoading = false
-                self.errorMessage = msg
+                self.errorMessage = err.message
                 return
             case .success(let base):
                 self.performLogin(email: email, password: password, apiBase: base)

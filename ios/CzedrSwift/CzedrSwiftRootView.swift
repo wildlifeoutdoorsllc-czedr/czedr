@@ -116,8 +116,8 @@ struct LoginView: View {
             case .success(let base):
                 apiBase = base
                 apiDiscoveryStatus = "Server found: \(base)"
-            case .failure(let msg):
-                apiDiscoveryStatus = msg
+            case .failure(let err):
+                apiDiscoveryStatus = err.message
             }
         }
     }
@@ -234,8 +234,8 @@ struct SignUpView: View {
             case .success(let base):
                 apiBase = base
                 apiDiscoveryStatus = "Server found: \(base)"
-            case .failure(let msg):
-                apiDiscoveryStatus = msg
+            case .failure(let err):
+                apiDiscoveryStatus = err.message
             }
         }
     }
