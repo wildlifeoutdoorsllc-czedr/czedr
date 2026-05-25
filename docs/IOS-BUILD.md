@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **109** — remove PIN keyboard white bubble |
+| **Last shipped (TestFlight)** | **110** — Wi‑Fi API auto-discovery on sign-up/login |
 | **Next ship build number** | **111** |
-| **In progress** | **110** — Wi‑Fi API auto-discovery on sign-up/login |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 110 | Auto-find API on Wi‑Fi; fix registration; LAN IP in CI |
 | 109 | Remove floating ✕ bubble on PIN number pad |
 | 108 | Logout inside menu List (always scrollable, not clipped) |
 | 107 | UIKit menu button on home; Set PIN screen before payments |
