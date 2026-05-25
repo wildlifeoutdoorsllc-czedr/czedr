@@ -187,6 +187,9 @@ Phases 1 + 2 give the largest real-world gain for users. Phase 3 is “audit pol
 
 ## Related docs
 
+- `docs/PRODUCTION-SECURITY-CHECKLIST.md` — prioritized remediation mapped to `App.php` and `.env.production.example`
+- `docs/ATTORNEY-SECURITY-BRIEF.md` — technical brief for counsel (not legal advice)
+- `docs/EDGE-WAF-DDOS.md` — CDN/WAF dictionary attack and DDoS guidance
 - `docs/AGENT-HANDOFF.md` — audit findings
 - `docs/TESTFLIGHT_SETUP.md` — `CZEDR_API_BASE` and CI
 - `docs/PROJECT-CONVERSATION-NOTES.md` — image challenge summary

@@ -10,8 +10,16 @@ $static = [
     '/corporate-portal.html' => __DIR__ . '/corporate-portal.html',
 ];
 if (isset($static[$path]) && is_readable($static[$path])) {
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    if (!\Czedr\Security\ProductionRouteGuard::allowPublicDevPages()) {
+        http_response_code(404);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['Status' => 'false', 'Data' => [['result' => 'Not found']]]);
+        return;
+    }
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-cache');
+    header('X-Frame-Options: DENY');
     readfile($static[$path]);
     return;
 }

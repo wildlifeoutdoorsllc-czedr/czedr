@@ -16,6 +16,7 @@ final class JsonResponse
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: DENY');
         header('Referrer-Policy: no-referrer');
+        header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
         if (!Env::isLocal() && HttpsGate::requestIsHttps()) {
             header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
         }

@@ -23,6 +23,7 @@ use Czedr\Moov\MoovHttpClient;
 use Czedr\Moov\MoovWebhookVerifier;
 use Czedr\Security\HttpsGate;
 use Czedr\Security\PayloadCryptor;
+use Czedr\Security\ProductionRouteGuard;
 use Czedr\Security\RateLimitExceededException;
 use Czedr\Security\RateLimiter;
 use Czedr\Support\Env;
@@ -163,6 +164,7 @@ final class App
         });
 
         $this->router->post('/v1/auth/register', function (Request $r) {
+            ProductionRouteGuard::requirePlainAuthAllowed();
             $this->guardRegisterAttempt($r);
             $out = $this->auth->register(
                 (string) ($r->body['email'] ?? ''),
@@ -203,6 +205,7 @@ final class App
         });
 
         $this->router->post('/v1/auth/login', function (Request $r) {
+            ProductionRouteGuard::requirePlainAuthAllowed();
             $this->handleLogin(
                 $r,
                 (string) ($r->body['user_email'] ?? $r->body['email'] ?? ''),
@@ -498,15 +501,17 @@ final class App
 
         $this->router->post('/v1/legacy/card/update', fn (Request $r) => $this->legacyCardLink($r));
 
-        (new LegacyCompat(
-            $this->auth,
-            $this->passwordReset,
-            $this->ledger,
-            $this->invoices,
-            fn (Request $r, callable $fn) => $this->withAuth($r, $fn),
-            fn (array $out) => $this->loginResponsePayload($out),
-            $this->rateLimiter,
-        ))->register($this->router);
+        if (ProductionRouteGuard::allowLegacyApi()) {
+            (new LegacyCompat(
+                $this->auth,
+                $this->passwordReset,
+                $this->ledger,
+                $this->invoices,
+                fn (Request $r, callable $fn) => $this->withAuth($r, $fn),
+                fn (array $out) => $this->loginResponsePayload($out),
+                $this->rateLimiter,
+            ))->register($this->router);
+        }
 
         $this->router->post('/v1/legacy/card/image', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
             $raw = $r->rawBody ?? '';
@@ -681,7 +686,7 @@ final class App
     private function withAuth(Request $request, callable $fn): void
     {
         $token = $request->bearerToken();
-        if (!$token && !empty($request->body['auth_code'])) {
+        if (!$token && Env::isLocal() && !empty($request->body['auth_code'])) {
             $token = (string) $request->body['auth_code'];
         }
         if (!$token) {
