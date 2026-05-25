@@ -25,10 +25,10 @@ Native **Kotlin + Jetpack Compose** client aligned with **iOS TestFlight build 1
 
 ## Run
 
-1. Start the API on your PC (`START-IPHONE-TESTING.cmd` or `scripts\start-php-server.ps1`).
-2. Open the **`android/`** folder in Android Studio → Sync Gradle → Run.
-3. **Emulator:** default API base `http://10.0.2.2:8080` (host machine).
-4. **Physical device:** same Wi‑Fi as PC; discovery should find `http://192.168.x.x:8080`, or enter the URL from the script output.
+1. Double-click **`START-ANDROID-DEV.cmd`** at repo root (API + `local.properties`).
+2. Android Studio → open **`android/`** → **Sync Project with Gradle Files** → **Run** ▶.
+3. Guide: **`docs/ANDROID-STUDIO-QUICKSTART.md`**
+4. **Emulator:** `http://10.0.2.2:8080` · **Phone:** same Wi‑Fi, use discovery or LAN URL from API window.
 
 Cleartext HTTP is enabled for local dev only (`usesCleartextTraffic`).
 
