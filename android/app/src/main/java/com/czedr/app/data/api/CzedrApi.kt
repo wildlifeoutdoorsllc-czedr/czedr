@@ -3,6 +3,7 @@ package com.czedr.app.data.api
 import com.czedr.app.data.session.SessionStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -250,7 +251,7 @@ class CzedrApi(private val sessionStore: SessionStore) {
                 .get()
                 .addHeader("Authorization", "Bearer $token")
                 .build()
-            parseObjectEnvelope(execute(req), map)
+            parseObjectEnvelope(execute(req)) { data -> ApiResult.Ok(map(data)) }
         }.getOrElse { e ->
             when (e) {
                 is ApiHttpException -> ApiResult.Err(e.message ?: "HTTP ${e.code}")
@@ -303,7 +304,8 @@ class CzedrApi(private val sessionStore: SessionStore) {
         val u = url.trim().trimEnd('/')
         if (u.isEmpty()) return null
         val httpUrl = u.toHttpUrlOrNull() ?: return null
-        val portPart = if (httpUrl.port != httpUrl.defaultPort) ":${httpUrl.port}" else ""
+        val defaultPort = HttpUrl.defaultPort(httpUrl.scheme)
+        val portPart = if (httpUrl.port != defaultPort) ":${httpUrl.port}" else ""
         return "${httpUrl.scheme}://${httpUrl.host}$portPart"
     }
 }
