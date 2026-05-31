@@ -484,14 +484,14 @@ final class CzedrAPIClient {
             case NSURLErrorCannotConnectToHost, NSURLErrorNetworkConnectionLost,
                  NSURLErrorNotConnectedToInternet, NSURLErrorTimedOut,
                  NSURLErrorCannotFindHost:
-                return "Cannot reach the API server. Use your PC's current Wi‑Fi address (run scripts\\start-php-server.ps1), same Wi‑Fi as the phone, and open /v1/health in Safari first."
+                return "Cannot reach Czedr. Check your internet connection and try again."
             default:
                 break
             }
         }
         let msg = err.localizedDescription
         if msg.localizedCaseInsensitiveContains("connect") {
-            return "Cannot reach the API server. Check the API base URL, keep the PHP server running on your PC, and use the same Wi‑Fi."
+            return "Cannot reach Czedr. Check your internet connection and try again."
         }
         return msg
     }

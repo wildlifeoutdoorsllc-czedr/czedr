@@ -19,6 +19,7 @@ struct CzedrSwiftRootView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .environment(\.sizeCategory, CzedrTypography.contentSizeCategory)
         .sheet(isPresented: $session.isMenuPresented) {
             MenuSheet()
                 .environmentObject(session)

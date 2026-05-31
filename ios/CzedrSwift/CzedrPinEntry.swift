@@ -20,7 +20,7 @@ struct CzedrPinEntryView: View {
     var body: some View {
         VStack(spacing: 14) {
             Text(label)
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: 17, weight: .bold))
                 .foregroundColor(CzedrPalette.redPrimary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
@@ -47,10 +47,10 @@ struct CzedrPinEntryView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 5)
                 .fill(CzedrPalette.redPrimary)
-                .frame(width: 42, height: 76)
+                .frame(width: 48, height: 84)
             if filled {
                 Text("•")
-                    .font(.system(size: 36, weight: .bold))
+                    .font(.system(size: 42, weight: .bold))
                     .foregroundColor(.white)
                     .offset(y: -2)
             }

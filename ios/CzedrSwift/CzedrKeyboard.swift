@@ -39,6 +39,7 @@ enum CzedrKeyboard {
     /// SwiftUI TextField uses UIKit underneath — keep typed text dark on orange.
     static func installFieldTextAppearance() {
         UITextField.appearance().textColor = .black
+        UITextField.appearance().font = UIFont.preferredFont(forTextStyle: .title3)
         UITextField.appearance().tintColor = UIColor(red: 231 / 255, green: 236 / 255, blue: 243 / 255, alpha: 1)
     }
 }

@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **110** — Wi‑Fi API auto-discovery on sign-up/login |
-| **Next ship build number** | **111** |
-| **In progress** | — |
+| **Last shipped (TestFlight)** | **111** — production API `https://api.czedr.com` |
+| **Next ship build number** | **112** |
+| **In progress** | **112** — larger fonts (accessibility) |
 
 ## Ship pipeline (user preference)
 

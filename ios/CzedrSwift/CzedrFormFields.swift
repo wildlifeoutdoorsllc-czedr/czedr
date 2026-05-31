@@ -15,6 +15,7 @@ struct CzedrPlaceholderTextField: View {
     var body: some View {
         ZStack(alignment: .leading) {
             TextField("", text: $text)
+                .font(.body)
                 .keyboardType(keyboard)
                 .autocapitalization(autocapitalization)
                 .disableAutocorrection(disableAutocorrection)
@@ -23,6 +24,7 @@ struct CzedrPlaceholderTextField: View {
 
             if text.isEmpty {
                 Text(placeholder)
+                    .font(.body)
                     .foregroundColor(CzedrPalette.fieldPlaceholder)
                     .padding(.horizontal, 12)
                     .allowsHitTesting(false)
@@ -41,12 +43,14 @@ struct CzedrPlaceholderSecureField: View {
     var body: some View {
         ZStack(alignment: .leading) {
             SecureField("", text: $text)
+                .font(.body)
                 .keyboardType(keyboard)
                 .padding(12)
                 .foregroundColor(CzedrPalette.fieldText)
 
             if text.isEmpty {
                 Text(placeholder)
+                    .font(.body)
                     .foregroundColor(CzedrPalette.fieldPlaceholder)
                     .padding(.horizontal, 12)
                     .allowsHitTesting(false)
