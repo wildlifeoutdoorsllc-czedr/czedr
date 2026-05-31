@@ -8,10 +8,11 @@ import SwiftUI
 struct CzedrBrandTaglineView: View {
     var body: some View {
         VStack(spacing: 6) {
-            Text("We make payments easy.")
-                .font(.subheadline)
+            Text("Never give your credit or debit card information again.")
+                .font(.subheadline.weight(.semibold))
                 .foregroundColor(CzedrPalette.caption)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
 
             Text("Cheddar, Stack it!")
                 .font(.title3.weight(.bold))

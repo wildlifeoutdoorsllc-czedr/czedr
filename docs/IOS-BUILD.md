@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **111** — production API `https://api.czedr.com` |
-| **Next ship build number** | **112** |
-| **In progress** | **112** — larger fonts (accessibility) |
+| **Next ship build number** | **116** |
+| **In progress** | **116** — card-free tagline on sign-in + marketing site |
 
 ## Ship pipeline (user preference)
 
