@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CZEDR — Cheddar. Stack it.</title>
-  <meta name="description" content="CZEDR makes payments easy. Say Cheddar — like the money. Stack it.">
+  <meta name="description" content="CZEDR makes payments easy. Cheddar, Stack it!">
+  <link rel="icon" href="Czedr-auth-logo.png" type="image/png">
   <style>
     :root {
       --bg: #2a2a2c;
@@ -12,7 +13,7 @@
       --muted: #b0b5bc;
       --gold: #ffc42e;
       --red: #e31e24;
-      --orange: #f58220;
+      --border: #454548;
     }
     * { box-sizing: border-box; }
     body {
@@ -21,38 +22,62 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 2rem 1.25rem;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .brand img {
+      height: 40px;
+      width: auto;
+    }
+    .brand span {
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+    }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    nav a:hover { color: var(--text); }
     main {
-      max-width: 32rem;
+      max-width: 36rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3rem;
       text-align: center;
     }
-    .wordmark {
-      font-size: clamp(2.5rem, 10vw, 3.5rem);
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      margin: 0 0 0.5rem;
-    }
-    .wordmark span { color: var(--orange); }
-    .easy {
-      color: var(--muted);
-      font-size: 1.125rem;
-      margin: 0 0 1rem;
+    .logo {
+      width: min(100%, 320px);
+      height: auto;
+      margin: 0 auto 1rem;
+      display: block;
     }
     .hook {
       color: var(--gold);
       font-size: clamp(1.5rem, 6vw, 2rem);
       font-weight: 700;
-      margin: 0 0 1.25rem;
-    }
-    .pronounce {
-      color: var(--muted);
-      font-size: 0.95rem;
       margin: 0 0 2rem;
     }
+    .actions { margin-bottom: 2rem; }
     a.btn {
       display: inline-block;
       background: #58595b;
@@ -64,22 +89,69 @@
       margin: 0.25rem;
     }
     a.btn.primary { background: var(--red); color: #fff; }
+    section.panel {
+      text-align: left;
+      background: #353538;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-top: 2rem;
+    }
+    section.panel h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1.1rem;
+    }
+    section.panel p, section.panel li {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+    section.panel ul { margin: 0; padding-left: 1.2rem; }
     footer {
-      margin-top: 2.5rem;
+      text-align: center;
+      padding: 1.5rem;
       font-size: 0.85rem;
       color: var(--muted);
+      border-top: 1px solid var(--border);
     }
   </style>
 </head>
 <body>
+  <header>
+    <a class="brand" href="/">
+      <img src="Czedr-auth-logo.png" alt="CZEDR logo">
+      <span>CZEDR</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="/">Home</a>
+      <a href="#app">Get the App</a>
+      <a href="https://api.czedr.com/v1/health">API Status</a>
+      <a href="#about">About</a>
+      <a href="mailto:support@czedr.com">Contact</a>
+    </nav>
+  </header>
+
   <main>
-    <h1 class="wordmark">C<span>Z</span>EDR</h1>
-    <p class="easy">We make payments easy.</p>
+    <img class="logo" src="Czedr-auth-logo.png" alt="CZEDR — we make payments easy">
+
     <p class="hook">Cheddar, Stack it!</p>
-    <p class="pronounce">Say <strong>Cheddar</strong> — like the money.</p>
-    <a class="btn primary" href="https://testflight.apple.com/join">Get the app (TestFlight)</a>
-    <a class="btn" href="https://api.czedr.com/v1/health">API status</a>
-    <footer>© CZEDR · api.czedr.com</footer>
+
+    <div class="actions" id="app">
+      <a class="btn primary" href="https://testflight.apple.com/join">Get the app (TestFlight)</a>
+      <a class="btn" href="https://api.czedr.com/v1/health">API status</a>
+    </div>
+
+    <section class="panel" id="about">
+      <h2>About CZEDR</h2>
+      <p>CZEDR is a simple way to send and receive payments. Sign in, set your PIN, and pay by Czedr ID — on your phone, from anywhere.</p>
+      <ul>
+        <li>Secure HTTPS API at api.czedr.com</li>
+        <li>Micro-deposit bank linking (no aggregator logins)</li>
+        <li>Built for people who want payments easy</li>
+      </ul>
+    </section>
   </main>
+
+  <footer>© CZEDR · api.czedr.com</footer>
 </body>
 </html>
