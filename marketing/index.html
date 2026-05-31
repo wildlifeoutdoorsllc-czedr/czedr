@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CZEDR — Cheddar. Stack it.</title>
+  <meta name="description" content="CZEDR makes payments easy. Say Cheddar — like the money. Stack it.">
+  <style>
+    :root {
+      --bg: #2a2a2c;
+      --text: #e7ecf3;
+      --muted: #b0b5bc;
+      --gold: #ffc42e;
+      --red: #e31e24;
+      --orange: #f58220;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+    main {
+      max-width: 32rem;
+      text-align: center;
+    }
+    .wordmark {
+      font-size: clamp(2.5rem, 10vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      margin: 0 0 0.5rem;
+    }
+    .wordmark span { color: var(--orange); }
+    .easy {
+      color: var(--muted);
+      font-size: 1.125rem;
+      margin: 0 0 1rem;
+    }
+    .hook {
+      color: var(--gold);
+      font-size: clamp(1.5rem, 6vw, 2rem);
+      font-weight: 700;
+      margin: 0 0 1.25rem;
+    }
+    .pronounce {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0 0 2rem;
+    }
+    a.btn {
+      display: inline-block;
+      background: #58595b;
+      color: var(--text);
+      text-decoration: none;
+      padding: 0.85rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 0.25rem;
+    }
+    a.btn.primary { background: var(--red); color: #fff; }
+    footer {
+      margin-top: 2.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 class="wordmark">C<span>Z</span>EDR</h1>
+    <p class="easy">We make payments easy.</p>
+    <p class="hook">Cheddar, Stack it!</p>
+    <p class="pronounce">Say <strong>Cheddar</strong> — like the money.</p>
+    <a class="btn primary" href="https://testflight.apple.com/join">Get the app (TestFlight)</a>
+    <a class="btn" href="https://api.czedr.com/v1/health">API status</a>
+    <footer>© CZEDR · api.czedr.com</footer>
+  </main>
+</body>
+</html>

@@ -57,6 +57,9 @@ struct LoginView: View {
                 CzedrBrandLogoView(style: .signIn)
                     .padding(.top, 32)
 
+                CzedrBrandTaglineView()
+                    .padding(.bottom, 4)
+
                 Text(session.buildLabel)
                     .font(.caption)
                     .foregroundColor(CzedrPalette.caption)
@@ -155,6 +158,9 @@ struct SignUpView: View {
             VStack(spacing: 16) {
                 CzedrBrandLogoView(style: .signIn)
                     .padding(.top, 24)
+
+                CzedrBrandTaglineView()
+                    .padding(.bottom, 4)
 
                 Text("Create your Czedr account")
                     .font(.headline)

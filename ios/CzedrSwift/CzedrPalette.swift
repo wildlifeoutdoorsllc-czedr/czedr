@@ -15,6 +15,8 @@ enum CzedrPalette {
     static let lightText = Color(red: 231 / 255, green: 236 / 255, blue: 243 / 255)
     static let caption = Color(red: 176 / 255, green: 181 / 255, blue: 188 / 255)
     static let balanceGreen = Color(red: 50 / 255, green: 205 / 255, blue: 90 / 255)
+    /// Cheddar tagline accent — warm gold (money / cheese nod).
+    static let cheddarGold = Color(red: 255 / 255, green: 196 / 255, blue: 46 / 255)
     /// Typed text on orange inputs — dark for strong contrast on #F58220.
     static let fieldText = Color.black
     /// Hint text on orange inputs (slightly softer than typed text).
