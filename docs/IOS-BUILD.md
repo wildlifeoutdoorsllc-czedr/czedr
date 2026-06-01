@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **117** — tagline, larger fonts, production API `https://api.czedr.com` |
 | **Next ship build number** | **118** |
-| **In progress** | — |
+| **In progress** | **118** — fixed App Store icon (full C, no crop glitch) |
 
 ## Ship pipeline (user preference)
 
