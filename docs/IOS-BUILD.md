@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **118** — fixed App Store icon; production API `https://api.czedr.com` |
+| **Last shipped (TestFlight)** | **119** — forgot password on sign-in; PIN UX fixes ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26783745052)) |
 | **Next ship build number** | **120** |
-| **In progress** | **119** — [TestFlight CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26781802933) (forgot password on sign-in) |
+| **In progress** | — (Apple may take 10–30 min after CI before build 119 appears in TestFlight) |
 
 ## Ship pipeline (user preference)
 
