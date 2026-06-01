@@ -26,8 +26,12 @@ $dirty = git status --porcelain
 if ($dirty) {
     Write-Host "Uncommitted changes:" -ForegroundColor Yellow
     git status -sb
-    $ok = Read-Host "Continue anyway? (y/N)"
-    if ($ok -notmatch '^[yY]') { exit 1 }
+    if ($env:CZEDR_SHIP_FORCE -eq '1') {
+        Write-Host "CZEDR_SHIP_FORCE=1: continuing despite uncommitted changes." -ForegroundColor Yellow
+    } else {
+        $ok = Read-Host "Continue anyway? (y/N)"
+        if ($ok -notmatch '^[yY]') { exit 1 }
+    }
 }
 
 $ahead = (git rev-list --count "origin/czedrmaster..HEAD" 2>$null)
