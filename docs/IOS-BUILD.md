@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **118** — fixed App Store icon; production API `https://api.czedr.com` |
 | **Next ship build number** | **120** |
-| **In progress** | **119** — Forgot password on sign-in; TestFlight upload (see Actions) |
+| **In progress** | **119** — [TestFlight CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26781802933) (forgot password on sign-in) |
 
 ## Ship pipeline (user preference)
 
