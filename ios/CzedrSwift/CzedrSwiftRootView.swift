@@ -377,7 +377,7 @@ private struct CzedrAuthField: View {
             if secure {
                 CzedrPlaceholderSecureField(placeholder: label, text: $text, keyboard: keyboard)
             } else {
-                CzedrPlaceholderTextField(placeholder: label, text: text, keyboard: keyboard)
+                CzedrPlaceholderTextField(placeholder: label, text: $text, keyboard: keyboard)
             }
         }
     }
