@@ -215,7 +215,13 @@ final class AppSession: ObservableObject {
                 self.isLoading = false
                 switch result {
                 case .err(let msg):
-                    self.errorMessage = msg
+                    if msg.localizedCaseInsensitiveContains("PIN already set") {
+                        self.hasPinSet = true
+                        self.errorMessage = nil
+                        onSuccess()
+                    } else {
+                        self.errorMessage = msg
+                    }
                 case .ok:
                     self.hasPinSet = true
                     self.errorMessage = nil

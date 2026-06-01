@@ -31,13 +31,26 @@ struct CzedrSwiftRootView: View {
 
 struct AuthGateView: View {
     @State private var showSignUp = false
+    @State private var showForgotPassword = false
+    @State private var forgotEmailPrefill = ""
 
     var body: some View {
         Group {
-            if showSignUp {
+            if showForgotPassword {
+                ForgotPasswordView(
+                    showForgotPassword: $showForgotPassword,
+                    initialEmail: forgotEmailPrefill
+                )
+            } else if showSignUp {
                 SignUpView(showSignUp: $showSignUp)
             } else {
-                LoginView(showSignUp: $showSignUp)
+                LoginView(
+                    showSignUp: $showSignUp,
+                    onForgotPassword: { email in
+                        forgotEmailPrefill = email
+                        showForgotPassword = true
+                    }
+                )
             }
         }
     }
@@ -45,6 +58,7 @@ struct AuthGateView: View {
 
 struct LoginView: View {
     @Binding var showSignUp: Bool
+    var onForgotPassword: (String) -> Void = { _ in }
     @EnvironmentObject var session: AppSession
     @State private var email = ""
     @State private var password = ""
@@ -72,6 +86,9 @@ struct LoginView: View {
                 if let err = session.errorMessage {
                     Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
                 }
+                if let ok = session.actionMessage {
+                    Text(ok).font(.footnote).foregroundColor(CzedrPalette.balanceGreen)
+                }
 
                 Button(action: signIn) {
                     Text(session.isLoading ? "Signing in…" : "Sign in")
@@ -83,6 +100,13 @@ struct LoginView: View {
                         .cornerRadius(6)
                 }
                 .disabled(session.isLoading)
+
+                Button(action: { session.clearError(); onForgotPassword(email) }) {
+                    Text("Forgot password?")
+                        .font(.subheadline)
+                        .foregroundColor(CzedrPalette.caption)
+                }
+                .padding(.top, 4)
 
                 Button(action: { showSignUp = true }) {
                     Text("Create account")
@@ -132,10 +156,226 @@ struct LoginView: View {
     }
 
     private func field(_ label: String, text: Binding<String>, keyboard: UIKeyboardType = .default, secure: Bool = false) -> some View {
+        CzedrAuthField(label: label, text: text, keyboard: keyboard, secure: secure)
+    }
+}
+
+// MARK: - Forgot password
+
+private enum ForgotPasswordStep {
+    case requestEmail
+    case setNewPassword
+}
+
+struct ForgotPasswordView: View {
+    @Binding var showForgotPassword: Bool
+    var initialEmail: String = ""
+    @EnvironmentObject var session: AppSession
+
+    @State private var step: ForgotPasswordStep = .requestEmail
+    @State private var email = ""
+    @State private var resetToken = ""
+    @State private var newPassword = ""
+    @State private var confirmPassword = ""
+    @State private var apiBase = ""
+    @State private var apiDiscoveryStatus = ""
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var infoMessage: String?
+
+    private let api = CzedrAPIClient()
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                CzedrBrandLogoView(style: .signIn)
+                    .padding(.top, 24)
+
+                Text(step == .requestEmail ? "Forgot password" : "Set new password")
+                    .font(.headline)
+                    .foregroundColor(CzedrPalette.lightText)
+
+                Text(session.buildLabel)
+                    .font(.caption)
+                    .foregroundColor(CzedrPalette.caption)
+
+                CzedrAuthField(label: "API base URL", text: $apiBase, keyboard: .URL)
+                apiDiscoveryHint
+
+                if step == .requestEmail {
+                    CzedrAuthField(label: "Email", text: $email, keyboard: .emailAddress)
+                    Text("We will email a reset link to this address if an account exists.")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    if let info = infoMessage {
+                        Text(info)
+                            .font(.footnote)
+                            .foregroundColor(CzedrPalette.balanceGreen)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    CzedrAuthField(label: "Reset code", text: $resetToken, keyboard: .default)
+                    Text("Paste the code from your email, or paste the full reset link.")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    CzedrAuthField(label: "New password (10+ characters)", text: $newPassword, secure: true)
+                    CzedrAuthField(label: "Confirm new password", text: $confirmPassword, secure: true)
+                }
+
+                if let err = errorMessage {
+                    Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
+                }
+
+                Button(action: primaryAction) {
+                    Text(primaryButtonTitle)
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(CzedrPalette.charcoalButton)
+                        .foregroundColor(CzedrPalette.lightText)
+                        .cornerRadius(6)
+                }
+                .disabled(isLoading)
+
+                Button(action: backAction) {
+                    Text(backButtonTitle)
+                        .font(.subheadline)
+                        .foregroundColor(CzedrPalette.caption)
+                }
+                .padding(.top, 8)
+            }
+            .padding(24)
+        }
+        .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
+        .onAppear {
+            if email.isEmpty { email = initialEmail }
+            discoverApiServer()
+        }
+    }
+
+    private var primaryButtonTitle: String {
+        if isLoading {
+            return step == .requestEmail ? "Sending…" : "Updating…"
+        }
+        return step == .requestEmail ? "Send reset email" : "Set new password"
+    }
+
+    private var backButtonTitle: String {
+        step == .requestEmail ? "Back to sign in" : "Back"
+    }
+
+    private var apiDiscoveryHint: some View {
+        Group {
+            if !apiDiscoveryStatus.isEmpty {
+                Text(apiDiscoveryStatus)
+                    .font(.caption)
+                    .foregroundColor(
+                        apiDiscoveryStatus.contains("found") || apiDiscoveryStatus.contains("Found")
+                            ? CzedrPalette.balanceGreen
+                            : CzedrPalette.caption
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func discoverApiServer() {
+        if apiBase.isEmpty { apiBase = session.defaultApiBase() }
+        apiDiscoveryStatus = "Looking for your PC on Wi‑Fi…"
+        session.discoverApiBase { result in
+            switch result {
+            case .success(let base):
+                apiBase = base
+                apiDiscoveryStatus = "Server found: \(base)"
+            case .failure(let err):
+                apiDiscoveryStatus = err.message
+            }
+        }
+    }
+
+    private func primaryAction() {
+        errorMessage = nil
+        if step == .requestEmail {
+            sendResetEmail()
+        } else {
+            submitNewPassword()
+        }
+    }
+
+    private func backAction() {
+        errorMessage = nil
+        if step == .setNewPassword {
+            step = .requestEmail
+            infoMessage = nil
+        } else {
+            showForgotPassword = false
+        }
+    }
+
+    private func sendResetEmail() {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            errorMessage = "Enter your account email."
+            return
+        }
+        isLoading = true
+        api.forgotPassword(email: trimmed, apiBase: apiBase) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .err(let msg):
+                    errorMessage = msg
+                case .ok(let message):
+                    infoMessage = message
+                    step = .setNewPassword
+                }
+            }
+        }
+    }
+
+    private func submitNewPassword() {
+        let token = CzedrAPIClient.normalizeResetToken(resetToken)
+        if token.isEmpty {
+            errorMessage = "Enter the reset code from your email."
+            return
+        }
+        if newPassword.count < 10 {
+            errorMessage = "Password must be at least 10 characters."
+            return
+        }
+        if newPassword != confirmPassword {
+            errorMessage = "Passwords do not match."
+            return
+        }
+        isLoading = true
+        api.resetPassword(resetToken: token, newPassword: newPassword, apiBase: apiBase) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .err(let msg):
+                    errorMessage = msg
+                case .ok:
+                    showForgotPassword = false
+                    session.actionMessage = "Password updated. Sign in with your new password."
+                }
+            }
+        }
+    }
+}
+
+private struct CzedrAuthField: View {
+    let label: String
+    @Binding var text: String
+    var keyboard: UIKeyboardType = .default
+    var secure: Bool = false
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.caption).foregroundColor(CzedrPalette.caption)
             if secure {
-                CzedrPlaceholderSecureField(placeholder: label, text: text, keyboard: keyboard)
+                CzedrPlaceholderSecureField(placeholder: label, text: $text, keyboard: keyboard)
             } else {
                 CzedrPlaceholderTextField(placeholder: label, text: text, keyboard: keyboard)
             }
@@ -266,14 +506,7 @@ struct SignUpView: View {
     }
 
     private func field(_ label: String, text: Binding<String>, keyboard: UIKeyboardType = .default, secure: Bool = false) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label).font(.caption).foregroundColor(CzedrPalette.caption)
-            if secure {
-                CzedrPlaceholderSecureField(placeholder: label, text: text, keyboard: keyboard)
-            } else {
-                CzedrPlaceholderTextField(placeholder: label, text: text, keyboard: keyboard)
-            }
-        }
+        CzedrAuthField(label: label, text: text, keyboard: keyboard, secure: secure)
     }
 }
 

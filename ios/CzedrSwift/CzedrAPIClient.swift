@@ -64,6 +64,77 @@ final class CzedrAPIClient {
         }
     }
 
+    func forgotPassword(
+        email: String,
+        apiBase: String,
+        completion: @escaping (APIResult<String>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let body: [String: Any] = [
+            "user_email": trimmed,
+            "email": trimmed,
+        ]
+        postJSON(base: base, path: "/v1/auth/forgot-password", body: body, token: nil) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok(let data):
+                let message = (data["message"] as? String) ?? "If an account exists for this email, password reset instructions have been sent."
+                completion(.ok(message))
+            }
+        }
+    }
+
+    func resetPassword(
+        resetToken: String,
+        newPassword: String,
+        apiBase: String,
+        completion: @escaping (APIResult<Void>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        let token = Self.normalizeResetToken(resetToken)
+        if token.isEmpty {
+            completion(.err("Reset code is required"))
+            return
+        }
+        let body: [String: Any] = [
+            "reset_token": token,
+            "password": newPassword,
+        ]
+        postJSON(base: base, path: "/v1/auth/reset-password", body: body, token: nil) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok:
+                completion(.ok(()))
+            }
+        }
+    }
+
+    /// Accepts a raw token or a full reset URL from email (`#reset=…`).
+    static func normalizeResetToken(_ raw: String) -> String {
+        var t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let hash = t.range(of: "#reset=") {
+            t = String(t[hash.upperBound...])
+        } else if let hash = t.range(of: "reset=") {
+            t = String(t[hash.upperBound...])
+        }
+        if let q = t.firstIndex(of: "?") {
+            t = String(t[..<q])
+        }
+        if let amp = t.firstIndex(of: "&") {
+            t = String(t[..<amp])
+        }
+        return t.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     func register(
         email: String,
         password: String,

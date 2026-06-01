@@ -36,7 +36,7 @@ ios/CzedrSwift/
 
 | Screen | Status |
 |--------|--------|
-| Login | Done |
+| Login | Done (includes **Forgot password?** → email reset + new password) |
 | Home (balance + tiles) | Done |
 | Make Payment | Done |
 | History | Done |

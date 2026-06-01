@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **118** — fixed App Store icon; production API `https://api.czedr.com` |
-| **Next ship build number** | **119** |
-| **In progress** | — |
+| **Next ship build number** | **120** |
+| **In progress** | **119** — Forgot password on sign-in; TestFlight upload (see Actions) |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 119 | Forgot password on sign-in; PIN set UX fixes |
 | 110 | Auto-find API on Wi‑Fi; fix registration; LAN IP in CI |
 | 109 | Remove floating ✕ bubble on PIN number pad |
 | 108 | Logout inside menu List (always scrollable, not clipped) |

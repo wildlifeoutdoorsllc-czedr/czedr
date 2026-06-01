@@ -8,13 +8,16 @@ import UIKit
 
 /// UIKit tag so tap-to-dismiss keyboard does not steal touches from PIN entry.
 enum CzedrPinEntryTag {
-    static let container = 0xC2ED_0010
+    static func container(fieldId: Int) -> Int {
+        0xC2ED_0000 + fieldId
+    }
 }
 
 /// Shared PIN UI: red label + four tall vertical red boxes; UIKit field captures digits reliably.
 struct CzedrPinEntryView: View {
     @Binding var pin: String
     var label: String = "ENTER YOUR CZEDR PIN"
+    var fieldId: Int = 0
     private let length = 4
 
     var body: some View {
@@ -33,7 +36,7 @@ struct CzedrPinEntryView: View {
                 }
                 .allowsHitTesting(false)
 
-                CzedrPinCaptureField(text: $pin, maxLength: length)
+                CzedrPinCaptureField(text: $pin, maxLength: length, fieldId: fieldId)
                     .frame(maxWidth: .infinity)
                     .frame(height: 80)
             }
@@ -64,19 +67,21 @@ struct CzedrPinEntryView: View {
 private struct CzedrPinCaptureField: UIViewRepresentable {
     @Binding var text: String
     let maxLength: Int
+    let fieldId: Int
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
 
     func makeUIView(context: Context) -> UIView {
+        let tag = CzedrPinEntryTag.container(fieldId: fieldId)
         let container = UIView()
-        container.tag = CzedrPinEntryTag.container
+        container.tag = tag
         container.backgroundColor = .clear
         container.isUserInteractionEnabled = true
 
         let field = UITextField()
-        field.tag = CzedrPinEntryTag.container
+        field.tag = tag
         field.translatesAutoresizingMaskIntoConstraints = false
         field.keyboardType = .numberPad
         // No global ✕ accessory bar — it renders as a floating white bubble beside the number pad.

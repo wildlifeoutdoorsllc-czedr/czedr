@@ -71,7 +71,7 @@ extension KeyboardDismissTarget: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         var view: UIView? = touch.view
         while let current = view {
-            if current.tag == CzedrPinEntryTag.container {
+            if current.tag >= 0xC2ED_0000 && current.tag <= 0xC2ED_00FF {
                 return false
             }
             if current is UIControl {
