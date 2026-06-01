@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **117** — tagline, larger fonts, production API `https://api.czedr.com` |
-| **Next ship build number** | **118** |
-| **In progress** | **118** — fixed App Store icon (full C, no crop glitch) |
+| **Last shipped (TestFlight)** | **118** — fixed App Store icon; production API `https://api.czedr.com` |
+| **Next ship build number** | **119** |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
