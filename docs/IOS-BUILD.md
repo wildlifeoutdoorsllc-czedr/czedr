@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **111** — production API `https://api.czedr.com` |
-| **Next ship build number** | **117** |
-| **In progress** | **117** — fix Xcode duplicate IDs; tagline + larger fonts |
+| **Last shipped (TestFlight)** | **117** — tagline, larger fonts, production API `https://api.czedr.com` |
+| **Next ship build number** | **118** |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
