@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **119** — forgot password on sign-in; PIN UX fixes ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26783745052)) |
 | **Next ship build number** | **120** |
-| **In progress** | — (Apple may take 10–30 min after CI before build 119 appears in TestFlight) |
+| **In progress** | **120** — QR pay (Profile QR + scan/paste on Make Payment); tagline trim (unshipped) |
 
 ## Ship pipeline (user preference)
 

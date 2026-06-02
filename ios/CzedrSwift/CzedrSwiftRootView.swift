@@ -785,17 +785,28 @@ struct MakePaymentScreen: View {
     @State private var pin = ""
     @State private var showSuccess = false
     @State private var successDetails: PaymentSuccessDetails?
+    @State private var showQrScanner = false
 
     var body: some View {
         LoggedInPageLayout(title: "Make Payment", showBack: true, onMenu: { session.presentMenu() }) {
             ScrollView {
                 VStack(spacing: 12) {
-                    HStack {
+                    HStack(spacing: 8) {
                         CzedrPlaceholderTextField(
                             placeholder: "Recipient Czedr ID",
                             text: $recipientId,
                             autocapitalization: .allCharacters
                         )
+                        Button(action: { showQrScanner = true }) {
+                            Image(systemName: "qrcode.viewfinder")
+                                .font(.title2)
+                                .frame(width: 44, height: 44)
+                                .background(CzedrPalette.orangeField)
+                                .foregroundColor(CzedrPalette.fieldText)
+                                .cornerRadius(4)
+                        }
+                        .accessibilityLabel("Scan Czedr QR code")
+
                         Button("VALIDATE") { validate() }
                             .font(.caption.bold())
                             .padding(.horizontal, 10)
@@ -804,6 +815,18 @@ struct MakePaymentScreen: View {
                             .foregroundColor(.white)
                             .cornerRadius(4)
                     }
+                    Text("Scan, type, or paste a Czedr ID (e.g. from a text message).")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Button(action: pasteRecipientFromClipboard) {
+                        Text("Paste ID from clipboard")
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(CzedrPalette.cheddarGold)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                     if !validatedName.isEmpty {
                         Text(validatedName).font(.footnote).foregroundColor(CzedrPalette.balanceGreen)
                     }
@@ -866,6 +889,12 @@ struct MakePaymentScreen: View {
                 }
                 .hidden()
             )
+            .sheet(isPresented: $showQrScanner) {
+                CzedrQrScannerSheet(
+                    onScan: handleScannedPayload,
+                    onCancel: { showQrScanner = false }
+                )
+            }
         }
     }
 
@@ -880,6 +909,32 @@ struct MakePaymentScreen: View {
         } else {
             EmptyView()
         }
+    }
+
+    private func handleScannedPayload(_ raw: String) {
+        showQrScanner = false
+        guard let id = CzedrQrCode.parseCzedrId(from: raw) else {
+            session.errorMessage = "Could not read a Czedr ID from that QR code."
+            return
+        }
+        recipientId = id
+        validatedName = ""
+        validate()
+    }
+
+    private func pasteRecipientFromClipboard() {
+        session.clearError()
+        guard let raw = UIPasteboard.general.string, !raw.isEmpty else {
+            session.errorMessage = "Nothing to paste from the clipboard."
+            return
+        }
+        guard let id = CzedrQrCode.parseCzedrId(from: raw) else {
+            session.errorMessage = "Clipboard does not contain a valid Czedr ID."
+            return
+        }
+        recipientId = id
+        validatedName = ""
+        validate()
     }
 
     private func validate() {
@@ -957,6 +1012,9 @@ struct ProfileScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 row("Email", session.email)
                 row("Czedr ID", session.czedrId)
+
+                profilePaymentQrSection
+
                 row("API", session.apiBase)
                 row("Build", session.buildLabel)
                 NavigationLink(destination: MyBankScreen()) {
@@ -1001,6 +1059,39 @@ struct ProfileScreen: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(.caption).foregroundColor(CzedrPalette.caption)
             Text(value).foregroundColor(CzedrPalette.lightText)
+        }
+    }
+
+    @ViewBuilder
+    private var profilePaymentQrSection: some View {
+        let id = session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if id.isEmpty {
+            EmptyView()
+        } else {
+            VStack(spacing: 12) {
+                Text("My payment QR")
+                    .font(.caption)
+                    .foregroundColor(CzedrPalette.caption)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let uiImage = CzedrQrCode.image(from: CzedrQrCode.paymentPayload(czedrId: id)) {
+                    Image(uiImage: uiImage)
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 220, maxHeight: 220)
+                        .padding(12)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .frame(maxWidth: .infinity)
+                }
+
+                Text("Show this so others can pay you. They can also type or paste your ID: \(id)")
+                    .font(.caption)
+                    .foregroundColor(CzedrPalette.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.vertical, 8)
         }
     }
 }

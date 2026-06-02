@@ -44,7 +44,7 @@
 		<string>_http._tcp</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Czedr uses the camera when you choose to take a profile photo or capture an image while adding a payment card.</string>
+	<string>Czedr uses the camera to scan a recipient’s Czedr QR code when you send a payment. You can still type or paste a Czedr ID without the camera.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Czedr does not use your location for payments or your account. This permission is required by Apple because a push notification library in the app can reference location APIs; Czedr does not request your location during normal use.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

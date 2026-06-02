@@ -42,6 +42,8 @@
 		CZSW171F600100CZEDR /* CzedrKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW161F600100CZEDR /* CzedrKeyboard.swift */; };
 		CZSW281F600100CZEDR /* CzedrTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW271F600100CZEDR /* CzedrTypography.swift */; };
 		CZSW2A1F600100CZEDR /* CzedrBrandTagline.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW291F600100CZEDR /* CzedrBrandTagline.swift */; };
+		CZSW2C1F600100CZEDR /* CzedrQrCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW2B1F600100CZEDR /* CzedrQrCode.swift */; };
+		CZSW2E1F600100CZEDR /* CzedrQrScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW2D1F600100CZEDR /* CzedrQrScanner.swift */; };
 		CZSW191F600100CZEDR /* CzedrFormFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW181F600100CZEDR /* CzedrFormFields.swift */; };
 		CZSW1B1F600100CZEDR /* CzedrMoney.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW1A1F600100CZEDR /* CzedrMoney.swift */; };
 		CZSW1D1F600100CZEDR /* CzedrPinEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */; };
@@ -251,6 +253,8 @@
 		CZSW161F600100CZEDR /* CzedrKeyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrKeyboard.swift; sourceTree = "<group>"; };
 		CZSW271F600100CZEDR /* CzedrTypography.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrTypography.swift; sourceTree = "<group>"; };
 		CZSW291F600100CZEDR /* CzedrBrandTagline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrBrandTagline.swift; sourceTree = "<group>"; };
+		CZSW2B1F600100CZEDR /* CzedrQrCode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrQrCode.swift; sourceTree = "<group>"; };
+		CZSW2D1F600100CZEDR /* CzedrQrScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrQrScanner.swift; sourceTree = "<group>"; };
 		CZSW181F600100CZEDR /* CzedrFormFields.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrFormFields.swift; sourceTree = "<group>"; };
 		CZSW1A1F600100CZEDR /* CzedrMoney.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrMoney.swift; sourceTree = "<group>"; };
 		CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPinEntry.swift; sourceTree = "<group>"; };
@@ -728,6 +732,8 @@
 				CZSW161F600100CZEDR /* CzedrKeyboard.swift */,
 				CZSW271F600100CZEDR /* CzedrTypography.swift */,
 				CZSW291F600100CZEDR /* CzedrBrandTagline.swift */,
+				CZSW2B1F600100CZEDR /* CzedrQrCode.swift */,
+				CZSW2D1F600100CZEDR /* CzedrQrScanner.swift */,
 				CZSW181F600100CZEDR /* CzedrFormFields.swift */,
 				CZSW1A1F600100CZEDR /* CzedrMoney.swift */,
 				CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */,
@@ -1188,6 +1194,8 @@
 				CZSW171F600100CZEDR /* CzedrKeyboard.swift in Sources */,
 				CZSW281F600100CZEDR /* CzedrTypography.swift in Sources */,
 				CZSW2A1F600100CZEDR /* CzedrBrandTagline.swift in Sources */,
+				CZSW2C1F600100CZEDR /* CzedrQrCode.swift in Sources */,
+				CZSW2E1F600100CZEDR /* CzedrQrScanner.swift in Sources */,
 				CZSW191F600100CZEDR /* CzedrFormFields.swift in Sources */,
 				CZSW1B1F600100CZEDR /* CzedrMoney.swift in Sources */,
 				CZSW1D1F600100CZEDR /* CzedrPinEntry.swift in Sources */,

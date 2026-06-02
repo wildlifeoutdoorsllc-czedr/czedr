@@ -37,6 +37,8 @@ ios/CzedrSwift/
 | Screen | Status |
 |--------|--------|
 | Login | Done (includes **Forgot password?** → email reset + new password) |
+| Profile payment QR | Done — **My payment QR** for receive |
+| Make Payment scan | Done — QR icon + paste from clipboard; **VALIDATE** unchanged |
 | Home (balance + tiles) | Done |
 | Make Payment | Done |
 | History | Done |
