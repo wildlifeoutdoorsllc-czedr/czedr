@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **119** — forgot password on sign-in; PIN UX fixes ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26783745052)) |
+| **Last shipped (TestFlight)** | **120** — Profile payment QR; scan/paste on Make Payment; tagline trim ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26844770637)) |
 | **Next ship build number** | **121** |
-| **In progress** | **120** — QR pay + tagline trim ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26844770637)) |
+| **In progress** | — (Apple may take 10–30 min before build 120 appears in TestFlight) |
 
 ## Ship pipeline (user preference)
 
