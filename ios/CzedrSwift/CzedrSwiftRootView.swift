@@ -1013,7 +1013,9 @@ struct ProfileScreen: View {
                 row("Email", session.email)
                 row("Czedr ID", session.czedrId)
 
-                profilePaymentQrSection
+                if !session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    CzedrPaymentQrView(czedrId: session.czedrId)
+                }
 
                 row("API", session.apiBase)
                 row("Build", session.buildLabel)
@@ -1062,38 +1064,6 @@ struct ProfileScreen: View {
         }
     }
 
-    @ViewBuilder
-    private var profilePaymentQrSection: some View {
-        let id = session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines)
-        if id.isEmpty {
-            EmptyView()
-        } else {
-            VStack(spacing: 12) {
-                Text("My payment QR")
-                    .font(.caption)
-                    .foregroundColor(CzedrPalette.caption)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                if let uiImage = CzedrQrCode.image(from: CzedrQrCode.paymentPayload(czedrId: id)) {
-                    Image(uiImage: uiImage)
-                        .interpolation(.none)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 220, maxHeight: 220)
-                        .padding(12)
-                        .background(Color.white)
-                        .cornerRadius(8)
-                        .frame(maxWidth: .infinity)
-                }
-
-                Text("Show this so others can pay you. They can also type or paste your ID: \(id)")
-                    .font(.caption)
-                    .foregroundColor(CzedrPalette.caption)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.vertical, 8)
-        }
-    }
 }
 
 struct PlaceholderScreen: View {

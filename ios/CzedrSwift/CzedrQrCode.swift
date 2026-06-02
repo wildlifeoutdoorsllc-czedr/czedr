@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import CoreImage
 import CoreImage.CIFilterBuiltins
 
 enum CzedrQrCode {
@@ -11,24 +12,49 @@ enum CzedrQrCode {
     static let payUrlPrefix = "https://czedr.com/pay/"
 
     private static let idPattern = try? NSRegularExpression(pattern: #"(?i)\b(CZ[0-9A-F]{8})\b"#)
+    private static let ciContext = CIContext(options: nil)
 
     static func paymentPayload(czedrId: String) -> String {
         let id = czedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         return payUrlPrefix + id
     }
 
+    /// Renders a scannable black-on-white QR at the given point size.
     static func image(from string: String, dimension: CGFloat = 220) -> UIImage? {
-        let data = Data(string.utf8)
+        let payload = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !payload.isEmpty else { return nil }
+
         let filter = CIFilter.qrCodeGenerator()
-        filter.setValue(data, forKey: "inputMessage")
+        filter.message = Data(payload.utf8)
         filter.correctionLevel = "M"
 
-        guard let output = filter.outputImage else { return nil }
-        let scale = dimension / output.extent.width
-        let scaled = output.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-        let context = CIContext()
-        guard let cg = context.createCGImage(scaled, from: scaled.extent) else { return nil }
-        return UIImage(cgImage: cg)
+        guard var ciImage = filter.outputImage else { return nil }
+
+        // CIQRCodeGenerator often returns a tiny image with a non-zero origin — scale and normalize.
+        let extent = ciImage.extent
+        let side = max(extent.width, extent.height, 1)
+        let scale = dimension / side
+        ciImage = ciImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        let normalized = ciImage.transformed(
+            by: CGAffineTransform(translationX: -ciImage.extent.origin.x, y: -ciImage.extent.origin.y)
+        )
+
+        let size = CGSize(width: dimension, height: dimension)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = UIScreen.main.scale
+        format.opaque = true
+
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
+        return renderer.image { ctx in
+            UIColor.white.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+
+            let drawRect = CGRect(origin: .zero, size: size)
+            let cgContext = ctx.cgContext
+            cgContext.translateBy(x: 0, y: size.height)
+            cgContext.scaleBy(x: 1, y: -1)
+            ciContext.draw(normalized, in: drawRect, from: normalized.extent)
+        }
     }
 
     /// Finds a Czedr ID in a QR string, URL, or plain text (e.g. pasted from Messages).
