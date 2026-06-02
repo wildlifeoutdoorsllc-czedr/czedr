@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **121** — fix Profile payment QR rendering ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26845823598)) |
 | **Next ship build number** | **122** |
-| **In progress** | — (Apple may take 10–30 min before build 121 appears in TestFlight) |
+| **In progress** | **122** — Profile: pinned Back toolbar, scroll, QR false-color raster |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 122 | Profile: pinned Back + scroll; QR false-color raster; compact hero |
 | 121 | Profile QR renders correctly (black on white) |
 | 120 | Profile payment QR; scan/paste recipient on Make Payment; tagline trim |
 | 119 | Forgot password on sign-in; PIN set UX fixes |

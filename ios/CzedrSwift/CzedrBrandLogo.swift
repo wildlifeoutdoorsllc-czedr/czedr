@@ -13,6 +13,8 @@ enum CzedrLogoStyle {
     case toolbar
     /// Logged-in pages — large logo below toolbar (same visual weight as sign-in).
     case hero
+    /// Profile and other dense screens — smaller hero so toolbar and content stay on screen.
+    case heroCompact
 }
 
 struct CzedrBrandLogoView: View {
@@ -40,6 +42,12 @@ struct CzedrBrandLogoView: View {
                 aspect: aspect,
                 maxWidth: panelW - 24,
                 maxHeight: min(screenH * 0.32, 380)
+            )
+        case .heroCompact:
+            return Self.fitLogo(
+                aspect: aspect,
+                maxWidth: panelW - 48,
+                maxHeight: min(screenH * 0.14, 100)
             )
         case .toolbar:
             return CzedrTheme.brandAuthLogoCompactDisplaySize(forPanelWidth: panelW)
@@ -79,7 +87,7 @@ struct CzedrBrandLogoView: View {
         switch style {
         case .toolbar:
             return max(logoSize.height, 44)
-        case .signIn, .hero:
+        case .signIn, .hero, .heroCompact:
             return logoSize.height + 12
         }
     }

@@ -609,12 +609,18 @@ struct ShellToolbar: View {
                 }
                 Spacer()
                 if showBack {
-                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.title)
-                            .foregroundColor(CzedrPalette.lightText)
-                            .frame(width: 44, height: 44)
+                    Button(action: goBack) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.title3.weight(.semibold))
+                            Text("Back")
+                                .font(.headline)
+                        }
+                        .foregroundColor(CzedrPalette.lightText)
+                        .padding(.horizontal, 8)
+                        .frame(minWidth: 44, minHeight: 44)
                     }
+                    .accessibilityLabel("Back")
                 } else {
                     Color.clear.frame(width: 44, height: 44)
                 }
@@ -622,7 +628,6 @@ struct ShellToolbar: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .background(CzedrPalette.surface)
-            .zIndex(1)
 
             if !title.isEmpty {
                 Text(title)
@@ -634,26 +639,32 @@ struct ShellToolbar: View {
                     .background(CzedrPalette.surface)
             }
         }
+        .background(CzedrPalette.surface)
+    }
+
+    private func goBack() {
+        presentationMode.wrappedValue.dismiss()
     }
 }
 
-/// Standard logged-in page: single toolbar, single hero logo, then content.
+/// Standard logged-in page: pinned toolbar, hero logo, then content.
 struct LoggedInPageLayout<Content: View>: View {
     let title: String
     var showBack: Bool = true
+    var logoStyle: CzedrLogoStyle = .hero
     var onMenu: (() -> Void)?
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         VStack(spacing: 0) {
             ShellToolbar(title: title, showBack: showBack, onMenu: onMenu)
-            CzedrBrandLogoView(style: .hero)
+            CzedrBrandLogoView(style: logoStyle)
                 .padding(.bottom, 4)
             content()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .clipped()
         }
-        .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(CzedrPalette.background)
         .navigationBarHidden(true)
     }
 }
@@ -1006,35 +1017,40 @@ struct HistoryScreen: View {
 struct ProfileScreen: View {
     var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
+    @Environment(\.presentationMode) private var presentationMode
 
     var body: some View {
-        LoggedInPageLayout(title: "Profile", showBack: true, onMenu: { session.presentMenu() }) {
-            VStack(alignment: .leading, spacing: 16) {
-                row("Email", session.email)
-                row("Czedr ID", session.czedrId)
+        LoggedInPageLayout(
+            title: "Profile",
+            showBack: true,
+            logoStyle: .heroCompact,
+            onMenu: { session.presentMenu() }
+        ) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        HStack {
+                            Image(systemName: "chevron.left")
+                            Text("Back to Home")
+                                .font(.headline)
+                        }
+                        .foregroundColor(CzedrPalette.cheddarGold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 8)
+                    }
+                    .buttonStyle(PlainButtonStyle())
 
-                if !session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    CzedrPaymentQrView(czedrId: session.czedrId)
-                }
+                    row("Email", session.email)
+                    row("Czedr ID", session.czedrId)
 
-                row("API", session.apiBase)
-                row("Build", session.buildLabel)
-                NavigationLink(destination: MyBankScreen()) {
-                    Text("+ My Bank")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(CzedrPalette.orangeField)
-                        .foregroundColor(CzedrPalette.fieldText)
-                        .cornerRadius(6)
-                }
-                if session.hasPinSet {
-                    Text("Payment PIN is set")
-                        .font(.subheadline)
-                        .foregroundColor(CzedrPalette.balanceGreen)
-                } else {
-                    NavigationLink(destination: SetPinScreen()) {
-                        Text("Set PIN")
+                    if !session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        CzedrPaymentQrView(czedrId: session.czedrId)
+                    }
+
+                    row("API", session.apiBase)
+                    row("Build", session.buildLabel)
+                    NavigationLink(destination: MyBankScreen()) {
+                        Text("+ My Bank")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
@@ -1042,18 +1058,34 @@ struct ProfileScreen: View {
                             .foregroundColor(CzedrPalette.fieldText)
                             .cornerRadius(6)
                     }
+                    if session.hasPinSet {
+                        Text("Payment PIN is set")
+                            .font(.subheadline)
+                            .foregroundColor(CzedrPalette.balanceGreen)
+                    } else {
+                        NavigationLink(destination: SetPinScreen()) {
+                            Text("Set PIN")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(CzedrPalette.orangeField)
+                                .foregroundColor(CzedrPalette.fieldText)
+                                .cornerRadius(6)
+                        }
+                    }
+                    Button(action: { session.logout() }) {
+                        Text("Sign out")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(CzedrPalette.redPrimary)
+                            .foregroundColor(.white)
+                            .cornerRadius(6)
+                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
                 }
-                Spacer()
-                Button(action: { session.logout() }) {
-                    Text("Sign out")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(CzedrPalette.redPrimary)
-                        .foregroundColor(.white)
-                        .cornerRadius(6)
-                }
+                .padding(16)
             }
-            .padding(16)
         }
     }
 

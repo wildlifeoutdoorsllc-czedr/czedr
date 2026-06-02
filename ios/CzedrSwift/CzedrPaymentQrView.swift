@@ -10,6 +10,7 @@ struct CzedrPaymentQrView: View {
     let czedrId: String
 
     @State private var qrImage: UIImage?
+    @State private var qrFailed = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -26,6 +27,21 @@ struct CzedrPaymentQrView: View {
                         .scaledToFit()
                         .frame(width: 200, height: 200)
                         .accessibilityLabel("Payment QR code for \(czedrId)")
+                } else if qrFailed {
+                    VStack(spacing: 6) {
+                        Image(systemName: "qrcode")
+                            .font(.system(size: 48))
+                            .foregroundColor(CzedrPalette.caption)
+                        Text("QR could not be drawn on this device.")
+                            .font(.caption)
+                            .foregroundColor(CzedrPalette.caption)
+                            .multilineTextAlignment(.center)
+                        Text("Others can still pay you using your ID below.")
+                            .font(.caption2)
+                            .foregroundColor(CzedrPalette.caption)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(width: 200, height: 200)
                 } else {
                     VStack(spacing: 8) {
                         ProgressView()
@@ -56,8 +72,16 @@ struct CzedrPaymentQrView: View {
         let id = czedrId.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !id.isEmpty else {
             qrImage = nil
+            qrFailed = false
             return
         }
-        qrImage = CzedrQrCode.image(from: CzedrQrCode.paymentPayload(czedrId: id))
+        let payload = CzedrQrCode.paymentPayload(czedrId: id)
+        if let image = CzedrQrCode.image(from: payload) {
+            qrImage = image
+            qrFailed = false
+        } else {
+            qrImage = nil
+            qrFailed = true
+        }
     }
 }

@@ -30,7 +30,7 @@ enum CzedrQrCode {
 
         guard var ciImage = filter.outputImage else { return nil }
 
-        // CIQRCodeGenerator often returns a tiny image with a non-zero origin — scale and normalize.
+        // CIQRCodeGenerator returns a tiny image — scale up before rasterizing.
         let extent = ciImage.extent
         let side = max(extent.width, extent.height, 1)
         let scale = dimension / side
@@ -39,22 +39,48 @@ enum CzedrQrCode {
             by: CGAffineTransform(translationX: -ciImage.extent.origin.x, y: -ciImage.extent.origin.y)
         )
 
-        let size = CGSize(width: dimension, height: dimension)
-        let format = UIGraphicsImageRendererFormat()
-        format.scale = UIScreen.main.scale
-        format.opaque = true
+        let colorFilter = CIFilter.falseColor()
+        colorFilter.inputImage = normalized
+        colorFilter.color0 = CIColor(color: .black)
+        colorFilter.color1 = CIColor(color: .white)
+        guard let colored = colorFilter.outputImage else { return nil }
 
-        let renderer = UIGraphicsImageRenderer(size: size, format: format)
-        return renderer.image { ctx in
-            UIColor.white.setFill()
-            ctx.fill(CGRect(origin: .zero, size: size))
-
-            let drawRect = CGRect(origin: .zero, size: size)
-            let cgContext = ctx.cgContext
-            cgContext.translateBy(x: 0, y: size.height)
-            cgContext.scaleBy(x: 1, y: -1)
-            ciContext.draw(normalized, in: drawRect, from: normalized.extent)
+        let drawRect = colored.extent.integral
+        guard drawRect.width > 1, drawRect.height > 1,
+              let cgImage = ciContext.createCGImage(colored, from: drawRect) else {
+            return nil
         }
+
+        let scaleFactor = UIScreen.main.scale
+        let uiImage = UIImage(cgImage: cgImage, scale: scaleFactor, orientation: .up)
+        return isLikelyBlank(uiImage) ? nil : uiImage
+    }
+
+    /// True when the QR bitmap has no dark modules (failed Core Image draw on device).
+    static func isLikelyBlank(_ image: UIImage) -> Bool {
+        guard let cgImage = image.cgImage else { return true }
+        let w = min(cgImage.width, 64)
+        let h = min(cgImage.height, 64)
+        guard w > 0, h > 0 else { return true }
+
+        var pixels = [UInt8](repeating: 0, count: w * h * 4)
+        guard let ctx = CGContext(
+            data: &pixels,
+            width: w,
+            height: h,
+            bitsPerComponent: 8,
+            bytesPerRow: w * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return true }
+
+        ctx.draw(cgImage, in: CGRect(x: 0, y: 0, width: w, height: h))
+        var darkCount = 0
+        for i in stride(from: 0, to: pixels.count, by: 4) {
+            let lum = (Int(pixels[i]) + Int(pixels[i + 1]) + Int(pixels[i + 2])) / 3
+            if lum < 200 { darkCount += 1 }
+        }
+        return darkCount < 12
     }
 
     /// Finds a Czedr ID in a QR string, URL, or plain text (e.g. pasted from Messages).
