@@ -552,11 +552,9 @@ struct MenuSheet: View {
                 NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
                     Text("Profile")
                 }
-                if !session.hasPinSet {
-                    NavigationLink(destination: SetPinScreen()) {
-                        Text("Set PIN")
-                            .foregroundColor(CzedrPalette.redPrimary)
-                    }
+                NavigationLink(destination: SetPinScreen()) {
+                    Text(session.hasPinSet ? "Change PIN" : "Set PIN")
+                        .foregroundColor(session.hasPinSet ? CzedrPalette.lightText : CzedrPalette.redPrimary)
                 }
                 NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
                     Text("Send Invoice")
@@ -1044,7 +1042,10 @@ struct ProfileScreen: View {
                     row("Czedr ID", session.czedrId)
 
                     if !session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        CzedrPaymentQrView(czedrId: session.czedrId)
+                        CzedrPaymentQrView(
+                            czedrId: session.czedrId,
+                            paymentQrPayload: session.effectivePaymentQrPayload
+                        )
                     }
 
                     row("API", session.apiBase)
@@ -1062,17 +1063,19 @@ struct ProfileScreen: View {
                         Text("Payment PIN is set")
                             .font(.subheadline)
                             .foregroundColor(CzedrPalette.balanceGreen)
-                    } else {
-                        NavigationLink(destination: SetPinScreen()) {
-                            Text("Set PIN")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(CzedrPalette.orangeField)
-                                .foregroundColor(CzedrPalette.fieldText)
-                                .cornerRadius(6)
-                        }
                     }
+                    NavigationLink(destination: SetPinScreen()) {
+                        Text(session.hasPinSet ? "Change PIN" : "Set PIN")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(CzedrPalette.orangeField)
+                            .foregroundColor(CzedrPalette.fieldText)
+                            .cornerRadius(6)
+                    }
+
+                    CzedrSupportHelpCard()
+
                     Button(action: { session.logout() }) {
                         Text("Sign out")
                             .frame(maxWidth: .infinity)
@@ -1087,6 +1090,7 @@ struct ProfileScreen: View {
                 .padding(16)
             }
         }
+        .onAppear { session.refreshProfile() }
     }
 
     private func row(_ label: String, _ value: String) -> some View {

@@ -8,6 +8,7 @@ import UIKit
 
 struct CzedrPaymentQrView: View {
     let czedrId: String
+    var paymentQrPayload: String = ""
 
     @State private var qrImage: UIImage?
     @State private var qrFailed = false
@@ -66,6 +67,7 @@ struct CzedrPaymentQrView: View {
         .padding(.vertical, 8)
         .onAppear(perform: refreshQr)
         .onChange(of: czedrId, perform: { _ in refreshQr() })
+        .onChange(of: paymentQrPayload, perform: { _ in refreshQr() })
     }
 
     private func refreshQr() {
@@ -75,7 +77,8 @@ struct CzedrPaymentQrView: View {
             qrFailed = false
             return
         }
-        let payload = CzedrQrCode.paymentPayload(czedrId: id)
+        let trimmedPayload = paymentQrPayload.trimmingCharacters(in: .whitespacesAndNewlines)
+        let payload = trimmedPayload.isEmpty ? CzedrQrCode.paymentPayload(czedrId: id) : trimmedPayload
         if let image = CzedrQrCode.image(from: payload) {
             qrImage = image
             qrFailed = false

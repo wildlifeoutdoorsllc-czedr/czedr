@@ -21,6 +21,7 @@ final class AppSession: ObservableObject {
     @Published var actionMessage: String?
     @Published var isMenuPresented = false
     @Published var hasPinSet = false
+    @Published var paymentQrPayload = ""
 
     private var token = ""
     private let api = CzedrAPIClient()
@@ -43,6 +44,16 @@ final class AppSession: ObservableObject {
         actionMessage = nil
         isMenuPresented = false
         hasPinSet = false
+        paymentQrPayload = ""
+    }
+
+    /// QR string from API when available; otherwise built from Czedr ID.
+    var effectivePaymentQrPayload: String {
+        let trimmed = paymentQrPayload.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { return trimmed }
+        let id = czedrId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !id.isEmpty else { return "" }
+        return CzedrQrCode.paymentPayload(czedrId: id)
     }
 
     func presentMenu() {
@@ -157,7 +168,8 @@ final class AppSession: ObservableObject {
                         email: payload.email,
                         czedrId: payload.czedrId,
                         apiBase: apiBase,
-                        hasPinSet: payload.hasPinSet
+                        hasPinSet: payload.hasPinSet,
+                        paymentQrPayload: payload.paymentQrPayload
                     )
                     self.refreshBalance()
                 }
@@ -195,9 +207,35 @@ final class AppSession: ObservableObject {
                         email: payload.email,
                         czedrId: payload.czedrId,
                         apiBase: apiBase,
-                        hasPinSet: payload.hasPinSet
+                        hasPinSet: payload.hasPinSet,
+                        paymentQrPayload: payload.paymentQrPayload
                     )
                     self.refreshBalance()
+                }
+            }
+        }
+    }
+
+    func refreshProfile(completion: ((Bool) -> Void)? = nil) {
+        guard isLoggedIn, !token.isEmpty else {
+            completion?(false)
+            return
+        }
+        api.fetchMe(apiBase: apiBase, token: token) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                switch result {
+                case .err(let msg):
+                    self.errorMessage = msg
+                    completion?(false)
+                case .ok(let profile):
+                    if !profile.email.isEmpty { self.email = profile.email }
+                    self.czedrId = profile.czedrId
+                    self.hasPinSet = profile.hasPinSet
+                    self.paymentQrPayload = profile.paymentQrPayload
+                    KeychainStore.set(profile.email, key: KeychainStore.Keys.email)
+                    KeychainStore.set(profile.czedrId, key: KeychainStore.Keys.czedrId)
+                    completion?(true)
                 }
             }
         }
@@ -231,6 +269,28 @@ final class AppSession: ObservableObject {
         }
     }
 
+    func changeAccountPin(oldPin: String, newPin: String, onSuccess: @escaping () -> Void) {
+        if oldPin.count != 4 || newPin.count != 4 {
+            errorMessage = "PIN must be 4 digits"
+            return
+        }
+        isLoading = true
+        api.changePin(apiBase: apiBase, token: token, oldPin: oldPin, newPin: newPin) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self.errorMessage = msg
+                case .ok:
+                    self.hasPinSet = true
+                    self.errorMessage = nil
+                    onSuccess()
+                }
+            }
+        }
+    }
+
     func logout() {
         let base = apiBase
         let tok = token
@@ -246,6 +306,7 @@ final class AppSession: ObservableObject {
         actionMessage = nil
         isMenuPresented = false
         hasPinSet = false
+        paymentQrPayload = ""
     }
 
     func refreshBalance() {
@@ -444,13 +505,15 @@ final class AppSession: ObservableObject {
         email: String,
         czedrId: String,
         apiBase: String,
-        hasPinSet: Bool
+        hasPinSet: Bool,
+        paymentQrPayload: String = ""
     ) {
         self.token = token
         self.email = email
         self.czedrId = czedrId
         self.apiBase = apiBase
         self.hasPinSet = hasPinSet
+        self.paymentQrPayload = paymentQrPayload
         KeychainStore.set(token, key: KeychainStore.Keys.token)
         KeychainStore.set(email, key: KeychainStore.Keys.email)
         KeychainStore.set(czedrId, key: KeychainStore.Keys.czedrId)

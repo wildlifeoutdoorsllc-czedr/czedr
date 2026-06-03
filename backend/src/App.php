@@ -21,6 +21,7 @@ use Czedr\Moov\MoovAchService;
 use Czedr\Moov\MoovConfig;
 use Czedr\Moov\MoovHttpClient;
 use Czedr\Moov\MoovWebhookVerifier;
+use Czedr\Payments\PaymentQr;
 use Czedr\Security\HttpsGate;
 use Czedr\Security\PayloadCryptor;
 use Czedr\Security\ProductionRouteGuard;
@@ -175,7 +176,7 @@ final class App
                 $r->ip,
                 $r->userAgent
             );
-            JsonResponse::ok($out);
+            JsonResponse::ok($this->loginResponsePayload($out));
         });
 
         $this->router->post('/v1/auth/register-secure', function (Request $r) {
@@ -201,7 +202,7 @@ final class App
                 $r->userAgent
             );
             $this->signupChallenges->consumeChallenge($challengeId);
-            JsonResponse::ok($out);
+            JsonResponse::ok($this->loginResponsePayload($out));
         });
 
         $this->router->post('/v1/auth/login', function (Request $r) {
@@ -265,6 +266,16 @@ final class App
             }
             $this->auth->setPin($uid, $pin);
             JsonResponse::ok(['set' => true, 'user_pin' => '1']);
+        }));
+
+        $this->router->post('/v1/auth/pin/update', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $oldPin = (string) ($r->body['old_pin'] ?? $r->body['user_pin_old'] ?? '');
+            $newPin = (string) ($r->body['new_pin'] ?? $r->body['user_pin'] ?? '');
+            if ($oldPin === '' || $newPin === '') {
+                throw new \InvalidArgumentException('old_pin and new_pin are required');
+            }
+            $this->auth->changePin($uid, $oldPin, $newPin);
+            JsonResponse::ok(['updated' => true, 'user_pin' => '1']);
         }));
 
         $this->router->post('/v1/auth/logout', function (Request $r) {
@@ -342,6 +353,16 @@ final class App
         $this->router->get('/v1/users/validate', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
             $czedrId = (string) ($_GET['czedr_id'] ?? $r->body['czedr_id'] ?? '');
             JsonResponse::ok($this->auth->recipientLookupForViewer($uid, $czedrId));
+        }));
+
+        $this->router->get('/v1/me', fn (Request $r) => $this->withAuth($r, function (string $uid) {
+            $user = $this->auth->userProfile($uid);
+            $czedrId = (string) ($user['czedr_id'] ?? '');
+            JsonResponse::ok(array_merge(
+                $user,
+                PaymentQr::metaForCzedrId($czedrId),
+                ['user_pin' => $this->auth->userPinFlag($uid)]
+            ));
         }));
 
         $this->router->post('/v1/transfers', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
@@ -708,16 +729,19 @@ final class App
         $userId = (string) ($user['id'] ?? '');
         $czedrId = (string) ($user['czedr_id'] ?? '');
 
-        return [
-            'auth_code' => $out['auth_token'],
-            'user' => $user,
-            'id' => $czedrId,
-            'czedr_id' => $czedrId,
-            'email' => $user['email'] ?? '',
-            'email ' => $user['email'] ?? '',
-            'user_pin' => $this->auth->userPinFlag($userId),
-            'profile_pic ' => '',
-        ];
+        return array_merge(
+            [
+                'auth_code' => $out['auth_token'],
+                'user' => $user,
+                'id' => $czedrId,
+                'czedr_id' => $czedrId,
+                'email' => $user['email'] ?? '',
+                'email ' => $user['email'] ?? '',
+                'user_pin' => $this->auth->userPinFlag($userId),
+                'profile_pic ' => '',
+            ],
+            PaymentQr::metaForCzedrId($czedrId)
+        );
     }
 
     private function applyIngressRateLimits(Request $r): void

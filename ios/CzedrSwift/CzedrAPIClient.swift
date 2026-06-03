@@ -31,6 +31,21 @@ struct PaymentTransferResult {
     let transactionId: String?
 }
 
+struct MeProfile {
+    let email: String
+    let czedrId: String
+    let hasPinSet: Bool
+    let paymentQrPayload: String
+}
+
+struct AuthPayload {
+    let token: String
+    let email: String
+    let czedrId: String
+    let hasPinSet: Bool
+    let paymentQrPayload: String
+}
+
 final class CzedrAPIClient {
     private let session: URLSession
 
@@ -42,7 +57,7 @@ final class CzedrAPIClient {
         email: String,
         password: String,
         apiBase: String,
-        completion: @escaping (APIResult<(token: String, email: String, czedrId: String, hasPinSet: Bool)>) -> Void
+        completion: @escaping (APIResult<AuthPayload>) -> Void
     ) {
         guard let base = Self.normalizeBase(apiBase) else {
             completion(.err("Invalid API base URL"))
@@ -140,7 +155,7 @@ final class CzedrAPIClient {
         password: String,
         referrerCzedrId: String?,
         apiBase: String,
-        completion: @escaping (APIResult<(token: String, email: String, czedrId: String, hasPinSet: Bool)>) -> Void
+        completion: @escaping (APIResult<AuthPayload>) -> Void
     ) {
         guard let base = Self.normalizeBase(apiBase) else {
             completion(.err("Invalid API base URL"))
@@ -164,10 +179,64 @@ final class CzedrAPIClient {
         }
     }
 
+    func fetchMe(
+        apiBase: String,
+        token: String,
+        completion: @escaping (APIResult<MeProfile>) -> Void
+    ) {
+        authedGetObject(
+            base: apiBase,
+            path: "/v1/me",
+            token: token,
+            map: { data in
+                let cid = (data["czedr_id"] as? String) ?? ""
+                if cid.isEmpty {
+                    return .err("No Czedr ID in profile")
+                }
+                let qr = Self.paymentQrPayload(from: data, czedrId: cid)
+                let pinFlag = (data["user_pin"] as? String) ?? "0"
+                return .ok(MeProfile(
+                    email: (data["email"] as? String) ?? "",
+                    czedrId: cid,
+                    hasPinSet: pinFlag == "1",
+                    paymentQrPayload: qr
+                ))
+            },
+            completion: completion
+        )
+    }
+
+    func changePin(
+        apiBase: String,
+        token: String,
+        oldPin: String,
+        newPin: String,
+        completion: @escaping (APIResult<Void>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        let body: [String: Any] = [
+            "old_pin": oldPin,
+            "new_pin": newPin,
+            "user_pin_old": oldPin,
+            "user_pin": newPin,
+        ]
+        postJSON(base: base, path: "/v1/auth/pin/update", body: body, token: token) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok:
+                completion(.ok(()))
+            }
+        }
+    }
+
     private static func parseAuthPayload(
         _ data: [String: Any],
         fallbackEmail: String
-    ) -> APIResult<(token: String, email: String, czedrId: String, hasPinSet: Bool)> {
+    ) -> APIResult<AuthPayload> {
         let auth = (data["auth_code"] as? String) ?? (data["auth_token"] as? String) ?? ""
         if auth.isEmpty {
             return .err("No auth token in response")
@@ -179,7 +248,17 @@ final class CzedrAPIClient {
             return .err("No Czedr ID in response")
         }
         let pinFlag = (data["user_pin"] as? String) ?? (user?["user_pin"] as? String) ?? "0"
-        return .ok((auth, em, cid, pinFlag == "1"))
+        let qr = paymentQrPayload(from: data, czedrId: cid)
+        return .ok(AuthPayload(token: auth, email: em, czedrId: cid, hasPinSet: pinFlag == "1", paymentQrPayload: qr))
+    }
+
+    private static func paymentQrPayload(from data: [String: Any], czedrId: String) -> String {
+        let user = data["user"] as? [String: Any]
+        let fromApi = (data["payment_qr_payload"] as? String) ?? (user?["payment_qr_payload"] as? String) ?? ""
+        if !fromApi.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return fromApi.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return CzedrQrCode.paymentPayload(czedrId: czedrId)
     }
 
     func setPin(
