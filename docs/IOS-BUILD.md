@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **124** — Profile text size Standard / Large / Extra large ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26917706688)) |
-| **Next ship build number** | **127** |
-| **In progress** | **126** — TestFlight CI (QR scan + paste on Send Invoice). |
+| **Next ship build number** | **128** |
+| **In progress** | **127** — TestFlight CI (invoice success screen; amount 15 = $15; invoice UX matches payment). |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 127 | Send Invoice success screen; whole-dollar amounts; PIN gate; QR on Send Invoice (includes 125–126) |
 | 126 | Send Invoice: QR scan + paste debtor ID (same as Make Payment) |
 | 125 | Clear stale home errors; funding errors only on + My Bank |
 | 124 | Profile text size — Standard, Large, Extra large (saved on device) |

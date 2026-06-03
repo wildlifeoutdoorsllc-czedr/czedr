@@ -17,6 +17,8 @@ struct SendInvoiceScreen: View {
     @State private var description = ""
     @State private var pin = ""
     @State private var showQrScanner = false
+    @State private var showSuccess = false
+    @State private var successDetails: InvoiceSuccessDetails?
 
     var body: some View {
         LoggedInPageLayout(title: "Send Invoice", showBack: true, onMenu: { session.presentMenu() }) {
@@ -67,7 +69,7 @@ struct SendInvoiceScreen: View {
                     }
 
                     CzedrPlaceholderTextField(
-                        placeholder: "Amount they owe ($)",
+                        placeholder: "Enter amount",
                         text: $amount,
                         keyboard: .decimalPad
                     )
@@ -75,8 +77,23 @@ struct SendInvoiceScreen: View {
 
                     CzedrPlaceholderTextField(placeholder: "Description", text: $description)
 
-                    CzedrPinEntryView(pin: $pin)
-                        .padding(.top, 12)
+                    if !session.hasPinSet {
+                        Text("Set a 4-digit PIN in Profile before you can send invoices.")
+                            .font(.footnote)
+                            .foregroundColor(CzedrPalette.redPrimary)
+                        NavigationLink(destination: SetPinScreen()) {
+                            Text("SET PIN NOW")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(CzedrPalette.redPrimary)
+                                .foregroundColor(.white)
+                                .cornerRadius(6)
+                        }
+                    } else {
+                        CzedrPinEntryView(pin: $pin)
+                            .padding(.top, 12)
+                    }
 
                     Button(action: sendInvoice) {
                         Text(session.isLoading ? "…" : "SEND INVOICE")
@@ -87,7 +104,7 @@ struct SendInvoiceScreen: View {
                             .foregroundColor(CzedrPalette.lightText)
                             .cornerRadius(6)
                     }
-                    .disabled(session.isLoading)
+                    .disabled(session.isLoading || !session.hasPinSet)
                     .padding(.top, 8)
 
                     if let err = session.errorMessage {
@@ -99,12 +116,34 @@ struct SendInvoiceScreen: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
+            .background(
+                NavigationLink(
+                    destination: successDestination,
+                    isActive: $showSuccess
+                ) {
+                    EmptyView()
+                }
+                .hidden()
+            )
             .sheet(isPresented: $showQrScanner) {
                 CzedrQrScannerSheet(
                     onScan: handleScannedPayload,
                     onCancel: { showQrScanner = false }
                 )
             }
+        }
+    }
+
+    @ViewBuilder
+    private var successDestination: some View {
+        if let details = successDetails {
+            InvoiceSuccessScreen(
+                details: details,
+                isPresented: $showSuccess,
+                onDone: resetForm
+            )
+        } else {
+            EmptyView()
         }
     }
 
@@ -148,7 +187,21 @@ struct SendInvoiceScreen: View {
             to: debtorId,
             amountDollars: amount,
             description: description,
-            pin: pin
-        )
+            pin: pin,
+            debtorName: validatedName
+        ) { details in
+            successDetails = details
+            showSuccess = true
+        }
+    }
+
+    private func resetForm() {
+        debtorId = ""
+        validatedName = ""
+        amount = ""
+        description = ""
+        pin = ""
+        successDetails = nil
+        session.clearError()
     }
 }

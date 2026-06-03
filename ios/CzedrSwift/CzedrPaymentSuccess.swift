@@ -94,3 +94,94 @@ struct PaymentSuccessScreen: View {
         onDone()
     }
 }
+
+struct InvoiceSuccessDetails: Equatable {
+    let debtorCzedrId: String
+    let debtorName: String
+    let amountCents: Int64
+    let description: String
+}
+
+struct InvoiceSuccessScreen: View {
+    @EnvironmentObject var session: AppSession
+    @Environment(\.czedrTextSize) private var textSize
+    let details: InvoiceSuccessDetails
+    @Binding var isPresented: Bool
+    var onDone: () -> Void
+
+    var body: some View {
+        LoggedInPageLayout(title: "Success", showBack: false, onMenu: { session.presentMenu() }) {
+            VStack(spacing: 20) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: CzedrTypography.scaled(72, size: textSize)))
+                    .foregroundColor(CzedrPalette.balanceGreen)
+                    .padding(.top, 24)
+
+                Text("Invoice sent")
+                    .font(.title2.bold())
+                    .foregroundColor(CzedrPalette.lightText)
+                    .multilineTextAlignment(.center)
+
+                Text(CzedrMoney.format(cents: details.amountCents))
+                    .font(.system(size: CzedrTypography.scaled(36, size: textSize), weight: .semibold))
+                    .foregroundColor(CzedrPalette.balanceGreen)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    successRow("To", debtorLine)
+                    if !details.description.isEmpty {
+                        successRow("Description", details.description)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(CzedrPalette.surface)
+                .cornerRadius(8)
+
+                Text("They can pay when they sign in — no need for them to be online now.")
+                    .font(.caption)
+                    .foregroundColor(CzedrPalette.caption)
+                    .multilineTextAlignment(.center)
+
+                Spacer(minLength: 12)
+
+                Button(action: finish) {
+                    Text("OK")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(CzedrPalette.charcoalButton)
+                        .foregroundColor(CzedrPalette.lightText)
+                        .cornerRadius(6)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+
+    private var debtorLine: String {
+        let id = details.debtorCzedrId.uppercased()
+        if details.debtorName.isEmpty || details.debtorName.uppercased() == id {
+            return id
+        }
+        return "\(details.debtorName) (\(id))"
+    }
+
+    private func successRow(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(CzedrPalette.caption)
+            Text(value)
+                .font(.subheadline)
+                .foregroundColor(CzedrPalette.lightText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func finish() {
+        isPresented = false
+        onDone()
+    }
+}

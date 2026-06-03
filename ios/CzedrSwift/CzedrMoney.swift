@@ -16,6 +16,14 @@ enum CzedrMoney {
         return f
     }()
 
+    private static let usDecimal: NumberFormatter = {
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: "en_US")
+        f.numberStyle = .decimal
+        f.generatesDecimalNumbers = true
+        return f
+    }()
+
     /// e.g. $10,193.71 (USD) or $10,193.71 EUR
     static func format(cents: Int64, currency: String = "USD") -> String {
         let dollars = Double(cents) / 100.0
@@ -33,13 +41,49 @@ enum CzedrMoney {
         return "$\(amount) \(code)"
     }
 
-    static func parseDollarsToCents(_ input: String) -> Int64? {
-        let cleaned = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Parses dollar input: `15`, `15.`, `15.5`, `15.00`, `$15`, `1,234.56` → dollars (not cents).
+    static func parseDollarAmount(_ input: String) -> Double? {
+        var cleaned = input.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: "\u{00A0}", with: "")
             .replacingOccurrences(of: " ", with: "")
+        if cleaned.isEmpty { return nil }
+
+        // Whole dollars only (e.g. "15" → $15.00).
+        if cleaned.allSatisfy(\.isNumber) {
+            return Double(cleaned).flatMap { $0 > 0 ? $0 : nil }
+        }
+
+        // Decimal comma when no dot: "15,5" / "15,50" (not thousands).
+        if cleaned.contains(","), !cleaned.contains(".") {
+            if let comma = cleaned.lastIndex(of: ",") {
+                let after = cleaned[cleaned.index(after: comma)...]
+                if !after.isEmpty, after.count <= 2, after.allSatisfy(\.isNumber) {
+                    cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
+                } else {
+                    cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+                }
+            }
+        } else {
+            cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+        }
+
+        while cleaned.hasSuffix(".") {
+            cleaned.removeLast()
+        }
+        if cleaned.isEmpty { return nil }
+
+        if let n = usDecimal.number(from: cleaned) as? NSDecimalNumber {
+            let value = n.doubleValue
+            return value > 0 ? value : nil
+        }
         guard let value = Double(cleaned), value > 0 else { return nil }
-        return Int64((value * 100.0).rounded())
+        return value
+    }
+
+    static func parseDollarsToCents(_ input: String) -> Int64? {
+        guard let dollars = parseDollarAmount(input) else { return nil }
+        return Int64((dollars * 100.0).rounded())
     }
 
     private static func fallback(dollars: Double, currency: String) -> String {

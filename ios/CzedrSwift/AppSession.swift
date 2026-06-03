@@ -387,8 +387,15 @@ final class AppSession: ObservableObject {
         }
     }
 
-    func sendInvoice(to: String, amountDollars: String, description: String, pin: String) {
-        guard CzedrMoney.parseDollarsToCents(amountDollars) != nil else {
+    func sendInvoice(
+        to: String,
+        amountDollars: String,
+        description: String,
+        pin: String,
+        debtorName: String = "",
+        onSuccess: @escaping (InvoiceSuccessDetails) -> Void
+    ) {
+        guard let cents = CzedrMoney.parseDollarsToCents(amountDollars) else {
             errorMessage = "Enter a valid amount"
             return
         }
@@ -402,6 +409,8 @@ final class AppSession: ObservableObject {
             return
         }
         isLoading = true
+        errorMessage = nil
+        let desc = description.trimmingCharacters(in: .whitespacesAndNewlines)
         api.createInvoice(
             apiBase: apiBase,
             token: token,
@@ -416,8 +425,16 @@ final class AppSession: ObservableObject {
                 switch result {
                 case .err(let msg):
                     self.errorMessage = msg
-                case .ok(let msg):
-                    self.actionMessage = msg
+                case .ok:
+                    self.errorMessage = nil
+                    onSuccess(
+                        InvoiceSuccessDetails(
+                            debtorCzedrId: toId,
+                            debtorName: debtorName.trimmingCharacters(in: .whitespacesAndNewlines),
+                            amountCents: cents,
+                            description: desc
+                        )
+                    )
                 }
             }
         }

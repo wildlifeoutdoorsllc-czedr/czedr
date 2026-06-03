@@ -369,14 +369,14 @@ final class CzedrAPIClient {
             completion(.err("Not signed in"))
             return
         }
-        let cleaned = amountDollars.trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: " ", with: "")
+        guard let amount = CzedrMoney.parseDollarAmount(amountDollars) else {
+            completion(.err("Enter a valid amount"))
+            return
+        }
         let body: [String: Any] = [
             "to_czedr_id": toCzedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased(),
             "rec_czedr_id": toCzedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased(),
-            "amount": Double(cleaned) ?? 0,
+            "amount": amount,
             "desc": description.isEmpty ? "Invoice" : description,
             "description": description.isEmpty ? "Invoice" : description,
             "user_pin": pin,
