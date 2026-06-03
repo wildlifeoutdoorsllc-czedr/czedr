@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **124** — Profile text size Standard / Large / Extra large ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26917706688)) |
-| **Next ship build number** | **125** |
-| **In progress** | **125** — TestFlight CI (home error UX; funding errors on + My Bank only). Deploy API when ready: `docs/RELEASE-TRAIN.md`. |
+| **Next ship build number** | **127** |
+| **In progress** | **126** — TestFlight CI (QR scan + paste on Send Invoice). |
 
 ## Ship pipeline (user preference)
 
@@ -24,7 +24,8 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
-| 125 | (planned) Clear stale home errors; funding errors only on + My Bank — requires API deploy with `/v1/me` |
+| 126 | Send Invoice: QR scan + paste debtor ID (same as Make Payment) |
+| 125 | Clear stale home errors; funding errors only on + My Bank |
 | 124 | Profile text size — Standard, Large, Extra large (saved on device) |
 | 123 | `/v1/me` payment QR; Change PIN; Profile support help |
 | 122 | Profile: pinned Back + scroll; QR false-color raster; compact hero — **verified on device** |
