@@ -21,6 +21,8 @@ struct CzedrPinEntryView: View {
     @Environment(\.czedrTextSize) private var textSize
     private let length = 4
 
+    private var slotH: CGFloat { CzedrTypography.scaled(84, size: textSize) }
+
     var body: some View {
         VStack(spacing: 14) {
             Text(label)
@@ -49,7 +51,6 @@ struct CzedrPinEntryView: View {
 
     private func pinSlot(filled: Bool) -> some View {
         let slotW = CzedrTypography.scaled(48, size: textSize)
-        let slotH = CzedrTypography.scaled(84, size: textSize)
         return ZStack {
             RoundedRectangle(cornerRadius: 5)
                 .fill(CzedrPalette.redPrimary)
