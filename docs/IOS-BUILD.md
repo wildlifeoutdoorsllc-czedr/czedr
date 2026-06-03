@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **122** — Profile back/scroll + QR false-color raster ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26846980458)) |
-| **Next ship build number** | **123** |
-| **In progress** | **123** — `/v1/me` QR payload, Change PIN, support help on Profile |
+| **Last shipped (TestFlight)** | **123** — `/v1/me` QR, Change PIN, Profile support help ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26912338372)) |
+| **Next ship build number** | **124** |
+| **In progress** | **124** — Profile text size: Standard / Large / Extra large |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 124 | Profile text size — Standard, Large, Extra large (saved on device) |
 | 123 | `/v1/me` payment QR; Change PIN; Profile support help |
 | 122 | Profile: pinned Back + scroll; QR false-color raster; compact hero — **verified on device** |
 | 121 | Profile QR renders correctly (black on white) |

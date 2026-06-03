@@ -15,6 +15,7 @@ struct PaymentSuccessDetails: Equatable {
 
 struct PaymentSuccessScreen: View {
     @EnvironmentObject var session: AppSession
+    @Environment(\.czedrTextSize) private var textSize
     let details: PaymentSuccessDetails
     @Binding var isPresented: Bool
     var onDone: () -> Void
@@ -23,7 +24,7 @@ struct PaymentSuccessScreen: View {
         LoggedInPageLayout(title: "Success", showBack: false, onMenu: { session.presentMenu() }) {
             VStack(spacing: 20) {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 72))
+                    .font(.system(size: CzedrTypography.scaled(72, size: textSize)))
                     .foregroundColor(CzedrPalette.balanceGreen)
                     .padding(.top, 24)
 
@@ -33,7 +34,7 @@ struct PaymentSuccessScreen: View {
                     .multilineTextAlignment(.center)
 
                 Text(CzedrMoney.format(cents: details.amountCents))
-                    .font(.system(size: 36, weight: .semibold))
+                    .font(.system(size: CzedrTypography.scaled(36, size: textSize), weight: .semibold))
                     .foregroundColor(CzedrPalette.balanceGreen)
 
                 VStack(alignment: .leading, spacing: 10) {

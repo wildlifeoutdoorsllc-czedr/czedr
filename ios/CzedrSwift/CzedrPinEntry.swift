@@ -18,12 +18,13 @@ struct CzedrPinEntryView: View {
     @Binding var pin: String
     var label: String = "ENTER YOUR CZEDR PIN"
     var fieldId: Int = 0
+    @Environment(\.czedrTextSize) private var textSize
     private let length = 4
 
     var body: some View {
         VStack(spacing: 14) {
             Text(label)
-                .font(.system(size: 17, weight: .bold))
+                .font(.system(size: CzedrTypography.scaled(17, size: textSize), weight: .bold))
                 .foregroundColor(CzedrPalette.redPrimary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
@@ -38,22 +39,24 @@ struct CzedrPinEntryView: View {
 
                 CzedrPinCaptureField(text: $pin, maxLength: length, fieldId: fieldId)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 80)
+                    .frame(height: slotH)
             }
-            .frame(height: 80)
+            .frame(height: slotH)
             .contentShape(Rectangle())
         }
         .padding(.vertical, 4)
     }
 
     private func pinSlot(filled: Bool) -> some View {
-        ZStack {
+        let slotW = CzedrTypography.scaled(48, size: textSize)
+        let slotH = CzedrTypography.scaled(84, size: textSize)
+        return ZStack {
             RoundedRectangle(cornerRadius: 5)
                 .fill(CzedrPalette.redPrimary)
-                .frame(width: 48, height: 84)
+                .frame(width: slotW, height: slotH)
             if filled {
                 Text("•")
-                    .font(.system(size: 42, weight: .bold))
+                    .font(.system(size: CzedrTypography.scaled(42, size: textSize), weight: .bold))
                     .foregroundColor(.white)
                     .offset(y: -2)
             }

@@ -9,6 +9,11 @@ import SwiftUI
 
 struct CzedrSwiftRootView: View {
     @EnvironmentObject var session: AppSession
+    @AppStorage(CzedrTextSize.storageKey) private var textSizeRaw = CzedrTextSize.defaultChoice.rawValue
+
+    private var textSize: CzedrTextSize {
+        CzedrTextSize.fromStored(textSizeRaw)
+    }
 
     var body: some View {
         Group {
@@ -19,7 +24,8 @@ struct CzedrSwiftRootView: View {
             }
         }
         .preferredColorScheme(.dark)
-        .environment(\.sizeCategory, CzedrTypography.contentSizeCategory)
+        .environment(\.sizeCategory, CzedrTypography.contentSizeCategory(for: textSize))
+        .environment(\.czedrTextSize, textSize)
         .sheet(isPresented: $session.isMenuPresented) {
             MenuSheet()
                 .environmentObject(session)
@@ -672,6 +678,7 @@ struct LoggedInPageLayout<Content: View>: View {
 struct HomeScreen: View {
     var openedFromMenu: Bool = false
     @EnvironmentObject var session: AppSession
+    @Environment(\.czedrTextSize) private var textSize
 
     var body: some View {
         LoggedInPageLayout(title: "", showBack: openedFromMenu, onMenu: { session.presentMenu() }) {
@@ -692,7 +699,7 @@ struct HomeScreen: View {
                             .foregroundColor(CzedrPalette.caption)
                             .multilineTextAlignment(.center)
                         Text(session.balanceText)
-                            .font(.system(size: 32, weight: .semibold))
+                            .font(.system(size: CzedrTypography.scaled(32, size: textSize), weight: .semibold))
                             .foregroundColor(CzedrPalette.balanceGreen)
                             .multilineTextAlignment(.center)
                         NavigationLink(destination: MyBankScreen()) {
@@ -1073,6 +1080,8 @@ struct ProfileScreen: View {
                             .foregroundColor(CzedrPalette.fieldText)
                             .cornerRadius(6)
                     }
+
+                    CzedrTextSizePicker()
 
                     CzedrSupportHelpCard()
 

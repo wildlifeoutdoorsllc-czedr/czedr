@@ -40,6 +40,7 @@ ios/CzedrSwift/
 | Profile payment QR | Done — from **`GET /v1/me`** `payment_qr_payload` (fallback local) |
 | Change PIN | Done — `POST /v1/auth/pin/update` with current PIN |
 | Profile support help | Done — PIN recovery text + mailto `support@czedr.com` |
+| Text size (3 options) | Profile — Standard / Large / Extra large (saved on device) |
 | Make Payment scan | Done — QR icon + paste from clipboard; **VALIDATE** unchanged |
 | Home (balance + tiles) | Done |
 | Make Payment | Done |

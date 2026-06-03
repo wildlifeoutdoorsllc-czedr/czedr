@@ -9,6 +9,7 @@ import UIKit
 struct CzedrPaymentQrView: View {
     let czedrId: String
     var paymentQrPayload: String = ""
+    @Environment(\.czedrTextSize) private var textSize
 
     @State private var qrImage: UIImage?
     @State private var qrFailed = false
@@ -31,7 +32,7 @@ struct CzedrPaymentQrView: View {
                 } else if qrFailed {
                     VStack(spacing: 6) {
                         Image(systemName: "qrcode")
-                            .font(.system(size: 48))
+                            .font(.system(size: CzedrTypography.scaled(48, size: textSize)))
                             .foregroundColor(CzedrPalette.caption)
                         Text("QR could not be drawn on this device.")
                             .font(.caption)
