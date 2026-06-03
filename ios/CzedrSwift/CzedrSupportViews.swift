@@ -6,7 +6,16 @@
 import SwiftUI
 
 enum CzedrSupport {
+    /// Member support inbox (must stay in sync with marketing/site-config.json).
     static let email = "support@czedr.com"
+
+    static var mailtoURL: URL {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = email
+        components.queryItems = [URLQueryItem(name: "subject", value: "Czedr app help")]
+        return components.url ?? URL(string: "mailto:\(email)")!
+    }
 }
 
 struct CzedrSupportHelpCard: View {
@@ -19,15 +28,21 @@ struct CzedrSupportHelpCard: View {
                 .font(.caption)
                 .foregroundColor(CzedrPalette.caption)
                 .fixedSize(horizontal: false, vertical: true)
-            Link(destination: URL(string: "mailto:\(CzedrSupport.email)?subject=Czedr%20app%20help")!) {
+            Text("Member support")
+                .font(.caption)
+                .foregroundColor(CzedrPalette.caption)
+                .padding(.top, 4)
+            Text(CzedrSupport.email)
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(CzedrPalette.lightText)
+            Link(destination: CzedrSupport.mailtoURL) {
                 HStack {
                     Image(systemName: "envelope")
-                    Text("Email \(CzedrSupport.email)")
+                    Text("Email support")
                         .font(.subheadline.weight(.semibold))
                 }
                 .foregroundColor(CzedrPalette.cheddarGold)
             }
-            .padding(.top, 4)
         }
         .padding(.vertical, 8)
     }

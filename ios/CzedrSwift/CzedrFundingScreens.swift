@@ -21,6 +21,7 @@ struct MyBankScreen: View {
     @State private var amount2 = ""
     @State private var devHintA = ""
     @State private var devHintB = ""
+    @State private var screenError: String?
 
     var body: some View {
         LoggedInPageLayout(title: "+ My Bank", showBack: true, onMenu: { session.presentMenu() }) {
@@ -63,7 +64,7 @@ struct MyBankScreen: View {
                         confirmSection
                     }
 
-                    if let err = session.errorMessage {
+                    if let err = screenError {
                         Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
                     }
                     if let ok = session.actionMessage {
@@ -152,10 +153,11 @@ struct MyBankScreen: View {
     }
 
     private func reload() {
-        session.clearError()
-        session.fetchFundingStatus { msg, list in
+        screenError = nil
+        session.fetchFundingStatus { msg, list, err in
             statusMessage = msg
             banks = list
+            screenError = err
             if let pending = list.first(where: { $0.status == "awaiting_confirm" }) {
                 confirmLinkId = pending.id
             }
@@ -163,7 +165,7 @@ struct MyBankScreen: View {
     }
 
     private func startLink() {
-        session.clearError()
+        screenError = nil
         session.startBankLink(
             routing: routing,
             account: account,
@@ -171,8 +173,8 @@ struct MyBankScreen: View {
             accountType: accountType
         ) { result in
             switch result {
-            case .err:
-                break
+            case .err(let msg):
+                screenError = msg
             case .ok(let payload):
                 session.actionMessage = payload.message
                 if let a = payload.microCentsA, let b = payload.microCentsB {
@@ -190,11 +192,15 @@ struct MyBankScreen: View {
 
     private func confirmLink() {
         guard let c1 = Int(amount1.trimmingCharacters(in: .whitespaces)), let c2 = Int(amount2.trimmingCharacters(in: .whitespaces)) else {
-            session.errorMessage = "Enter both amounts in cents"
+            screenError = "Enter both amounts in cents"
             return
         }
-        session.clearError()
-        session.confirmBankLink(bankLinkId: confirmLinkId, amount1Cents: c1, amount2Cents: c2) {
+        screenError = nil
+        session.confirmBankLink(bankLinkId: confirmLinkId, amount1Cents: c1, amount2Cents: c2) { err in
+            if let err {
+                screenError = err
+                return
+            }
             confirmLinkId = ""
             amount1 = ""
             amount2 = ""

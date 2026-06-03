@@ -771,7 +771,10 @@ struct HomeScreen: View {
                 .padding(.bottom, 16)
             }
         }
-        .onAppear { session.refreshBalance() }
+        .onAppear {
+            session.clearError()
+            session.refreshBalance()
+        }
     }
 
     private func tileContent(_ title: String, _ symbol: String) -> some View {

@@ -320,6 +320,7 @@ final class AppSession: ObservableObject {
                 case .err(let msg):
                     self.errorMessage = msg
                 case .ok(let bal):
+                    self.errorMessage = nil
                     self.balanceCents = bal.balanceCents
                     self.balanceText = CzedrMoney.format(cents: bal.balanceCents, currency: bal.currency)
                 }
@@ -422,15 +423,14 @@ final class AppSession: ObservableObject {
         }
     }
 
-    func fetchFundingStatus(completion: @escaping (String, [BankLinkRow]) -> Void) {
-        api.fetchFundingStatus(apiBase: apiBase, token: token) { [weak self] result in
+    func fetchFundingStatus(completion: @escaping (String, [BankLinkRow], String?) -> Void) {
+        api.fetchFundingStatus(apiBase: apiBase, token: token) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .err(let msg):
-                    self?.errorMessage = msg
-                    completion("", [])
+                    completion("", [], msg)
                 case .ok(let payload):
-                    completion(payload.message, payload.banks)
+                    completion(payload.message, payload.banks, nil)
                 }
             }
         }
@@ -457,7 +457,6 @@ final class AppSession: ObservableObject {
                 self?.isLoading = false
                 switch result {
                 case .err(let msg):
-                    self?.errorMessage = msg
                     completion(.err(msg))
                 case .ok(let payload):
                     self?.actionMessage = payload.message
@@ -467,18 +466,22 @@ final class AppSession: ObservableObject {
         }
     }
 
-    func confirmBankLink(bankLinkId: String, amount1Cents: Int, amount2Cents: Int, completion: @escaping () -> Void) {
+    func confirmBankLink(
+        bankLinkId: String,
+        amount1Cents: Int,
+        amount2Cents: Int,
+        completion: @escaping (String?) -> Void
+    ) {
         isLoading = true
-        errorMessage = nil
         api.confirmBankLink(apiBase: apiBase, token: token, bankLinkId: bankLinkId, amount1Cents: amount1Cents, amount2Cents: amount2Cents) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 switch result {
                 case .err(let msg):
-                    self?.errorMessage = msg
+                    completion(msg)
                 case .ok:
                     self?.actionMessage = "Bank verified"
-                    completion()
+                    completion(nil)
                 }
             }
         }
