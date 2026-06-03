@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **123** — `/v1/me` QR, Change PIN, Profile support help ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26912338372)) |
-| **Next ship build number** | **124** |
-| **In progress** | **124** — Profile text size: Standard / Large / Extra large |
+| **Last shipped (TestFlight)** | **124** — Profile text size Standard / Large / Extra large ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/26917706688)) |
+| **Next ship build number** | **125** |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 

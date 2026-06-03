@@ -2,7 +2,7 @@
 
 **Purpose:** Map the problems members most often contact support about to what the SwiftUI app already handles in-app (so fewer tickets and faster self-service).
 
-**Last reviewed:** June 2026 (build **123**)
+**Last reviewed:** June 2026 (build **124**)
 
 ---
 
@@ -21,7 +21,7 @@
 | 9 | **Stuck on a screen / no back** | Profile **Back** + **Back to Home**, scroll | 122 |
 | 10 | **App won’t connect** | Sign-in API field; Wi‑Fi discovery on LAN builds | TestFlight uses `https://api.czedr.com` |
 | 11 | **How to contact support** | Profile → **Email support** (`support@czedr.com`) | 123 |
-| 15 | **Text too small / hard to read** | Profile → **Text size**: Standard, Large, Extra large | 124 |
+| 15 | **Text too small / hard to read** | Profile → **Text size**: Standard, Large, Extra large | **124** (TestFlight) |
 | 12 | **Invoices** | Menu **Send Invoice**; Pending still placeholder | Send shipped earlier |
 | 13 | **Change password while logged in** | Use **Sign out** → **Forgot password?** (no in-app “change password” yet) | Documented in Profile help |
 | 14 | **Add bank / deposit** | **+ My Bank** stub; ACH gated on server | Moov later |
