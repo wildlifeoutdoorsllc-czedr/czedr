@@ -621,7 +621,7 @@ final class CzedrAPIClient {
         map: @escaping ([[String: Any]]) -> APIResult<T>,
         completion: @escaping (APIResult<T>) -> Void
     ) {
-        guard let base = Self.normalizeBase(apiBase) else {
+        guard let base = Self.normalizeBase(base) else {
             completion(.err("Invalid API base URL"))
             return
         }
