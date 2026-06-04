@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **129** — History green/red; Referral Earnings menu |
-| **Next ship build number** | **131** |
-| **In progress** | **131** — same as 130 (QR on Referral Earnings; menu Logout divider); 130 upload stuck on Apple 500 |
+| **Last shipped (TestFlight)** | **131** — QR on Referral Earnings; menu Logout divider fix |
+| **Next ship build number** | **132** |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
