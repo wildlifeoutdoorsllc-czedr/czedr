@@ -520,33 +520,33 @@ final class AppSession: ObservableObject {
         }
     }
 
-    func fetchPendingInvoicesSent(completion: @escaping (Result<[InvoiceRow], String>) -> Void) {
+    func fetchPendingInvoicesSent(completion: @escaping (Result<[InvoiceRow], ApiResolveError>) -> Void) {
         api.fetchInvoicesSent(apiBase: apiBase, token: token) { result in
             DispatchQueue.main.async {
                 switch result {
-                case .err(let msg): completion(.failure(msg))
+                case .err(let msg): completion(.failure(ApiResolveError(message: msg)))
                 case .ok(let rows): completion(.success(rows))
                 }
             }
         }
     }
 
-    func fetchReferralEarnings(completion: @escaping (Result<ReferralEarnings, String>) -> Void) {
+    func fetchReferralEarnings(completion: @escaping (Result<ReferralEarnings, ApiResolveError>) -> Void) {
         api.fetchReferralEarnings(apiBase: apiBase, token: token) { result in
             DispatchQueue.main.async {
                 switch result {
-                case .err(let msg): completion(.failure(msg))
+                case .err(let msg): completion(.failure(ApiResolveError(message: msg)))
                 case .ok(let data): completion(.success(data))
                 }
             }
         }
     }
 
-    func fetchPendingInvoicesReceived(completion: @escaping (Result<[InvoiceRow], String>) -> Void) {
+    func fetchPendingInvoicesReceived(completion: @escaping (Result<[InvoiceRow], ApiResolveError>) -> Void) {
         api.fetchInvoicesReceived(apiBase: apiBase, token: token) { result in
             DispatchQueue.main.async {
                 switch result {
-                case .err(let msg): completion(.failure(msg))
+                case .err(let msg): completion(.failure(ApiResolveError(message: msg)))
                 case .ok(let rows): completion(.success(rows))
                 }
             }

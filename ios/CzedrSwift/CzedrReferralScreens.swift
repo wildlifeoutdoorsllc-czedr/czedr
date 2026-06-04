@@ -100,8 +100,8 @@ struct ReferralEarningsScreen: View {
             switch result {
             case .success(let data):
                 earnings = data
-            case .failure(let msg):
-                screenError = msg
+            case .failure(let err):
+                screenError = err.message
             }
         }
     }

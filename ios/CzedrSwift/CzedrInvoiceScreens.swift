@@ -322,7 +322,7 @@ struct PendingInvoicesScreen: View {
         session.fetchPendingInvoicesSent { result in
             switch result {
             case .success(let rows): sentRows = rows
-            case .failure(let msg): loadError = msg
+            case .failure(let err): loadError = err.message
             }
             group.leave()
         }
@@ -331,7 +331,7 @@ struct PendingInvoicesScreen: View {
         session.fetchPendingInvoicesReceived { result in
             switch result {
             case .success(let rows): receivedRows = rows
-            case .failure(let msg): loadError = loadError ?? msg
+            case .failure(let err): loadError = loadError ?? err.message
             }
             group.leave()
         }
