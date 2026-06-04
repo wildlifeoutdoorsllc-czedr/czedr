@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **131** — QR on Referral Earnings; menu Logout divider fix |
+| **Last shipped (TestFlight)** | **132** — Sign up: referrer ID + QR scan + paste |
 | **Next ship build number** | **133** |
-| **In progress** | **132** — Sign up: referrer Czedr ID field + QR scan + paste |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
