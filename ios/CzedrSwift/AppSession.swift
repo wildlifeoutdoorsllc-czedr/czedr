@@ -520,6 +520,28 @@ final class AppSession: ObservableObject {
         }
     }
 
+    func fetchPendingInvoicesSent(completion: @escaping (Result<[InvoiceRow], String>) -> Void) {
+        api.fetchInvoicesSent(apiBase: apiBase, token: token) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .err(let msg): completion(.failure(msg))
+                case .ok(let rows): completion(.success(rows))
+                }
+            }
+        }
+    }
+
+    func fetchPendingInvoicesReceived(completion: @escaping (Result<[InvoiceRow], String>) -> Void) {
+        api.fetchInvoicesReceived(apiBase: apiBase, token: token) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .err(let msg): completion(.failure(msg))
+                case .ok(let rows): completion(.success(rows))
+                }
+            }
+        }
+    }
+
     private func persistSession(
         token: String,
         email: String,

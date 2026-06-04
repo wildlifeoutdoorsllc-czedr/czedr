@@ -565,7 +565,7 @@ struct MenuSheet: View {
                 NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
                     Text("Send Invoice")
                 }
-                NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices", openedFromMenu: true)) {
+                NavigationLink(destination: PendingInvoicesScreen(openedFromMenu: true)) {
                     Text("Pending Invoices")
                 }
                 NavigationLink(destination: PlaceholderScreen(title: "Link Card", openedFromMenu: true)) {
@@ -749,7 +749,7 @@ struct HomeScreen: View {
                             }
                         }
                         HStack(spacing: 12) {
-                            NavigationLink(destination: PlaceholderScreen(title: "Pending Invoices")) {
+                            NavigationLink(destination: PendingInvoicesScreen()) {
                                 tileContent("Pending", "clock")
                             }
                             NavigationLink(destination: HistoryScreen()) {

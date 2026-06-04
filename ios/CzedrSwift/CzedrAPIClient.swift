@@ -27,6 +27,16 @@ struct TransferRow: Identifiable {
     let status: String
 }
 
+struct InvoiceRow: Identifiable {
+    let id: String
+    let counterpartyCzedrId: String
+    let counterpartyLabel: String
+    let amountCents: Int64
+    let description: String
+    let createdAt: String
+    let direction: String
+}
+
 struct PaymentTransferResult {
     let transactionId: String?
 }
@@ -479,6 +489,34 @@ final class CzedrAPIClient {
         }
     }
 
+    func fetchInvoicesSent(
+        apiBase: String,
+        token: String,
+        completion: @escaping (APIResult<[InvoiceRow]>) -> Void
+    ) {
+        authedGetList(
+            base: apiBase,
+            path: "/v1/invoices/sent?offset=1&limit=50",
+            token: token,
+            map: { rows in .ok(Self.mapInvoiceRows(rows, direction: "sent")) },
+            completion: completion
+        )
+    }
+
+    func fetchInvoicesReceived(
+        apiBase: String,
+        token: String,
+        completion: @escaping (APIResult<[InvoiceRow]>) -> Void
+    ) {
+        authedGetList(
+            base: apiBase,
+            path: "/v1/invoices/received?offset=1&limit=50",
+            token: token,
+            map: { rows in .ok(Self.mapInvoiceRows(rows, direction: "received")) },
+            completion: completion
+        )
+    }
+
     func fetchHistory(apiBase: String, token: String, completion: @escaping (APIResult<[TransferRow]>) -> Void) {
         authedGetObject(
             base: apiBase,
@@ -506,7 +544,71 @@ final class CzedrAPIClient {
         )
     }
 
+    private static func mapInvoiceRows(_ rows: [[String: Any]], direction: String) -> [InvoiceRow] {
+        rows.compactMap { row -> InvoiceRow? in
+            let id = (row["id"] as? String) ?? ""
+            if id.isEmpty { return nil }
+            let cid = (row["user_id"] as? String) ?? ""
+            let label = (row["name"] as? String) ?? (row["user_email"] as? String) ?? cid
+            let amountStr = row["amount"] as? String ?? (row["amount"] as? NSNumber)?.stringValue ?? "0"
+            let dollars = Double(amountStr) ?? 0
+            let cents = Int64((dollars * 100.0).rounded())
+            return InvoiceRow(
+                id: id,
+                counterpartyCzedrId: cid,
+                counterpartyLabel: label,
+                amountCents: cents,
+                description: row["description"] as? String ?? "",
+                createdAt: row["created_date"] as? String ?? "",
+                direction: direction
+            )
+        }
+    }
+
     // MARK: - HTTP helpers
+
+    private func authedGetList<T>(
+        base: String,
+        path: String,
+        token: String,
+        map: @escaping ([[String: Any]]) -> APIResult<T>,
+        completion: @escaping (APIResult<T>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        if token.isEmpty {
+            completion(.err("Not signed in"))
+            return
+        }
+        var req = URLRequest(url: URL(string: "\(base)\(path)")!)
+        req.httpMethod = "GET"
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        run(req) { result in
+            switch result {
+            case .failure(let err):
+                completion(.err(Self.friendlyNetworkError(err)))
+            case .success(let data):
+                guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    completion(.err("Invalid JSON"))
+                    return
+                }
+                if json["Status"] as? String != "true" {
+                    completion(.err(Self.errorMessage(from: data) ?? "Request failed"))
+                    return
+                }
+                let payload = json["Data"]
+                let rows: [[String: Any]]
+                if let arr = payload as? [[String: Any]] {
+                    rows = arr
+                } else {
+                    rows = []
+                }
+                completion(map(rows))
+            }
+        }
+    }
 
     private func authedGetObject<T>(
         base: String,
