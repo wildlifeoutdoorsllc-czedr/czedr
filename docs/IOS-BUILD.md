@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **127** — Send Invoice success screen; amounts; QR on Send Invoice |
-| **Next ship build number** | **129** |
-| **In progress** | **128** — Pending Invoices lists (sent + received). |
+| **Last shipped (TestFlight)** | **128** — Pending Invoices lists |
+| **Next ship build number** | **130** |
+| **In progress** | **129** — History green/red credits & debits; Referral Earnings menu. |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 129 | History: green credits, red debits; Menu → Referral Earnings |
 | 128 | Pending Invoices: Waiting on them / You owe (API lists) |
 | 127 | Send Invoice success screen; whole-dollar amounts; PIN gate; QR on Send Invoice (includes 125–126) |
 | 126 | Send Invoice: QR scan + paste debtor ID (same as Make Payment) |

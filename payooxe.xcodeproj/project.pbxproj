@@ -51,6 +51,7 @@
 		CZSW1D1F600100CZEDR /* CzedrPinEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */; };
 		CZSW1F1F600100CZEDR /* CzedrFundingScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW1E1F600100CZEDR /* CzedrFundingScreens.swift */; };
 		CZSW221F600100CZEDR /* CzedrPaymentSuccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW211F600100CZEDR /* CzedrPaymentSuccess.swift */; };
+		CZSW281F600100CZEDR /* CzedrReferralScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW271F600100CZEDR /* CzedrReferralScreens.swift */; };
 		CZSW241F600100CZEDR /* CzedrMenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW231F600100CZEDR /* CzedrMenuButton.swift */; };
 		CZSW261F600100CZEDR /* CzedrPinScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CZSW251F600100CZEDR /* CzedrPinScreens.swift */; };
 		068F847E1B182B2E003652F0 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 068F846C1B182B2E003652F0 /* AFHTTPRequestOperation.m */; };
@@ -95,7 +96,7 @@
 		06EDE1BB1B19891100AED75F /* pro_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 06EDE1BA1B19891100AED75F /* pro_icon@2x.png */; };
 		06EDE1BF1B19B24900AED75F /* changePasswordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 06EDE1BD1B19B24900AED75F /* changePasswordViewController.m */; };
 		06EDE1C01B19B24900AED75F /* changePasswordViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 06EDE1BE1B19B24900AED75F /* changePasswordViewController.xib */; };
-		06F4EBD61B22A7B6002AD8C1 /* payooze.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 06F4EBD41B22A7B6002AD8C1 /* payooze.xcdatamodeld */; };
+		06F4EBD61B22A7B6002AD8C1 /* czedr.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 06F4EBD41B22A7B6002AD8C1 /* czedr.xcdatamodeld */; };
 		06F4EBD81B22BD95002AD8C1 /* chasebankcard_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 06F4EBD71B22BD95002AD8C1 /* chasebankcard_1.png */; };
 		06F4EBDB1B22C5BA002AD8C1 /* AsyncImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 06F4EBDA1B22C5BA002AD8C1 /* AsyncImageView.m */; };
 		06F4EBDD1B22CBA6002AD8C1 /* arrowgrey.png in Resources */ = {isa = PBXBuildFile; fileRef = 06F4EBDC1B22CBA6002AD8C1 /* arrowgrey.png */; };
@@ -264,6 +265,7 @@
 		CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPinEntry.swift; sourceTree = "<group>"; };
 		CZSW1E1F600100CZEDR /* CzedrFundingScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrFundingScreens.swift; sourceTree = "<group>"; };
 		CZSW211F600100CZEDR /* CzedrPaymentSuccess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPaymentSuccess.swift; sourceTree = "<group>"; };
+		CZSW271F600100CZEDR /* CzedrReferralScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrReferralScreens.swift; sourceTree = "<group>"; };
 		CZSW231F600100CZEDR /* CzedrMenuButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrMenuButton.swift; sourceTree = "<group>"; };
 		CZSW251F600100CZEDR /* CzedrPinScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CzedrPinScreens.swift; sourceTree = "<group>"; };
 		068F846B1B182B2E003652F0 /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
@@ -347,7 +349,7 @@
 		06EDE1BC1B19B24900AED75F /* changePasswordViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = changePasswordViewController.h; sourceTree = "<group>"; };
 		06EDE1BD1B19B24900AED75F /* changePasswordViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = changePasswordViewController.m; sourceTree = "<group>"; };
 		06EDE1BE1B19B24900AED75F /* changePasswordViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = changePasswordViewController.xib; sourceTree = "<group>"; };
-		06F4EBD51B22A7B6002AD8C1 /* payooze.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = payooze.xcdatamodel; sourceTree = "<group>"; };
+		06F4EBD51B22A7B6002AD8C1 /* czedr.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = czedr.xcdatamodel; sourceTree = "<group>"; };
 		06F4EBD71B22BD95002AD8C1 /* chasebankcard_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = chasebankcard_1.png; path = ../chasebankcard_1.png; sourceTree = "<group>"; };
 		06F4EBD91B22C5BA002AD8C1 /* AsyncImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncImageView.h; sourceTree = "<group>"; };
 		06F4EBDA1B22C5BA002AD8C1 /* AsyncImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncImageView.m; sourceTree = "<group>"; };
@@ -694,7 +696,7 @@
 				06F4EBDC1B22CBA6002AD8C1 /* arrowgrey.png */,
 				06F4EBD91B22C5BA002AD8C1 /* AsyncImageView.h */,
 				06F4EBDA1B22C5BA002AD8C1 /* AsyncImageView.m */,
-				06F4EBD41B22A7B6002AD8C1 /* payooze.xcdatamodeld */,
+				06F4EBD41B22A7B6002AD8C1 /* czedr.xcdatamodeld */,
 				068E6E7F1B2073DA00B71121 /* AESCrypt.h */,
 				068E6E801B2073DA00B71121 /* AESCrypt.m */,
 				068E6E821B2073E300B71121 /* NSData+Base64.h */,
@@ -745,6 +747,7 @@
 				CZSW1C1F600100CZEDR /* CzedrPinEntry.swift */,
 				CZSW1E1F600100CZEDR /* CzedrFundingScreens.swift */,
 				CZSW211F600100CZEDR /* CzedrPaymentSuccess.swift */,
+				CZSW271F600100CZEDR /* CzedrReferralScreens.swift */,
 				CZSW231F600100CZEDR /* CzedrMenuButton.swift */,
 				CZSW251F600100CZEDR /* CzedrPinScreens.swift */,
 				CZSW031F600100CZEDR /* CzedrAPIClient.swift */,
@@ -1209,6 +1212,7 @@
 				CZSW1D1F600100CZEDR /* CzedrPinEntry.swift in Sources */,
 				CZSW1F1F600100CZEDR /* CzedrFundingScreens.swift in Sources */,
 				CZSW221F600100CZEDR /* CzedrPaymentSuccess.swift in Sources */,
+				CZSW281F600100CZEDR /* CzedrReferralScreens.swift in Sources */,
 				CZSW241F600100CZEDR /* CzedrMenuButton.swift in Sources */,
 				CZSW261F600100CZEDR /* CzedrPinScreens.swift in Sources */,
 				AF3FBE1B1A9C70B600F8FE78 /* GCPlaceholderTextView.m in Sources */,
@@ -1225,7 +1229,7 @@
 				068F84861B182B2E003652F0 /* AFURLSessionManager.m in Sources */,
 				AF2EDA0F0F0C4D330020ECBA /* forgotViewController.m in Sources */,
 				AF2EDA250F0C4D330020ECBA /* profileViewController.m in Sources */,
-				06F4EBD61B22A7B6002AD8C1 /* payooze.xcdatamodeld in Sources */,
+				06F4EBD61B22A7B6002AD8C1 /* czedr.xcdatamodeld in Sources */,
 				B3D374451CE4A5F500D479D9 /* SDWebImageDownloader.m in Sources */,
 				AF3FBE141A9C5AA300F8FE78 /* HistoryInvoiveViewController.m in Sources */,
 				AF5971831A9B37F6003CB3C3 /* Invoice2ViewController.m in Sources */,
@@ -1518,13 +1522,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		06F4EBD41B22A7B6002AD8C1 /* payooze.xcdatamodeld */ = {
+		06F4EBD41B22A7B6002AD8C1 /* czedr.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				06F4EBD51B22A7B6002AD8C1 /* payooze.xcdatamodel */,
+				06F4EBD51B22A7B6002AD8C1 /* czedr.xcdatamodel */,
 			);
-			currentVersion = 06F4EBD51B22A7B6002AD8C1 /* payooze.xcdatamodel */;
-			path = payooze.xcdatamodeld;
+			currentVersion = 06F4EBD51B22A7B6002AD8C1 /* czedr.xcdatamodel */;
+			path = czedr.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

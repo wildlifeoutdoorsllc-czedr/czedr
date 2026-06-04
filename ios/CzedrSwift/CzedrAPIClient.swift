@@ -27,6 +27,20 @@ struct TransferRow: Identifiable {
     let status: String
 }
 
+struct ReferralCredit: Identifiable {
+    let id: String
+    let amountCents: Int64
+    let createdAt: String
+    let memo: String
+}
+
+struct ReferralEarnings {
+    let totalCents: Int64
+    let paymentCount: Int
+    let currency: String
+    let recent: [ReferralCredit]
+}
+
 struct InvoiceRow: Identifiable {
     let id: String
     let counterpartyCzedrId: String
@@ -487,6 +501,39 @@ final class CzedrAPIClient {
             case .ok: completion(.ok(()))
             }
         }
+    }
+
+    func fetchReferralEarnings(
+        apiBase: String,
+        token: String,
+        recentLimit: Int = 25,
+        completion: @escaping (APIResult<ReferralEarnings>) -> Void
+    ) {
+        authedGetObject(
+            base: apiBase,
+            path: "/v1/referrals/earnings?recent_limit=\(max(1, min(recentLimit, 100)))",
+            token: token,
+            map: { data in
+                let recentRaw = data["recent_credits"] as? [[String: Any]] ?? []
+                let recent = recentRaw.compactMap { row -> ReferralCredit? in
+                    let id = (row["id"] as? String) ?? ""
+                    if id.isEmpty { return nil }
+                    return ReferralCredit(
+                        id: id,
+                        amountCents: Self.int64(row["amount_cents"]),
+                        createdAt: row["created_at"] as? String ?? "",
+                        memo: row["memo"] as? String ?? ""
+                    )
+                }
+                return .ok(ReferralEarnings(
+                    totalCents: Self.int64(data["referral_earnings_total_cents"]),
+                    paymentCount: Int(Self.int64(data["referral_payment_count"])),
+                    currency: data["currency"] as? String ?? "USD",
+                    recent: recent
+                ))
+            },
+            completion: completion
+        )
     }
 
     func fetchInvoicesSent(

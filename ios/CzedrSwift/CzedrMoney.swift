@@ -86,6 +86,13 @@ enum CzedrMoney {
         return Int64((dollars * 100.0).rounded())
     }
 
+    /// Signed display for ledger history: credits `+$15.00`, debits `-$15.00`.
+    static func signedFormat(cents: Int64, isCredit: Bool, currency: String = "USD") -> String {
+        let mag = cents < 0 ? -cents : cents
+        let unsigned = format(cents: mag, currency: currency)
+        return isCredit ? "+\(unsigned)" : "-\(unsigned)"
+    }
+
     private static func fallback(dollars: Double, currency: String) -> String {
         String(format: "$%.2f %@", dollars, currency)
     }

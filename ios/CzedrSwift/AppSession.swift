@@ -531,6 +531,17 @@ final class AppSession: ObservableObject {
         }
     }
 
+    func fetchReferralEarnings(completion: @escaping (Result<ReferralEarnings, String>) -> Void) {
+        api.fetchReferralEarnings(apiBase: apiBase, token: token) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .err(let msg): completion(.failure(msg))
+                case .ok(let data): completion(.success(data))
+                }
+            }
+        }
+    }
+
     func fetchPendingInvoicesReceived(completion: @escaping (Result<[InvoiceRow], String>) -> Void) {
         api.fetchInvoicesReceived(apiBase: apiBase, token: token) { result in
             DispatchQueue.main.async {

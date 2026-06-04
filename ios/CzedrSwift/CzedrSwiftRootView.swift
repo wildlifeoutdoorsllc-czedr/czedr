@@ -555,6 +555,9 @@ struct MenuSheet: View {
                 NavigationLink(destination: HistoryScreen(openedFromMenu: true)) {
                     Text("History")
                 }
+                NavigationLink(destination: ReferralEarningsScreen(openedFromMenu: true)) {
+                    Text("Referral Earnings")
+                }
                 NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
                     Text("Profile")
                 }
@@ -999,19 +1002,38 @@ struct HistoryScreen: View {
     var body: some View {
         LoggedInPageLayout(title: "History", showBack: true, onMenu: { session.presentMenu() }) {
             List(rows) { row in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(AppSession.formatMoney(cents: row.amountCents, currency: row.currency))
-                        .font(.headline)
-                        .foregroundColor(CzedrPalette.balanceGreen)
-                    Text(row.memo).foregroundColor(CzedrPalette.lightText)
-                    Text("\(row.fromCzedrId) → \(row.toCzedrId)")
-                        .font(.caption)
-                        .foregroundColor(CzedrPalette.caption)
-                    Text(row.createdAt).font(.caption).foregroundColor(CzedrPalette.caption)
-                }
-                .listRowBackground(CzedrPalette.surface)
+                historyRow(row)
+                    .listRowBackground(CzedrPalette.surface)
             }
             .onAppear(perform: load)
+        }
+    }
+
+    private func historyRow(_ row: TransferRow) -> some View {
+        let myId = session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        let isCredit = row.toCzedrId.uppercased() == myId
+        let isDebit = row.fromCzedrId.uppercased() == myId
+        let color: Color = isCredit ? CzedrPalette.balanceGreen : (isDebit ? CzedrPalette.redPrimary : CzedrPalette.lightText)
+        let label = isCredit ? "Credit" : (isDebit ? "Debit" : "Transfer")
+
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(label)
+                    .font(.caption.bold())
+                    .foregroundColor(color)
+                Spacer()
+                Text(CzedrMoney.signedFormat(cents: row.amountCents, isCredit: isCredit, currency: row.currency))
+                    .font(.headline)
+                    .foregroundColor(color)
+            }
+            Text(row.memo)
+                .foregroundColor(CzedrPalette.lightText)
+            Text(isCredit ? "From \(row.fromCzedrId)" : "To \(row.toCzedrId)")
+                .font(.caption)
+                .foregroundColor(CzedrPalette.caption)
+            Text(row.createdAt)
+                .font(.caption)
+                .foregroundColor(CzedrPalette.caption)
         }
     }
 
