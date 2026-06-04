@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 // MARK: - Root
 
@@ -396,6 +397,7 @@ struct SignUpView: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var referrerCzedrId = ""
+    @State private var showReferrerQrScanner = false
     @State private var apiBase = ""
     @State private var apiDiscoveryStatus = ""
 
@@ -426,14 +428,35 @@ struct SignUpView: View {
                     Text("Referrer Czedr ID (optional)")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
-                    CzedrPlaceholderTextField(
-                        placeholder: "Who invited you?",
-                        text: $referrerCzedrId,
-                        autocapitalization: .allCharacters
-                    )
-                    Text("Leave blank if no one referred you. Each referred member can earn their referrer $0.17 when they send or receive payments.")
+                    HStack(spacing: 8) {
+                        CzedrPlaceholderTextField(
+                            placeholder: "Referrer Czedr ID",
+                            text: $referrerCzedrId,
+                            autocapitalization: .allCharacters
+                        )
+                        Button(action: { showReferrerQrScanner = true }) {
+                            Image(systemName: "qrcode.viewfinder")
+                                .font(.title2)
+                                .frame(width: 44, height: 44)
+                                .background(CzedrPalette.orangeField)
+                                .foregroundColor(CzedrPalette.fieldText)
+                                .cornerRadius(4)
+                        }
+                        .accessibilityLabel("Scan referrer QR code")
+                    }
+                    Text("Type a Czedr ID, or scan their payment QR when you're together. Leave blank if no one referred you.")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button(action: pasteReferrerFromClipboard) {
+                        Text("Paste ID from clipboard")
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(CzedrPalette.cheddarGold)
+                    }
+                    Text("Referrers can earn $0.17 when referred members send or receive payments.")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if let err = session.errorMessage {
@@ -462,6 +485,35 @@ struct SignUpView: View {
         }
         .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
         .onAppear(perform: discoverApiServer)
+        .sheet(isPresented: $showReferrerQrScanner) {
+            CzedrQrScannerSheet(
+                onScan: handleScannedReferrer,
+                onCancel: { showReferrerQrScanner = false }
+            )
+        }
+    }
+
+    private func handleScannedReferrer(_ raw: String) {
+        showReferrerQrScanner = false
+        session.clearError()
+        guard let id = CzedrQrCode.parseCzedrId(from: raw) else {
+            session.errorMessage = "Could not read a Czedr ID from that QR code."
+            return
+        }
+        referrerCzedrId = id
+    }
+
+    private func pasteReferrerFromClipboard() {
+        session.clearError()
+        guard let raw = UIPasteboard.general.string, !raw.isEmpty else {
+            session.errorMessage = "Nothing to paste from the clipboard."
+            return
+        }
+        guard let id = CzedrQrCode.parseCzedrId(from: raw) else {
+            session.errorMessage = "Clipboard does not contain a valid Czedr ID."
+            return
+        }
+        referrerCzedrId = id
     }
 
     private var apiDiscoveryHint: some View {

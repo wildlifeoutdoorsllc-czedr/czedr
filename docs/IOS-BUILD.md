@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **131** — QR on Referral Earnings; menu Logout divider fix |
-| **Next ship build number** | **132** |
-| **In progress** | — |
+| **Next ship build number** | **133** |
+| **In progress** | **132** — Sign up: referrer Czedr ID field + QR scan + paste |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 132 | Sign up: referrer ID (not a question); QR scan + paste on optional referrer field |
 | 131 | Payment QR on Referral Earnings; Profile without QR; full-width line above Logout |
 | 130 | (upload may be processing) same as 131 — Apple duplicate if re-uploaded |
 | 129 | History: green credits, red debits; Menu → Referral Earnings |
