@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **129** — History green/red; Referral Earnings menu |
 | **Next ship build number** | **131** |
-| **In progress** | **130** — QR on Referral Earnings (not Profile); menu Logout divider fix |
+| **In progress** | **131** — same as 130 (QR on Referral Earnings; menu Logout divider); 130 upload stuck on Apple 500 |
 
 ## Ship pipeline (user preference)
 
@@ -24,7 +24,8 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
-| 130 | Payment QR on Referral Earnings; Profile without QR; full-width line above Logout |
+| 131 | Payment QR on Referral Earnings; Profile without QR; full-width line above Logout |
+| 130 | (upload may be processing) same as 131 — Apple duplicate if re-uploaded |
 | 129 | History: green credits, red debits; Menu → Referral Earnings |
 | 128 | Pending Invoices: Waiting on them / You owe (API lists) |
 | 127 | Send Invoice success screen; whole-dollar amounts; PIN gate; QR on Send Invoice (includes 125–126) |
