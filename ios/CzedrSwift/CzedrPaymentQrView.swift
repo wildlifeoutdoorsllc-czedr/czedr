@@ -1,6 +1,6 @@
 //
 //  CzedrPaymentQrView.swift
-//  Profile "My payment QR" card with reliable regeneration when Czedr ID is known.
+//  "My payment QR" card — shown on Referral Earnings; regenerates when Czedr ID or payload changes.
 //
 
 import SwiftUI

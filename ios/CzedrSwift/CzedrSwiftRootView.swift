@@ -545,51 +545,57 @@ struct MenuSheet: View {
 
     var body: some View {
         NavigationView {
-            List {
-                NavigationLink(destination: HomeScreen(openedFromMenu: true)) {
-                    Text("Home")
-                }
-                NavigationLink(destination: MakePaymentScreen(openedFromMenu: true)) {
-                    Text("Make Payment")
-                }
-                NavigationLink(destination: HistoryScreen(openedFromMenu: true)) {
-                    Text("History")
-                }
-                NavigationLink(destination: ReferralEarningsScreen(openedFromMenu: true)) {
-                    Text("Referral Earnings")
-                }
-                NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
-                    Text("Profile")
-                }
-                NavigationLink(destination: SetPinScreen()) {
-                    Text(session.hasPinSet ? "Change PIN" : "Set PIN")
-                        .foregroundColor(session.hasPinSet ? CzedrPalette.lightText : CzedrPalette.redPrimary)
-                }
-                NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
-                    Text("Send Invoice")
-                }
-                NavigationLink(destination: PendingInvoicesScreen(openedFromMenu: true)) {
-                    Text("Pending Invoices")
-                }
-                NavigationLink(destination: PlaceholderScreen(title: "Link Card", openedFromMenu: true)) {
-                    Text("Link Card")
-                }
-
-                Section {
-                    Button(action: {
-                        session.dismissMenu()
-                        session.logout()
-                    }) {
-                        Text("Logout")
-                            .font(.headline)
-                            .foregroundColor(CzedrPalette.redPrimary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.vertical, 8)
+            VStack(spacing: 0) {
+                List {
+                    NavigationLink(destination: HomeScreen(openedFromMenu: true)) {
+                        Text("Home")
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    NavigationLink(destination: MakePaymentScreen(openedFromMenu: true)) {
+                        Text("Make Payment")
+                    }
+                    NavigationLink(destination: HistoryScreen(openedFromMenu: true)) {
+                        Text("History")
+                    }
+                    NavigationLink(destination: ReferralEarningsScreen(openedFromMenu: true)) {
+                        Text("Referral Earnings")
+                    }
+                    NavigationLink(destination: ProfileScreen(openedFromMenu: true)) {
+                        Text("Profile")
+                    }
+                    NavigationLink(destination: SetPinScreen()) {
+                        Text(session.hasPinSet ? "Change PIN" : "Set PIN")
+                            .foregroundColor(session.hasPinSet ? CzedrPalette.lightText : CzedrPalette.redPrimary)
+                    }
+                    NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
+                        Text("Send Invoice")
+                    }
+                    NavigationLink(destination: PendingInvoicesScreen(openedFromMenu: true)) {
+                        Text("Pending Invoices")
+                    }
+                    NavigationLink(destination: PlaceholderScreen(title: "Link Card", openedFromMenu: true)) {
+                        Text("Link Card")
+                    }
                 }
+                .listStyle(PlainListStyle())
+
+                Rectangle()
+                    .fill(CzedrPalette.caption.opacity(0.35))
+                    .frame(height: 1)
+                    .frame(maxWidth: .infinity)
+
+                Button(action: {
+                    session.dismissMenu()
+                    session.logout()
+                }) {
+                    Text("Logout")
+                        .font(.headline)
+                        .foregroundColor(CzedrPalette.redPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
-            .listStyle(PlainListStyle())
+            .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
             .navigationBarTitle("Menu", displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") { session.dismissMenu() })
         }
@@ -1072,13 +1078,6 @@ struct ProfileScreen: View {
 
                     row("Email", session.email)
                     row("Czedr ID", session.czedrId)
-
-                    if !session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        CzedrPaymentQrView(
-                            czedrId: session.czedrId,
-                            paymentQrPayload: session.effectivePaymentQrPayload
-                        )
-                    }
 
                     row("API", session.apiBase)
                     row("Build", session.buildLabel)

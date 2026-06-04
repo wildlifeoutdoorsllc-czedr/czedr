@@ -17,10 +17,17 @@ struct ReferralEarningsScreen: View {
         LoggedInPageLayout(title: "Referral Earnings", showBack: true, onMenu: { session.presentMenu() }) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("You earn a small reward when people you referred make payments on Czedr. Credits are already in your balance.")
+                    Text("You earn a small reward when people you referred make payments on Czedr. Credits are already in your balance. Share your QR so others can pay you or sign up with your Czedr ID.")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    if !session.czedrId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        CzedrPaymentQrView(
+                            czedrId: session.czedrId,
+                            paymentQrPayload: session.effectivePaymentQrPayload
+                        )
+                    }
 
                     if isLoading && earnings == nil {
                         Text("Loading…")
@@ -67,7 +74,10 @@ struct ReferralEarningsScreen: View {
                 .padding(.bottom, 24)
             }
         }
-        .onAppear(perform: load)
+        .onAppear {
+            session.refreshProfile()
+            load()
+        }
     }
 
     private func referralCreditRow(_ credit: ReferralCredit, currency: String) -> some View {
