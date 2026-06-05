@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **132** — Sign up: referrer ID + QR scan + paste |
 | **Next ship build number** | **133** |
-| **In progress** | **133** — NavigationLink gray platter fix; Privacy Policy links |
+| **In progress** | **133** — NavigationLink gray platter fix; Privacy Policy links (CI retry: Gemfile multi_json) |
 
 ## Ship pipeline (user preference)
 
