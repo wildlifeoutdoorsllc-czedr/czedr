@@ -123,6 +123,7 @@ struct LoginView: View {
                 .padding(.top, 8)
             }
             .padding(24)
+            .buttonStyle(PlainButtonStyle())
         }
         .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
         .onAppear(perform: discoverApiServer)
@@ -254,6 +255,7 @@ struct ForgotPasswordView: View {
                 .padding(.top, 8)
             }
             .padding(24)
+            .buttonStyle(PlainButtonStyle())
         }
         .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
         .onAppear {
@@ -474,6 +476,13 @@ struct SignUpView: View {
                 }
                 .disabled(session.isLoading)
 
+                Link(destination: CzedrSupport.privacyPolicyURL) {
+                    Text("Privacy Policy")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.cheddarGold)
+                }
+                .padding(.top, 4)
+
                 Button(action: { showSignUp = false; session.clearError() }) {
                     Text("Already have an account? Sign in")
                         .font(.subheadline)
@@ -482,6 +491,7 @@ struct SignUpView: View {
                 .padding(.top, 8)
             }
             .padding(24)
+            .buttonStyle(PlainButtonStyle())
         }
         .background(CzedrPalette.background.edgesIgnoringSafeArea(.all))
         .onAppear(perform: discoverApiServer)
@@ -589,6 +599,7 @@ struct LoggedInNavigationView: View {
             HomeScreen()
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -629,6 +640,7 @@ struct MenuSheet: View {
                     }
                 }
                 .listStyle(PlainListStyle())
+                .buttonStyle(PlainButtonStyle())
 
                 Rectangle()
                     .fill(CzedrPalette.caption.opacity(0.35))
@@ -731,6 +743,7 @@ struct LoggedInPageLayout<Content: View>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(CzedrPalette.background)
         .navigationBarHidden(true)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -1126,8 +1139,6 @@ struct ProfileScreen: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 8)
                     }
-                    .buttonStyle(PlainButtonStyle())
-
                     row("Email", session.email)
                     row("Czedr ID", session.czedrId)
 

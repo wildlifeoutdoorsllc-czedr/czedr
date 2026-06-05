@@ -9,6 +9,9 @@ enum CzedrSupport {
     /// Member support inbox (must stay in sync with marketing/site-config.json).
     static let email = "support@czedr.com"
 
+    /// Public privacy policy (App Store, sign-up, Profile).
+    static let privacyPolicyURL = URL(string: "https://czedr.com/privacy")!
+
     static var mailtoURL: URL {
         var components = URLComponents()
         components.scheme = "mailto"
@@ -39,6 +42,14 @@ struct CzedrSupportHelpCard: View {
                 HStack {
                     Image(systemName: "envelope")
                     Text("Email support")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .foregroundColor(CzedrPalette.cheddarGold)
+            }
+            Link(destination: CzedrSupport.privacyPolicyURL) {
+                HStack {
+                    Image(systemName: "hand.raised")
+                    Text("Privacy Policy")
                         .font(.subheadline.weight(.semibold))
                 }
                 .foregroundColor(CzedrPalette.cheddarGold)

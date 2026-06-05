@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **132** — Sign up: referrer ID + QR scan + paste |
 | **Next ship build number** | **133** |
-| **In progress** | — |
+| **In progress** | **133** — NavigationLink gray platter fix; Privacy Policy links |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 133 | PlainButtonStyle on all screens (no gray NavigationLink halo); Privacy Policy on sign-up + Profile |
 | 132 | Sign up: referrer ID (not a question); QR scan + paste on optional referrer field |
 | 131 | Payment QR on Referral Earnings; Profile without QR; full-width line above Logout |
 | 130 | (upload may be processing) same as 131 — Apple duplicate if re-uploaded |
