@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **133** — NavigationLink gray platter fix; Privacy Policy links |
-| **Next ship build number** | **134** |
-| **In progress** | **134** — support@czedr.com on forgot-password; backend reset email Reply-To |
+| **Last shipped (TestFlight)** | **134** — support@czedr.com on forgot-password; backend reset email Reply-To ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27101299642)) |
+| **Next ship build number** | **135** |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
