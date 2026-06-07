@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **134** — support@czedr.com on forgot-password; backend reset email Reply-To ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27101299642)) |
-| **Next ship build number** | **135** |
-| **In progress** | **135** — Forgot password Option B: email link flow in app |
+| **Last shipped (TestFlight)** | **135** — Forgot password Option B: check email → reset link in Safari ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27101770902)) |
+| **Next ship build number** | **136** |
+| **In progress** | — |
 
 ## Ship pipeline (user preference)
 
