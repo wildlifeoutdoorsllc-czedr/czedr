@@ -92,6 +92,12 @@ struct LoginView: View {
 
                 if let err = session.errorMessage {
                     Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
+                    if err == "Invalid credentials" {
+                        Text("Tip: tap Password and type manually — iPhone may autofill an old saved password.")
+                            .font(.caption)
+                            .foregroundColor(CzedrPalette.caption)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
                 if let ok = session.actionMessage {
                     Text(ok).font(.footnote).foregroundColor(CzedrPalette.balanceGreen)
@@ -267,6 +273,12 @@ struct ForgotPasswordView: View {
 
                 if let err = errorMessage {
                     Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
+                    if err == "Invalid credentials" {
+                        Text("Tip: tap the password field and type manually — iPhone may autofill an old saved password.")
+                            .font(.caption)
+                            .foregroundColor(CzedrPalette.caption)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
 
                 if step != .emailSent {

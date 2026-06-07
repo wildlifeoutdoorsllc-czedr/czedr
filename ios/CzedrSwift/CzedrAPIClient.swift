@@ -87,11 +87,13 @@ final class CzedrAPIClient {
             completion(.err("Invalid API base URL"))
             return
         }
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
         let body: [String: Any] = [
-            "user_email": email,
-            "email": email,
-            "user_pwd": password,
-            "password": password,
+            "user_email": trimmed,
+            "email": trimmed,
+            "user_pwd": trimmedPassword,
+            "password": trimmedPassword,
         ]
         postJSON(base: base, path: "/v1/auth/login", body: body, token: nil) { result in
             switch result {

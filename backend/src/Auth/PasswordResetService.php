@@ -80,6 +80,7 @@ final class PasswordResetService
 
     public function resetPassword(string $token, string $newPassword, ?string $ip, ?string $userAgent): void
     {
+        $newPassword = trim($newPassword);
         if (strlen($newPassword) < 10) {
             throw new \InvalidArgumentException('Password must be at least 10 characters');
         }
@@ -104,9 +105,15 @@ final class PasswordResetService
 
         $userId = (string) $row['user_id'];
         $hash = password_hash($newPassword, PASSWORD_ARGON2ID);
+        if (!password_verify($newPassword, $hash)) {
+            throw new \RuntimeException('Password hash could not be verified');
+        }
 
-        $pdo->prepare('UPDATE users SET password_hash = :hash WHERE id = :id')
-            ->execute(['hash' => $hash, 'id' => $userId]);
+        $updated = $pdo->prepare('UPDATE users SET password_hash = :hash WHERE id = :id');
+        $updated->execute(['hash' => $hash, 'id' => $userId]);
+        if ($updated->rowCount() < 1) {
+            throw new \RuntimeException('Password update failed');
+        }
 
         $pdo->prepare('UPDATE password_reset_tokens SET used_at = NOW() WHERE id = :id')
             ->execute(['id' => $row['id']]);

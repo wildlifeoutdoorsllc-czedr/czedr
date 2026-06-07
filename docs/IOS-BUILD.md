@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **135** — Forgot password Option B: check email → reset link in Safari ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27101770902)) |
 | **Next ship build number** | **136** |
-| **In progress** | — |
+| **In progress** | **136** — sign-in autofill hint after Invalid credentials; trim passwords on login |
 
 ## Ship pipeline (user preference)
 

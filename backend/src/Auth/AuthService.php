@@ -28,7 +28,7 @@ final class AuthService
     /** @param array<string, mixed> $body */
     public static function optionalReferrerFromSignupBody(array $body): ?string
     {
-        foreach (['referrer_czedr_id', 'referred_by_czedr_id', 'referrer_payooze_id'] as $key) {
+        foreach (['referrer_czedr_id', 'referred_by_czedr_id'] as $key) {
             if (!empty($body[$key])) {
                 return (string) $body[$key];
             }
@@ -88,12 +88,13 @@ final class AuthService
         }
 
         $this->ledger->ensureAccount($userId);
-        if (Env::isLocal()) {
+        $welcomeCents = Env::welcomeBalanceCents();
+        if ($welcomeCents > 0) {
             $this->ledger->credit(
                 $userId,
-                10000,
+                $welcomeCents,
                 'welcome-' . $userId,
-                'Welcome balance (local dev only)',
+                'Welcome balance',
                 $ip,
                 $userAgent
             );
@@ -138,10 +139,12 @@ final class AuthService
      */
     public function login(string $email, string $password, ?string $ip, ?string $userAgent): array
     {
+        $email = strtolower(trim($email));
         $pdo = ConnectionFactory::saturn();
         $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email AND status = \'active\' LIMIT 1');
-        $stmt->execute(['email' => strtolower(trim($email))]);
+        $stmt->execute(['email' => $email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $password = trim($password);
         if (!$user || !password_verify($password, $user['password_hash'])) {
             $this->audit->log(null, 'auth.login_failed', 'user', null, $ip, $userAgent, ['email' => $email]);
             throw new \InvalidArgumentException('Invalid credentials');
@@ -343,10 +346,7 @@ final class AuthService
     /** @param array<string, mixed> $row */
     private function publicUserRow(array $row): array
     {
-        if (!isset($row['czedr_id']) && isset($row['payooze_id'])) {
-            $row['czedr_id'] = $row['payooze_id'];
-        }
-        unset($row['payooze_id'], $row['password_hash'], $row['pin_hash']);
+        unset($row['password_hash'], $row['pin_hash']);
 
         return $row;
     }
