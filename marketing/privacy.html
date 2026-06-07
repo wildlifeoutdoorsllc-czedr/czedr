@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy — CZEDR</title>
+  <meta name="description" content="CZEDR Privacy Policy — how we collect, use, and protect your information.">
+  <link rel="icon" href="Czedr-auth-logo.png" type="image/png">
+  <link rel="canonical" href="https://czedr.com/privacy">
+  <style>
+    :root {
+      --bg: #2a2a2c;
+      --text: #e7ecf3;
+      --muted: #b0b5bc;
+      --gold: #ffc42e;
+      --red: #e31e24;
+      --border: #454548;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .brand img { height: 36px; width: auto; }
+    nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    nav a:hover { color: var(--text); }
+    main {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+    h1 { font-size: 1.75rem; margin: 0 0 0.25rem; }
+    .updated { color: var(--muted); font-size: 0.9rem; margin: 0 0 2rem; }
+    h2 { font-size: 1.1rem; margin: 1.75rem 0 0.5rem; color: var(--gold); }
+    p, li { color: var(--muted); font-size: 0.95rem; }
+    ul { padding-left: 1.2rem; }
+    a { color: var(--gold); }
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/" aria-label="CZEDR home">
+      <img src="Czedr-auth-logo.png" alt="CZEDR">
+    </a>
+    <nav aria-label="Main">
+      <a href="/">Home</a>
+      <a href="privacy.html" aria-current="page">Privacy</a>
+      <a href="mailto:support@czedr.com">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: June 4, 2026</p>
+
+    <p>
+      CZEDR (“we,” “us,” or “Czedr”) explains here how we handle information when you use our website,
+      mobile apps, and API at <a href="https://api.czedr.com">api.czedr.com</a>.
+      This policy is provided for transparency and App Store requirements; it is not legal advice.
+      Contact <a href="mailto:support@czedr.com">support@czedr.com</a> with questions.
+    </p>
+
+    <h2>Information we collect</h2>
+    <ul>
+      <li><strong>Account data:</strong> email address, Czedr ID, password (stored hashed), optional referrer Czedr ID, and optional profile details you provide.</li>
+      <li><strong>Payment activity:</strong> transfers, invoices, balances, transaction history, referral earnings, and related memos stored on our ledger.</li>
+      <li><strong>Security data:</strong> optional 4-digit payment PIN (stored hashed), session tokens, and security-related audit logs (e.g. sign-in, payments).</li>
+      <li><strong>Bank linking (optional):</strong> if you link a bank account, we store linkage and verification data needed for micro-deposit confirmation — not your online banking password through third-party aggregators.</li>
+      <li><strong>Device / technical data:</strong> IP address, app version, and API request metadata used for security, rate limiting, and troubleshooting.</li>
+    </ul>
+
+    <h2>How we use information</h2>
+    <ul>
+      <li>Operate your account, process payments and invoices, display balances and history.</li>
+      <li>Authenticate you, prevent fraud and abuse, and comply with applicable law.</li>
+      <li>Send account-related email (e.g. password reset) when email is configured on our servers.</li>
+      <li>Improve reliability and support — including responses to <a href="mailto:support@czedr.com">support@czedr.com</a>.</li>
+    </ul>
+
+    <h2>What we do not do</h2>
+    <ul>
+      <li>We do not sell your personal information.</li>
+      <li>We do not ask for your bank login through Plaid-style aggregators for standard Czedr bank linking.</li>
+      <li>Other members do not see your email when they look up your Czedr ID (masked display names are shown instead).</li>
+    </ul>
+
+    <h2>Sharing</h2>
+    <p>
+      We share data only as needed to run the service (e.g. hosting providers, email delivery),
+      when you direct a payment to another member (they see amounts and Czedr IDs involved),
+      when required by law, or to protect rights and safety.
+      Payment QR codes encode your public Czedr payment link (<code>https://czedr.com/pay/…</code>) — anyone you show the QR to can see that identifier.
+    </p>
+
+    <h2>Retention & security</h2>
+    <p>
+      We retain account and ledger records while your account is active and as needed for legal, tax, and dispute purposes.
+      We use HTTPS, access controls, hashed passwords and PINs, and industry-standard practices appropriate to a financial-style app.
+      No method of transmission or storage is 100% secure.
+    </p>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li>Update profile information in the app where available.</li>
+      <li>Contact support to request account help or deletion (subject to legal retention needs).</li>
+      <li>Stop using the app and revoke TestFlight access on your device at any time.</li>
+    </ul>
+
+    <h2>Children</h2>
+    <p>Czedr is not directed to children under 13 (or 16 where applicable). We do not knowingly collect their data.</p>
+
+    <h2>Changes</h2>
+    <p>We may update this policy. The “Last updated” date above will change when we do. Continued use after changes means you accept the revised policy.</p>
+
+    <h2>Contact</h2>
+    <p>
+      Email: <a href="mailto:support@czedr.com">support@czedr.com</a><br>
+      Website: <a href="https://czedr.com">czedr.com</a>
+    </p>
+  </main>
+
+  <footer>© CZEDR · <a href="privacy.html">Privacy Policy</a></footer>
+</body>
+</html>

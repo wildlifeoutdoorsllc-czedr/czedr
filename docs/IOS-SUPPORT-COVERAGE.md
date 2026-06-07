@@ -42,7 +42,7 @@
 1. Sign in → Home shows balance  
 2. **Forgot password?** (staging) or test account  
 3. Set or **Change PIN** → Make Payment with **VALIDATE** + PIN  
-4. Profile: QR visible, **Back** works, **Email support** opens Mail  
+4. Profile: QR visible, **Back** works, **support@czedr.com** visible, **Email support** opens Mail to that address  
 5. Force-quit → must sign in again (session policy)
 
 ---

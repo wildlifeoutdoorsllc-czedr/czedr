@@ -5,6 +5,7 @@ namespace Czedr\Auth;
 
 use Czedr\Audit\AuditService;
 use Czedr\Database\ConnectionFactory;
+use Czedr\Mail\MailService;
 use Czedr\Support\Env;
 use Czedr\Support\Uuid;
 use PDO;
@@ -14,8 +15,10 @@ final class PasswordResetService
     private const TOKEN_BYTES = 32;
     private const EXPIRY_MINUTES = 60;
 
-    public function __construct(private readonly AuditService $audit)
-    {
+    public function __construct(
+        private readonly AuditService $audit,
+        private readonly MailService $mail = new MailService(),
+    ) {
     }
 
     /**
@@ -152,9 +155,38 @@ final class PasswordResetService
         }
         file_put_contents($logDir . '/password-reset.log', $line, FILE_APPEND | LOCK_EX);
 
-        // Production: integrate SMTP / SendGrid / SES using MAIL_* env vars.
-        if (!Env::isLocal()) {
+        if (!$this->mail->isConfigured()) {
+            if (!Env::isLocal()) {
+                error_log('Czedr: password reset email not sent — configure MAIL_* in .env (see docs/EMAIL-SETUP.md)');
+            }
             return;
+        }
+
+        $base = rtrim(Env::get('APP_PUBLIC_URL', 'https://api.czedr.com') ?? 'https://api.czedr.com', '/');
+        $resetUrl = $base . '/sandbox#reset=' . urlencode($token);
+        $subject = 'Reset your CZEDR password';
+        $text = "Hello,\n\n"
+            . "We received a request to reset your CZEDR password.\n\n"
+            . "Open this link within " . self::EXPIRY_MINUTES . " minutes:\n"
+            . $resetUrl . "\n\n"
+            . "If you did not request this, you can ignore this email.\n\n"
+            . "Questions? Email support@czedr.com\n\n"
+            . "— CZEDR\n";
+        $html = '<p>Hello,</p>'
+            . '<p>We received a request to reset your <strong>CZEDR</strong> password.</p>'
+            . '<p><a href="' . htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') . '">Reset your password</a>'
+            . ' (expires in ' . self::EXPIRY_MINUTES . ' minutes)</p>'
+            . '<p>If you did not request this, you can ignore this email.</p>'
+            . '<p>Questions? Email <a href="mailto:support@czedr.com">support@czedr.com</a></p>'
+            . '<p>— CZEDR</p>';
+
+        try {
+            $this->mail->send($email, $subject, $text, $html);
+        } catch (\Throwable $e) {
+            error_log('Czedr: password reset email failed: ' . $e->getMessage());
+            if (Env::isLocal()) {
+                throw $e;
+            }
         }
     }
 }

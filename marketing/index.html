@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CZEDR — Cheddar. Stack it.</title>
-  <meta name="description" content="Never give your credit or debit card information again. CZEDR — Cheddar, Stack it!">
+  <meta name="description" content="CZEDR — Cheddar, Stack it! Payments made easy.">
   <link rel="icon" href="Czedr-auth-logo.png" type="image/png">
   <style>
     :root {
@@ -42,10 +42,6 @@
     .brand img {
       height: 40px;
       width: auto;
-    }
-    .brand span {
-      font-weight: 700;
-      letter-spacing: 0.06em;
     }
     nav {
       display: flex;
@@ -114,6 +110,14 @@
       font-size: 0.95rem;
     }
     section.panel ul { margin: 0; padding-left: 1.2rem; }
+    .app-steps {
+      text-align: left;
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+    .app-steps ol { margin: 0.5rem 0 0; padding-left: 1.2rem; }
     footer {
       text-align: center;
       padding: 1.5rem;
@@ -125,15 +129,15 @@
 </head>
 <body>
   <header>
-    <a class="brand" href="/">
-      <img src="Czedr-auth-logo.png" alt="CZEDR logo">
-      <span>CZEDR</span>
+    <a class="brand" href="/" aria-label="CZEDR home">
+      <img src="Czedr-auth-logo.png" alt="CZEDR">
     </a>
     <nav aria-label="Main">
       <a href="/">Home</a>
       <a href="#app">Get the App</a>
-      <a href="https://api.czedr.com/v1/health">API Status</a>
+      <a href="https://api.czedr.com/status">API Status</a>
       <a href="#about">About</a>
+      <a href="privacy.html">Privacy</a>
       <a href="mailto:support@czedr.com">Contact</a>
     </nav>
   </header>
@@ -141,13 +145,28 @@
   <main>
     <img class="logo" src="Czedr-auth-logo.png" alt="CZEDR — we make payments easy">
 
-    <p class="tagline">Never give your credit or debit card information again.</p>
     <p class="hook">Cheddar, Stack it!</p>
 
-    <div class="actions" id="app">
-      <a class="btn primary" href="https://testflight.apple.com/join">Get the app (TestFlight)</a>
-      <a class="btn" href="https://api.czedr.com/v1/health">API status</a>
+    <div class="actions">
+      <a class="btn primary" id="testflight-btn" href="#app">Get the app (TestFlight)</a>
+      <a class="btn" href="https://api.czedr.com/status">API status</a>
     </div>
+
+    <section class="panel" id="app">
+      <h2>Get the app on iPhone</h2>
+      <p id="app-intro">Install <strong>Czedr</strong> through Apple TestFlight.</p>
+      <div class="app-steps">
+        <ol id="app-steps">
+          <li>Install Apple’s <strong>TestFlight</strong> app from the App Store (free) if you don’t have it yet.</li>
+          <li>Open TestFlight on your iPhone and tap <strong>Czedr</strong>, or use your invite link.</li>
+          <li>Sign in with your Czedr account — the app uses <strong>api.czedr.com</strong>.</li>
+        </ol>
+        <p style="margin-top:1rem">
+          Need an invite?
+          <a id="support-link" href="mailto:support@czedr.com?subject=TestFlight%20invite">Email support@czedr.com</a>
+        </p>
+      </div>
+    </section>
 
     <section class="panel" id="about">
       <h2>About CZEDR</h2>
@@ -160,6 +179,31 @@
     </section>
   </main>
 
-  <footer>© CZEDR · api.czedr.com</footer>
+  <footer>© CZEDR · <a href="privacy.html" id="privacy-footer-link">Privacy Policy</a> · api.czedr.com</footer>
+  <script>
+    fetch('site-config.json')
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .catch(function () { return {}; })
+      .then(function (cfg) {
+        var url = (cfg.testflight_public_url || '').trim();
+        var btn = document.getElementById('testflight-btn');
+        if (url && btn) {
+          btn.href = url;
+          btn.setAttribute('target', '_blank');
+          btn.setAttribute('rel', 'noopener');
+        }
+        if (cfg.support_email) {
+          var support = document.getElementById('support-link');
+          if (support) {
+            support.href = 'mailto:' + cfg.support_email + '?subject=TestFlight%20invite';
+            support.textContent = 'Email ' + cfg.support_email;
+          }
+        }
+        var privacyUrl = (cfg.privacy_policy_url || 'https://czedr.com/privacy').trim();
+        document.querySelectorAll('#privacy-footer-link, nav a[href="privacy.html"]').forEach(function (el) {
+          el.href = privacyUrl;
+        });
+      });
+  </script>
 </body>
 </html>

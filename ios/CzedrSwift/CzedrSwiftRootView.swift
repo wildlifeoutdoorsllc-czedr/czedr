@@ -253,6 +253,13 @@ struct ForgotPasswordView: View {
                         .foregroundColor(CzedrPalette.caption)
                 }
                 .padding(.top, 8)
+
+                Link(destination: CzedrSupport.mailtoURL) {
+                    Text("Questions? \(CzedrSupport.email)")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.cheddarGold)
+                }
+                .padding(.top, 4)
             }
             .padding(24)
             .buttonStyle(PlainButtonStyle())
