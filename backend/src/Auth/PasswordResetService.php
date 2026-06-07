@@ -71,9 +71,8 @@ final class PasswordResetService
         $out = ['message' => $message, 'expires_in_minutes' => self::EXPIRY_MINUTES];
 
         if (Env::isLocal()) {
-            $base = rtrim(Env::get('APP_PUBLIC_URL', 'http://127.0.0.1:8080') ?? 'http://127.0.0.1:8080', '/');
             $out['reset_token'] = $token;
-            $out['reset_url'] = $base . '/sandbox#reset=' . urlencode($token);
+            $out['reset_url'] = $this->resetPageUrl($token);
         }
 
         return $out;
@@ -124,6 +123,13 @@ final class PasswordResetService
         return rtrim(strtr(base64_encode(random_bytes(self::TOKEN_BYTES)), '+/', '-_'), '=');
     }
 
+    private function resetPageUrl(string $token): string
+    {
+        $base = rtrim(Env::get('APP_PUBLIC_URL', 'https://api.czedr.com') ?? 'https://api.czedr.com', '/');
+
+        return $base . '/reset-password?reset=' . urlencode($token);
+    }
+
     private function isValidEmail(string $email): bool
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -162,8 +168,7 @@ final class PasswordResetService
             return;
         }
 
-        $base = rtrim(Env::get('APP_PUBLIC_URL', 'https://api.czedr.com') ?? 'https://api.czedr.com', '/');
-        $resetUrl = $base . '/sandbox#reset=' . urlencode($token);
+        $resetUrl = $this->resetPageUrl($token);
         $subject = 'Reset your CZEDR password';
         $text = "Hello,\n\n"
             . "We received a request to reset your CZEDR password.\n\n"

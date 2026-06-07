@@ -2,16 +2,40 @@
 declare(strict_types=1);
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-$static = [
+$staticPublic = [
+    '/status' => __DIR__ . '/status.html',
+    '/status.html' => __DIR__ . '/status.html',
+    '/reset-password' => __DIR__ . '/reset-password.html',
+    '/reset-password.html' => __DIR__ . '/reset-password.html',
+];
+$staticDev = [
     '/sandbox' => __DIR__ . '/sandbox.html',
     '/sandbox.html' => __DIR__ . '/sandbox.html',
     '/corporate' => __DIR__ . '/corporate-portal.html',
     '/corporate-portal' => __DIR__ . '/corporate-portal.html',
     '/corporate-portal.html' => __DIR__ . '/corporate-portal.html',
 ];
-if (isset($static[$path]) && is_readable($static[$path])) {
+if (isset($staticPublic[$path]) && is_readable($staticPublic[$path])) {
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-cache');
+    header('X-Frame-Options: DENY');
+    readfile($staticPublic[$path]);
+    return;
+}
+if (isset($staticDev[$path]) && is_readable($staticDev[$path])) {
     require_once dirname(__DIR__) . '/bootstrap.php';
     if (!\Czedr\Security\ProductionRouteGuard::allowPublicDevPages()) {
+        // Old reset emails pointed at /sandbox — serve the production reset page instead.
+        if ($path === '/sandbox' || $path === '/sandbox.html') {
+            $resetPage = __DIR__ . '/reset-password.html';
+            if (is_readable($resetPage)) {
+                header('Content-Type: text/html; charset=utf-8');
+                header('Cache-Control: no-cache');
+                header('X-Frame-Options: DENY');
+                readfile($resetPage);
+                return;
+            }
+        }
         http_response_code(404);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['Status' => 'false', 'Data' => [['result' => 'Not found']]]);
@@ -20,7 +44,7 @@ if (isset($static[$path]) && is_readable($static[$path])) {
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-cache');
     header('X-Frame-Options: DENY');
-    readfile($static[$path]);
+    readfile($staticDev[$path]);
     return;
 }
 
