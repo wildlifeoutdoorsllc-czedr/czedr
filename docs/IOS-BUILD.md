@@ -6,7 +6,7 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 |-------|--------|
 | **Last shipped (TestFlight)** | **134** — support@czedr.com on forgot-password; backend reset email Reply-To ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27101299642)) |
 | **Next ship build number** | **135** |
-| **In progress** | — |
+| **In progress** | **135** — Forgot password Option B: email link flow in app |
 
 ## Ship pipeline (user preference)
 
@@ -24,7 +24,8 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
-| 134 | Forgot-password screen shows support@czedr.com; backend reset emails Reply-To support |
+| 135 | Forgot password: check-email screen → reset link in Mail/Safari (Option B); manual code fallback |
+| 134 | support@czedr.com on forgot-password; backend reset email Reply-To |
 | 132 | Sign up: referrer ID (not a question); QR scan + paste on optional referrer field |
 | 131 | Payment QR on Referral Earnings; Profile without QR; full-width line above Logout |
 | 130 | (upload may be processing) same as 131 — Apple duplicate if re-uploaded |

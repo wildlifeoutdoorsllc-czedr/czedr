@@ -172,6 +172,7 @@ struct LoginView: View {
 
 private enum ForgotPasswordStep {
     case requestEmail
+    case emailSent
     case setNewPassword
 }
 
@@ -199,7 +200,7 @@ struct ForgotPasswordView: View {
                 CzedrBrandLogoView(style: .signIn)
                     .padding(.top, 24)
 
-                Text(step == .requestEmail ? "Forgot password" : "Set new password")
+                Text(stepTitle)
                     .font(.headline)
                     .foregroundColor(CzedrPalette.lightText)
 
@@ -216,6 +217,38 @@ struct ForgotPasswordView: View {
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                } else if step == .emailSent {
+                    if let info = infoMessage {
+                        Text(info)
+                            .font(.footnote)
+                            .foregroundColor(CzedrPalette.balanceGreen)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    Text("Check your email and tap Reset your password. Safari will open a CZEDR page where you choose a new password.")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text("When finished, come back here and sign in with your new password.")
+                        .font(.caption)
+                        .foregroundColor(CzedrPalette.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
+                    Button(action: { showForgotPassword = false }) {
+                        Text("Back to sign in")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(CzedrPalette.redPrimary)
+                            .foregroundColor(.white)
+                            .cornerRadius(6)
+                    }
+                    .padding(.top, 8)
+                    Button(action: { step = .setNewPassword; errorMessage = nil }) {
+                        Text("Enter reset code in app instead")
+                            .font(.subheadline)
+                            .foregroundColor(CzedrPalette.cheddarGold)
+                    }
+                    .padding(.top, 4)
                 } else {
                     if let info = infoMessage {
                         Text(info)
@@ -224,7 +257,7 @@ struct ForgotPasswordView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     CzedrAuthField(label: "Reset code", text: $resetToken, keyboard: .default)
-                    Text("Paste the code from your email, or paste the full reset link.")
+                    Text("Paste the code from your email, or paste the full reset link from Mail.")
                         .font(.caption)
                         .foregroundColor(CzedrPalette.caption)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -236,23 +269,25 @@ struct ForgotPasswordView: View {
                     Text(err).font(.footnote).foregroundColor(CzedrPalette.redPrimary)
                 }
 
-                Button(action: primaryAction) {
-                    Text(primaryButtonTitle)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(CzedrPalette.charcoalButton)
-                        .foregroundColor(CzedrPalette.lightText)
-                        .cornerRadius(6)
-                }
-                .disabled(isLoading)
+                if step != .emailSent {
+                    Button(action: primaryAction) {
+                        Text(primaryButtonTitle)
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(CzedrPalette.charcoalButton)
+                            .foregroundColor(CzedrPalette.lightText)
+                            .cornerRadius(6)
+                    }
+                    .disabled(isLoading)
 
-                Button(action: backAction) {
-                    Text(backButtonTitle)
-                        .font(.subheadline)
-                        .foregroundColor(CzedrPalette.caption)
+                    Button(action: backAction) {
+                        Text(backButtonTitle)
+                            .font(.subheadline)
+                            .foregroundColor(CzedrPalette.caption)
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
 
                 Link(destination: CzedrSupport.mailtoURL) {
                     Text("Questions? \(CzedrSupport.email)")
@@ -271,6 +306,14 @@ struct ForgotPasswordView: View {
         }
     }
 
+    private var stepTitle: String {
+        switch step {
+        case .requestEmail: return "Forgot password"
+        case .emailSent: return "Check your email"
+        case .setNewPassword: return "Set new password"
+        }
+    }
+
     private var primaryButtonTitle: String {
         if isLoading {
             return step == .requestEmail ? "Sending…" : "Updating…"
@@ -279,7 +322,11 @@ struct ForgotPasswordView: View {
     }
 
     private var backButtonTitle: String {
-        step == .requestEmail ? "Back to sign in" : "Back"
+        switch step {
+        case .requestEmail: return "Back to sign in"
+        case .emailSent: return "Back to sign in"
+        case .setNewPassword: return "Back"
+        }
     }
 
     private var apiDiscoveryHint: some View {
@@ -322,10 +369,11 @@ struct ForgotPasswordView: View {
 
     private func backAction() {
         errorMessage = nil
-        if step == .setNewPassword {
-            step = .requestEmail
-            infoMessage = nil
-        } else {
+        switch step {
+        case .setNewPassword:
+            step = .emailSent
+            infoMessage = infoMessage ?? "If an account exists for this email, password reset instructions have been sent."
+        case .emailSent, .requestEmail:
             showForgotPassword = false
         }
     }
@@ -345,7 +393,7 @@ struct ForgotPasswordView: View {
                     errorMessage = msg
                 case .ok(let message):
                     infoMessage = message
-                    step = .setNewPassword
+                    step = .emailSent
                 }
             }
         }
