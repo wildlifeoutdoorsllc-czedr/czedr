@@ -4,7 +4,7 @@ Keep this file for later. Use two accounts to send money to each other in the **
 
 **Database:** First-time setup runs `scripts\install-backend.ps1` once — it creates only the **`saturn`** schema (no planet vault databases), then runs **`php scripts/run-migrations.php`** so all **`database/migrations/*.sql`** files are applied exactly once (recorded in **`schema_migrations`**). On existing servers, run **`php scripts/run-migrations.php`** after deploy when you add new migration files. Optionally set **`CZEDR_AUTO_MIGRATE=1`** in `.env` so the web entrypoint applies pending migrations before handling requests (first hit after deploy runs DDL; ensure the DB user may **ALTER** tables).
 
-**Production safety:** Set **`APP_ENV=production`** on real deployments (or omit `APP_ENV` — it defaults to production). That disables the **`$100` welcome credit**, hides **`reset_token` in forgot-password JSON**, returns **404** for **`GET /v1/dev/setup`**, and blocks **`POST /v1/ledger/load`** unless you explicitly set **`CZEDR_ALLOW_LEDGER_LOAD=1`**. Run **`php scripts/test-env-security.php`** for quick checks.
+**Production safety:** Set **`APP_ENV=production`** on real deployments (or omit `APP_ENV` — it defaults to production). That hides **`reset_token` in forgot-password JSON**, returns **404** for **`GET /v1/dev/setup`**, and blocks **`POST /v1/ledger/load`** unless you explicitly set **`CZEDR_ALLOW_LEDGER_LOAD=1`**. Welcome balance on signup is controlled by **`CZEDR_WELCOME_BALANCE_CENTS`** (default **$1,000**; set **`0`** to disable). Run **`php scripts/test-env-security.php`** for quick checks.
 
 **Staff vs member (directory privacy):** New rows default to **`role=member`**. Only **`staff`** users see another person’s **email** when validating a Czedr ID (`GET /v1/users/validate` and legacy **`valid_recipient`**). Other users get a **masked** label (e.g. last few ID characters), not an email. Promote only trusted accounts, directly in MySQL:  
 `UPDATE users SET role = 'staff' WHERE email = 'trusted-ops@yourorg.com' LIMIT 1;`  
@@ -56,7 +56,7 @@ That prints the **current** Czedr IDs and balances. IDs stay the same if the acc
 | Alice (payer) | `alice@test.czedr` | `TestPass1234!` |
 | Bob (receiver) | `bob@test.czedr` | `TestPass1234!` |
 
-Local dev (`APP_ENV=local` in `.env`) gives each account **$100** welcome balance on first signup.
+New signups receive a **$1,000** welcome balance by default (`CZEDR_WELCOME_BALANCE_CENTS=100000` in `.env`, or omit to use the code default).
 
 **Last seeded IDs (your machine — re-run script if unsure):**
 

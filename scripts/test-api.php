@@ -138,4 +138,20 @@ $recvToken = $reg2['auth_token'];
 $recv = api('GET', '/v1/invoices/received?offset=1&limit=10', null, $recvToken);
 echo '  received count: ' . count($recv) . "\n";
 
+echo "Profile GET /v1/me...\n";
+$me = api('GET', '/v1/me', null, $token);
+if (empty($me['czedr_id'])) {
+    throw new RuntimeException('/v1/me missing czedr_id');
+}
+
+echo "Funding status (ledger-first, bank optional)...\n";
+$funding = api('GET', '/v1/funding/status', null, $token);
+if (($funding['money_model'] ?? '') !== 'ledger_first') {
+    throw new RuntimeException('funding status money_model unexpected');
+}
+if (!array_key_exists('banks', $funding)) {
+    throw new RuntimeException('funding status missing banks array');
+}
+echo '  user_message: ' . ($funding['user_message'] ?? '') . "\n";
+
 echo "All API tests passed.\n";

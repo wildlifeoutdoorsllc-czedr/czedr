@@ -24,6 +24,14 @@ data class AuthPayload(
     val email: String,
     val czedrId: String,
     val hasPinSet: Boolean,
+    val paymentQrPayload: String,
+)
+
+data class MeProfile(
+    val email: String,
+    val czedrId: String,
+    val hasPinSet: Boolean,
+    val paymentQrPayload: String,
 )
 
 data class TransferResult(
@@ -121,7 +129,28 @@ class CzedrApi(private val sessionStore: SessionStore) {
             .ifBlank { data.optString("id") }
         if (cid.isBlank()) return ApiResult.Err("No Czedr ID in response")
         val pinFlag = data.optString("user_pin").ifBlank { user?.optString("user_pin").orEmpty() }
-        return ApiResult.Ok(AuthPayload(auth, em, cid, pinFlag == "1"))
+        val qrPayload = data.optString("payment_qr_payload").ifBlank {
+            user?.optString("payment_qr_payload").orEmpty()
+        }.ifBlank { "https://czedr.com/pay/${cid.uppercase()}" }
+        return ApiResult.Ok(AuthPayload(auth, em, cid, pinFlag == "1", qrPayload))
+    }
+
+    suspend fun fetchMe(): ApiResult<MeProfile> = withContext(Dispatchers.IO) {
+        authedGetObject("/v1/me") { data ->
+            val cid = data.optString("czedr_id")
+            if (cid.isBlank()) {
+                throw ApiHttpException(0, "No Czedr ID in profile")
+            }
+            val qrPayload = data.optString("payment_qr_payload").ifBlank {
+                "https://czedr.com/pay/${cid.uppercase()}"
+            }
+            MeProfile(
+                email = data.optString("email"),
+                czedrId = cid,
+                hasPinSet = data.optString("user_pin") == "1",
+                paymentQrPayload = qrPayload,
+            )
+        }
     }
 
     suspend fun logout() = withContext(Dispatchers.IO) {

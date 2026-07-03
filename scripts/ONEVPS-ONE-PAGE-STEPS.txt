@@ -1,0 +1,16 @@
+CZEDR — GET VPS WORKING (one page for Michael)
+=============================================
+
+EASIEST: double-click  D:\CZEDR\MAKE-VPS-WORK.cmd
+
+  - First time only: paste your OneVPS root password when asked (port 22122)
+  - Then it installs everything and opens https://api.czedr.com/v1/health
+
+If login fails:
+  - "Connection refused" → you used port 22; must use 22122
+  - "Permission denied" → reset root password in OneVPS panel, wait 2 min, retry
+
+Manual SSH test:  scripts\ssh-onevps.cmd
+
+Full guide: docs\DEPLOY-ONEVPS-CZEDR.md
+Support ticket: docs\SUPPORT-HANDOFF-ONEVPS.md section 10

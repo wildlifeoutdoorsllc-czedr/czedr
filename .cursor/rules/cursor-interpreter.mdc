@@ -1,0 +1,15 @@
+---
+description: Use local AI interpreter session to avoid repeated context
+alwaysApply: true
+---
+
+# Cursor interpreter workflow
+
+- Prefer reusing the local interpreter session instead of asking the user to restate context.
+- If user says to route/sync a prompt, use `scripts/cursor-interpreter.cmd`.
+- Keep one active session per topic (e.g., Czedr, CQ Athletes, security).
+- Save stable project context into the interpreter session system prompt once.
+- Use broadcast mode only when user asks to compare multiple backends.
+- For quick reuse:
+  - `scripts/cursor-interpreter.cmd -Message "your message"`
+  - `scripts/cursor-interpreter.cmd -NewSession -Message "new thread context"`

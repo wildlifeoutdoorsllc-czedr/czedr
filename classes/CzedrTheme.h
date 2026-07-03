@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)applyGlobalAppearance;
 
-/** Walk view hierarchy and replace legacy green/blue Payooze colors with deck palette. */
+/** Walk view hierarchy and replace legacy green/blue accent colors with deck palette. */
 + (void)applyDeckLookToView:(UIView *)view;
 
 /** Logged-in screens: deck palette + charcoal background (no white panels). */

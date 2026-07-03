@@ -1,0 +1,31 @@
+---
+description: Time limits for SSH, deploy, and long shell commands on Czedr OneVPS
+alwaysApply: true
+---
+
+# Czedr operation timeouts
+
+Read `docs/OPS-TIMEOUTS.md` for full detail and rationale.
+
+**Defaults (do not change without reason):** Quick **2 min**, Deploy **30 min**, Long **2 hr** max.
+
+## SSH / SCP from scripts
+
+- Dot-source `scripts/Czedr-SshDefaults.ps1` and use `Invoke-CzedrSsh` / `Invoke-CzedrScp` — do not call raw `ssh` without timeouts.
+- Profiles: **Quick** (2 min), **Deploy** (30 min), **Long** (2 hr max).
+
+## Cursor agent runs
+
+- Health check / one SQL audit: **≤ 2 minutes** then stop.
+- Deploy, migrate, email setup: **≤ 30 minutes** then stop.
+- Full backup download: **≤ 2 hours** then stop.
+- **Never** leave a hung SSH job running overnight.
+
+## VPS audit / MySQL
+
+- Prefer `bash /var/www/czedr/scripts/vps-audit-user.sh email@domain` on the server.
+- Avoid nested PowerShell + SSH + bash + MySQL quoting from the agent.
+
+## Interactive
+
+- Michael uses `CONNECT-TO-VPS.cmd` — no agent timeout on manual sessions.

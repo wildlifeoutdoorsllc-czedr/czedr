@@ -10,7 +10,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 
 ## Product direction
 
-- **Czedr** replaces legacy Payooze / 3ds3cur3 / S3cur3e branding.
+- **Czedr** replaces legacy 3ds3cur3 / S3cur3e branding.
 - Users pay by **Czedr ID** on an **internal ledger** only: **no** card, **no** ACH, **no** bank account storage in the shipped API.
 - **Single MySQL database (`saturn`)** holds users, sessions, ledger, invoices, and audit. (Planet-split vault code was removed from the runtime product to reduce scope and risk.)
 

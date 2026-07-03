@@ -127,7 +127,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             when (val r = api.login(email, password, base)) {
                 is ApiResult.Ok -> {
                     val p = r.value
-                    app.sessionStore.saveSession(p.token, p.email, p.czedrId, p.hasPinSet)
+                    app.sessionStore.saveSession(
+                        p.token,
+                        p.email,
+                        p.czedrId,
+                        p.hasPinSet,
+                        p.paymentQrPayload,
+                    )
                     _auth.value = AuthUiState(loading = false)
                     refreshHome()
                 }
@@ -166,12 +172,38 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             when (val r = api.register(email, password, referrerCzedrId, base)) {
                 is ApiResult.Ok -> {
                     val p = r.value
-                    app.sessionStore.saveSession(p.token, p.email, p.czedrId, p.hasPinSet)
+                    app.sessionStore.saveSession(
+                        p.token,
+                        p.email,
+                        p.czedrId,
+                        p.hasPinSet,
+                        p.paymentQrPayload,
+                    )
                     _auth.value = AuthUiState(loading = false)
                     refreshHome()
                 }
                 is ApiResult.Err -> {
                     _auth.value = _auth.value.copy(loading = false, error = r.message)
+                }
+            }
+        }
+    }
+
+    fun refreshProfile() {
+        viewModelScope.launch {
+            when (val r = api.fetchMe()) {
+                is ApiResult.Ok -> {
+                    val profile = r.value
+                    app.sessionStore.updatePaymentQrPayload(profile.paymentQrPayload)
+                    _session.value = _session.value?.copy(
+                        email = profile.email.ifBlank { _session.value?.email.orEmpty() },
+                        czedrId = profile.czedrId,
+                        hasPinSet = profile.hasPinSet,
+                        paymentQrPayload = profile.paymentQrPayload,
+                    )
+                }
+                is ApiResult.Err -> {
+                    _home.value = _home.value.copy(error = r.message)
                 }
             }
         }

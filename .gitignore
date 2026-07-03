@@ -31,6 +31,12 @@ fastlane/screenshots/
 fastlane/test_output/
 Gemfile.lock
 
+# AI Interpreter (local sessions + secrets)
+ai-interpreter/.env
+ai-interpreter/config.yaml
+ai-interpreter/data/
+.cursor/interpreter-session.txt
+
 # Android (Gradle / IDE / local SDK path)
 android/.gradle/
 android/.idea/
@@ -38,3 +44,6 @@ android/local.properties
 android/**/build/
 android/*.iml
 android/gradle/gradle-daemon-jvm.properties
+
+# Emergency backups (secrets + database dumps)
+backups/

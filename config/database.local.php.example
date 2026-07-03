@@ -1,0 +1,22 @@
+<?php
+/**
+ * Copy to config/database.local.php on the server (never commit the real file).
+ *
+ * Production: use a dedicated MySQL user with access only to `saturn`.
+ * Prefer VAULT_USER_SATURN / VAULT_PASS_SATURN in .env (see .env.production.example).
+ */
+return [
+    'host' => '127.0.0.1',
+    'port' => 3306,
+    'user' => 'app_saturn',
+    'pass' => 'REPLACE_WITH_STRONG_PASSWORD',
+    'charset' => 'utf8mb4',
+    'databases' => [
+        'app' => 'saturn',
+    ],
+    'options' => [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ],
+];

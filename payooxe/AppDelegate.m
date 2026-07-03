@@ -348,7 +348,7 @@
     {
         return _managedObjectModel;
     }
-    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"payooze" withExtension:@"momd"];
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"czedr" withExtension:@"momd"];
     if (!modelURL) {
         modelURL = [[NSBundle mainBundle] URLForResource:@"czedr" withExtension:@"momd"];
     }

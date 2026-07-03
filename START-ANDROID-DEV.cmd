@@ -17,7 +17,10 @@ echo  Next in Android Studio
 echo ========================================
 echo  1. Open folder:  %~dp0android
 echo  2. File - Sync Project with Gradle Files
-echo  3. Run app on emulator (API base: http://10.0.2.2:8080)
+echo  3. Plug in phone USB debugging OR slow emulator Czedr_API30
+echo     Phone API: http://LAN_IP:8080  (see API window)
+echo     Emulator only: http://10.0.2.2:8080
+echo     If emulator crashed PC: docs\ANDROID-PHYSICAL-DEVICE.md
 echo.
 echo  Test login: alice@test.czedr / TestPass1234!
 echo ========================================

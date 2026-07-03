@@ -64,4 +64,13 @@ final class Env
 
         return self::isLocal();
     }
+
+    /**
+     * USD cents credited from SYSTEM on new signup (0 = disabled).
+     * Default 100000 ($1,000) for TestFlight / demo onboarding.
+     */
+    public static function welcomeBalanceCents(): int
+    {
+        return max(0, (int) self::get('CZEDR_WELCOME_BALANCE_CENTS', '100000'));
+    }
 }

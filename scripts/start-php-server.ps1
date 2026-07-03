@@ -1,4 +1,4 @@
-# Czedr API — PHP built-in server for local dev (Android emulator, devices on Wi‑Fi, browser).
+# Czedr API - PHP built-in server for local dev (Android emulator, devices on Wi-Fi, browser).
 $root = Split-Path $PSScriptRoot -Parent
 $docRoot = Join-Path $root "backend\public"
 
@@ -33,7 +33,7 @@ Write-Host "PC LAN:      http://${lanIp}:8080/v1/health" -ForegroundColor Green
 Write-Host "Sandbox:     http://${lanIp}:8080/sandbox" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Android emulator use API base:  http://10.0.2.2:8080" -ForegroundColor DarkGray
-Write-Host "Phone on same Wi‑Fi use API base: http://${lanIp}:8080" -ForegroundColor DarkGray
+Write-Host "Phone on same Wi-Fi use API base: http://${lanIp}:8080" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "Keep this window open while testing." -ForegroundColor DarkGray
 Write-Host ""
@@ -45,7 +45,7 @@ $migrateScript = Join-Path $PSScriptRoot 'run-migrations.php'
 if (Test-Path $migrateScript) {
     & php $migrateScript
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Database migrations failed — fix MySQL/.env, then restart." -ForegroundColor Red
+        Write-Host "Database migrations failed - fix MySQL/.env, then restart." -ForegroundColor Red
         exit $LASTEXITCODE
     }
 }
@@ -55,4 +55,5 @@ $apiUrlFile = Join-Path $root 'scripts\iphone-api-url.txt'
 
 Set-Location $docRoot
 Write-Host "Document root: $docRoot" -ForegroundColor DarkGray
-php -S "0.0.0.0:8080" -t $docRoot "$docRoot\index.php"
+$router = Join-Path $docRoot 'index.php'
+php -S '0.0.0.0:8080' -t $docRoot $router

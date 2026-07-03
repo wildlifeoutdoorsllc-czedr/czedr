@@ -1,0 +1,26 @@
+# Copy to config.yaml to customize backends without editing code.
+default_backend: openai
+
+backends:
+  openai:
+    type: openai_compat
+    base_url: ${OPENAI_BASE_URL}
+    api_key: ${OPENAI_API_KEY}
+    model: ${OPENAI_MODEL}
+    label: OpenAI
+
+  # Example: local Ollama (OpenAI-compatible API)
+  ollama:
+    type: openai_compat
+    base_url: http://127.0.0.1:11434/v1
+    api_key: ollama
+    model: llama3.2
+    label: Ollama (local)
+
+  # Duplicate entry with different model — same API, different route
+  openai_fast:
+    type: openai_compat
+    base_url: ${OPENAI_BASE_URL}
+    api_key: ${OPENAI_API_KEY}
+    model: gpt-4o-mini
+    label: OpenAI Fast

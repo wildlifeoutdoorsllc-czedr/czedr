@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * Create (or refresh login for) two demo accounts for sandbox / API testing.
  * Run: php scripts/seed-test-accounts.php
- * Requires API at http://127.0.0.1:8080 and APP_ENV=local in .env for $100 welcome balance.
+ * Requires API at http://127.0.0.1:8080; welcome balance from CZEDR_WELCOME_BALANCE_CENTS (default $1,000).
  */
 
 $base = getenv('CZEDR_API_BASE') ?: 'http://127.0.0.1:8080';

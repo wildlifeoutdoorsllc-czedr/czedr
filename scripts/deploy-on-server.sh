@@ -133,6 +133,8 @@ ${DOMAIN} {
 
 czedr.com, www.czedr.com {
     root * /var/www/czedr/marketing
+    @privacy path /privacy /privacy/
+    rewrite @privacy /privacy.html
     file_server
     try_files {path} /index.html
 }
@@ -150,6 +152,20 @@ for i in $(seq 1 18); do
     echo "OK: https://${DOMAIN}/v1/health"
     curl -sS "https://${DOMAIN}/v1/health" | head -c 400
     echo ""
+    echo "==> Route smoke (expect 401 without token, not 404)"
+    ROUTE_FAIL=0
+    for p in /v1/me /v1/funding/status /v1/ledger/balance; do
+      code="$(curl -sS -o /dev/null -w '%{http_code}' -H 'Authorization: Bearer smoke' "https://${DOMAIN}${p}" || echo 000)"
+      if [[ "$code" == "404" ]]; then
+        echo "FAIL: GET ${p} -> 404 (stale deploy — missing route)"
+        ROUTE_FAIL=1
+      else
+        echo "OK: GET ${p} -> HTTP ${code}"
+      fi
+    done
+    if [[ "$ROUTE_FAIL" -ne 0 ]]; then
+      exit 1
+    fi
     exit 0
   fi
   sleep 5

@@ -13,8 +13,10 @@ Double-click **`START-ANDROID-DEV.cmd`** at the repo root. It:
 
 1. **File → Open** → `D:\CZEDR\android` (the `android` folder only)
 2. **File → Sync Project with Gradle Files** (wait until finished)
-3. **Tools → Device Manager** → start an emulator (or plug in a phone with USB debugging)
-4. Select the **app** run configuration → **Run** ▶
+3. **Run target:** prefer a **physical phone** (USB debugging) — see **`docs/ANDROID-PHYSICAL-DEVICE.md`**
+4. **Avoid the emulator** on this PC if it froze or crashed Windows (Celeron + 16 GB RAM is often too tight).
+5. If you still use an emulator: **Czedr_API30** only, nothing else running, long boot wait.
+6. Select the **app** run configuration → **Run** ▶
 
 Sign-in screen should show **Android · Build 110**.
 

@@ -13,14 +13,13 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "110"
-        // Emulator → host PC API (same Wi‑Fi device: use machine IP in Build → Edit field or BuildConfig below)
-        buildConfigField("String", "API_BASE_DEFAULT", "\"http://10.0.2.2:8080\"")
+        versionName = "111"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            buildConfigField("String", "API_BASE_DEFAULT", "\"https://api.czedr.com\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -28,6 +27,7 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            buildConfigField("String", "API_BASE_DEFAULT", "\"http://10.0.2.2:8080\"")
         }
     }
     compileOptions {
@@ -65,6 +65,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("com.google.zxing:core:3.5.3")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

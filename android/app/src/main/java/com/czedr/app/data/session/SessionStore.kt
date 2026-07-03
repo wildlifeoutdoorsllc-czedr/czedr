@@ -16,7 +16,11 @@ data class UserSession(
     val email: String,
     val czedrId: String,
     val hasPinSet: Boolean = false,
-)
+    val paymentQrPayload: String = "",
+) {
+    fun effectivePaymentQrPayload(): String =
+        paymentQrPayload.trim().ifBlank { com.czedr.app.qr.CzedrQrCode.paymentPayload(czedrId) }
+}
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("czedr")
 
@@ -28,6 +32,7 @@ class SessionStore(private val context: Context) {
         val czedrId = stringPreferencesKey("czedr_id")
         val apiBase = stringPreferencesKey("api_base")
         val hasPin = stringPreferencesKey("has_pin_set")
+        val paymentQrPayload = stringPreferencesKey("payment_qr_payload")
     }
 
     val session: Flow<UserSession?> = context.dataStore.data.map { prefs ->
@@ -38,15 +43,35 @@ class SessionStore(private val context: Context) {
             email = prefs[keys.email].orEmpty(),
             czedrId = prefs[keys.czedrId].orEmpty(),
             hasPinSet = prefs[keys.hasPin] == "1",
+            paymentQrPayload = prefs[keys.paymentQrPayload].orEmpty(),
         )
     }
 
-    suspend fun saveSession(token: String, email: String, czedrId: String, hasPinSet: Boolean) {
+    suspend fun saveSession(
+        token: String,
+        email: String,
+        czedrId: String,
+        hasPinSet: Boolean,
+        paymentQrPayload: String = "",
+    ) {
         context.dataStore.edit { prefs ->
             prefs[keys.token] = token
             prefs[keys.email] = email
             prefs[keys.czedrId] = czedrId
             prefs[keys.hasPin] = if (hasPinSet) "1" else "0"
+            if (paymentQrPayload.isNotBlank()) {
+                prefs[keys.paymentQrPayload] = paymentQrPayload
+            }
+        }
+    }
+
+    suspend fun updatePaymentQrPayload(payload: String) {
+        context.dataStore.edit { prefs ->
+            if (payload.isBlank()) {
+                prefs.remove(keys.paymentQrPayload)
+            } else {
+                prefs[keys.paymentQrPayload] = payload
+            }
         }
     }
 
@@ -74,6 +99,7 @@ class SessionStore(private val context: Context) {
             prefs.remove(keys.email)
             prefs.remove(keys.czedrId)
             prefs.remove(keys.hasPin)
+            prefs.remove(keys.paymentQrPayload)
         }
     }
 }

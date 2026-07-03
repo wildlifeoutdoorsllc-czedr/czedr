@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,6 +49,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import android.content.ClipboardManager
+import android.content.Context
+import com.czedr.app.qr.CzedrQrCode
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -148,6 +156,7 @@ private fun LoggedInApp(vm: MainViewModel, session: UserSession, nav: NavHostCon
                     onMenu = { vm.openMenu() },
                     onPayment = { nav.navigate("payment") },
                     onHistory = { nav.navigate("history") },
+                    onProfile = { nav.navigate("profile") },
                     onSetPin = { nav.navigate("setpin") },
                 )
             }
@@ -342,6 +351,7 @@ fun HomeScreen(
     onMenu: () -> Unit,
     onPayment: () -> Unit,
     onHistory: () -> Unit,
+    onProfile: () -> Unit,
     onSetPin: () -> Unit,
 ) {
     val home by vm.home.collectAsState()
@@ -382,6 +392,8 @@ fun HomeScreen(
                 Tile("Pending", Modifier.weight(1f)) {}
                 Tile("History", Modifier.weight(1f), onHistory)
             }
+            Spacer(Modifier.height(12.dp))
+            Tile("My Profile", Modifier.fillMaxWidth(), onProfile)
         }
     }
 }
@@ -404,14 +416,74 @@ fun MakePaymentScreen(
         if (home.paymentSuccess != null) onSuccess()
     }
 
+    val context = LocalContext.current
+    val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
+        result.contents?.let { raw ->
+            CzedrQrCode.parseCzedrId(raw)?.let { id ->
+                recipient = id
+                vm.validateRecipient(id)
+            }
+        }
+    }
+
     PageShell(title = "Make Payment", onMenu = onMenu, onBack = onBack) {
-        Column(Modifier.padding(16.dp)) {
+        Column(
+            Modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
             if (!session.hasPinSet) {
                 Text("Set a PIN in the menu before sending money.", color = CzedrColors.RedPrimary)
                 return@Column
             }
-            CzedrField("Recipient Czedr ID", recipient, { recipient = it.uppercase() })
-            TextButton(onClick = { vm.validateRecipient(recipient) }) { Text("Validate") }
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Box(Modifier.weight(1f)) {
+                    CzedrField("Recipient Czedr ID", recipient, { recipient = it.uppercase() })
+                }
+                IconButton(
+                    onClick = {
+                        scanLauncher.launch(
+                            ScanOptions().apply {
+                                setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                                setPrompt("Scan a Czedr payment QR")
+                                setBeepEnabled(false)
+                                setBarcodeImageEnabled(false)
+                            },
+                        )
+                    },
+                    modifier = Modifier
+                        .background(CzedrColors.OrangeField, RoundedCornerShape(4.dp)),
+                ) {
+                    Icon(Icons.Default.QrCodeScanner, "Scan QR", tint = CzedrColors.FieldText)
+                }
+                TextButton(
+                    onClick = { vm.validateRecipient(recipient) },
+                    modifier = Modifier.background(CzedrColors.RedPrimary, RoundedCornerShape(4.dp)),
+                ) {
+                    Text("VALIDATE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
+            Text(
+                "Scan, type, or paste a Czedr ID (e.g. from a text message).",
+                color = CzedrColors.Caption,
+                fontSize = 12.sp,
+            )
+            TextButton(
+                onClick = {
+                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                    CzedrQrCode.parseCzedrId(clip)?.let { id ->
+                        recipient = id
+                        vm.validateRecipient(id)
+                    }
+                },
+            ) {
+                Text("Paste ID from clipboard", color = CzedrColors.BalanceGreen, fontSize = 12.sp)
+            }
             home.recipientLabel?.let { Text("Recipient: $it", color = CzedrColors.LightText) }
             Spacer(Modifier.height(8.dp))
             CzedrField("Amount (USD)", amount, { amount = it }, KeyboardType.Decimal)
@@ -490,11 +562,24 @@ fun HistoryScreen(vm: MainViewModel, onMenu: () -> Unit, onBack: () -> Unit) {
 
 @Composable
 fun ProfileScreen(session: UserSession, vm: MainViewModel, onMenu: () -> Unit, onBack: () -> Unit) {
+    LaunchedEffect(Unit) { vm.refreshProfile() }
+
     PageShell(title = "Profile", onMenu = onMenu, onBack = onBack) {
-        Column(Modifier.padding(16.dp)) {
+        Column(
+            Modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
             DetailRow("Email", session.email)
             DetailRow("Czedr ID", session.czedrId)
+            if (session.czedrId.isNotBlank()) {
+                PaymentQrCard(
+                    payload = session.effectivePaymentQrPayload(),
+                    czedrId = session.czedrId,
+                )
+            }
             DetailRow("PIN set", if (session.hasPinSet) "Yes" else "No")
+            Text(vm.buildLabel, color = CzedrColors.Caption, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
             Spacer(Modifier.height(24.dp))
             Button(
                 onClick = { vm.logout() },

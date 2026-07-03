@@ -4,10 +4,12 @@
 
 $ErrorActionPreference = "Stop"
 
-$HostIP = "91.220.203.91"
-$Port = 22122
-$User = "root"
-$SshKey = Join-Path $env:USERPROFILE ".ssh\id_ed25519_czedr_onevps"
+. (Join-Path $PSScriptRoot "Czedr-SshDefaults.ps1")
+
+$HostIP = $script:CzedrVpsHost
+$Port = $script:CzedrVpsPort
+$User = $script:CzedrVpsUser
+$SshKey = $script:CzedrSshKey
 $RepoRoot = Split-Path $PSScriptRoot -Parent
 
 function Write-Step([string]$msg) {
@@ -27,9 +29,7 @@ function Ensure-SshKey {
 }
 
 function Test-SshKeyAuth {
-    $out = & ssh -p $Port -i $SshKey -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new `
-        "${User}@${HostIP}" "echo OK" 2>&1
-    return ($LASTEXITCODE -eq 0)
+    return (Test-CzedrSshKeyAuth)
 }
 
 function Install-SshKeyOnServer {
@@ -37,12 +37,16 @@ function Install-SshKeyOnServer {
     Write-Host 'ONE-TIME SETUP - enter your OneVPS root password when asked.' -ForegroundColor Yellow
     Write-Host 'Copy password from OneVPS panel into Notepad, then right-click to paste.' -ForegroundColor Yellow
     Write-Host ""
-    & scp -P $Port -o StrictHostKeyChecking=accept-new "${SshKey}.pub" "${User}@${HostIP}:/tmp/czedr_install_key.pub"
+    $scpArgs = Get-CzedrScpBaseArgs -Profile Quick
+    $scpArgs += "${SshKey}.pub", "${User}@${HostIP}:/tmp/czedr_install_key.pub"
+    & scp @scpArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Could not upload SSH key. Reset password in OneVPS panel; use port $Port."
     }
     $cmd = "umask 077; mkdir -p .ssh; touch .ssh/authorized_keys; grep -qF 'czedr-onevps-deploy' .ssh/authorized_keys || cat /tmp/czedr_install_key.pub >> .ssh/authorized_keys; chmod 700 .ssh; chmod 600 .ssh/authorized_keys; rm -f /tmp/czedr_install_key.pub"
-    & ssh -p $Port -o StrictHostKeyChecking=accept-new "${User}@${HostIP}" $cmd
+    $sshArgs = Get-CzedrSshBaseArgs -Profile Quick
+    $sshArgs += "${User}@${HostIP}", $cmd
+    & ssh @sshArgs
     if ($LASTEXITCODE -ne 0) {
         throw "SSH key install failed. Reset password in OneVPS panel and use port $Port."
     }
@@ -96,11 +100,11 @@ $archive = Build-DeployArchive
 $remoteTar = "/tmp/czedr-deploy.tgz"
 
 Write-Step "Uploading to server"
-& scp -P $Port -i $SshKey -o StrictHostKeyChecking=accept-new $archive "${User}@${HostIP}:${remoteTar}"
+Invoke-CzedrScp -ScpArgs @($archive, "${User}@${HostIP}:${remoteTar}") -Profile Deploy | Out-Null
 
 Write-Step "Extracting and running deploy-on-server.sh"
-$remote = 'set -e; mkdir -p /var/www/czedr; cd /var/www/czedr; tar xzf /tmp/czedr-deploy.tgz; chmod +x scripts/deploy-on-server.sh scripts/onevps-bootstrap.sh; bash scripts/deploy-on-server.sh'
-& ssh -p $Port -i $SshKey -o StrictHostKeyChecking=accept-new "${User}@${HostIP}" $remote
+$remote = 'set -e; mkdir -p /var/www/czedr; cd /var/www/czedr; tar xzf /tmp/czedr-deploy.tgz; chmod +x scripts/deploy-on-server.sh scripts/onevps-bootstrap.sh scripts/vps-audit-user.sh; bash scripts/deploy-on-server.sh'
+Invoke-CzedrSsh -RemoteCommand $remote -Profile Deploy | Out-Null
 
 Write-Host ""
 Write-Host "Done. Open in browser: https://api.czedr.com/v1/health" -ForegroundColor Green

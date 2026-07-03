@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CZEDR API Status</title>
+  <style>
+    :root {
+      --bg: #2a2a2c;
+      --text: #e7ecf3;
+      --muted: #b0b5bc;
+      --gold: #ffc42e;
+      --green: #3dd68c;
+      --red: #e31e24;
+      --border: #454548;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      width: min(100%, 28rem);
+      background: #353538;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.75rem;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.35rem;
+    }
+    .sub {
+      color: var(--muted);
+      margin: 0 0 1.5rem;
+      font-size: 0.95rem;
+    }
+    .pill {
+      display: inline-block;
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+    .pill.ok { background: rgba(61, 214, 140, 0.15); color: var(--green); }
+    .pill.bad { background: rgba(227, 30, 36, 0.15); color: var(--red); }
+    .pill.wait { background: rgba(255, 196, 46, 0.15); color: var(--gold); }
+    dl {
+      text-align: left;
+      margin: 1.25rem 0 0;
+      font-size: 0.9rem;
+    }
+    dt {
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+    dd {
+      margin: 0.15rem 0 0;
+      word-break: break-all;
+    }
+    a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>CZEDR API</h1>
+    <p class="sub">api.czedr.com</p>
+    <div id="badge" class="pill wait">Checking…</div>
+    <dl id="details" hidden></dl>
+    <footer>
+      <a href="https://czedr.com">Back to czedr.com</a>
+    </footer>
+  </div>
+  <script>
+    const badge = document.getElementById('badge');
+    const details = document.getElementById('details');
+
+    function setBadge(text, cls) {
+      badge.textContent = text;
+      badge.className = 'pill ' + cls;
+    }
+
+    function addRow(label, value) {
+      const dt = document.createElement('dt');
+      dt.textContent = label;
+      const dd = document.createElement('dd');
+      dd.textContent = value;
+      details.appendChild(dt);
+      details.appendChild(dd);
+    }
+
+    fetch('/v1/health', { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (body) {
+        const data = body && body.Data ? body.Data : {};
+        setBadge('Online', 'ok');
+        details.hidden = false;
+        addRow('Service', data.service || 'czedr-api');
+        addRow('Checked', new Date().toLocaleString());
+        addRow('Transfer fee', '$' + ((data.transfer_fee_cents || 0) / 100).toFixed(2));
+      })
+      .catch(function (err) {
+        setBadge('Offline or unreachable', 'bad');
+        details.hidden = false;
+        addRow('Error', err.message || 'Could not reach API');
+        addRow('Checked', new Date().toLocaleString());
+      });
+  </script>
+</body>
+</html>

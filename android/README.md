@@ -1,8 +1,8 @@
 # Czedr Android
 
-Native **Kotlin + Jetpack Compose** client aligned with **iOS TestFlight build 110** (same JSON API on `/v1/...`).
+Native **Kotlin + Jetpack Compose** client using the same JSON API on `/v1/...`.
 
-## Parity with iOS build 110
+## Parity (recent)
 
 | Feature | Android |
 |---------|---------|
@@ -11,12 +11,16 @@ Native **Kotlin + Jetpack Compose** client aligned with **iOS TestFlight build 1
 | API base URL field + status | Yes |
 | Home balance + tiles | Yes |
 | Make Payment + PIN | Yes |
+| Make Payment QR scan + paste ID | Yes (ZXing) |
+| Profile payment QR | Yes (`GET /v1/me` + local render) |
 | Payment success screen | Yes |
 | History | Yes |
 | Menu drawer + Logout | Yes |
 | Set PIN | Yes |
-| Build label | **Android · Build 110** |
+| Build label | **Android · Build 111** |
 | Send Invoice / Pending | Placeholder |
+
+See `docs/QR-PAYMENTS.md` for payload format and API fields.
 
 ## Requirements
 

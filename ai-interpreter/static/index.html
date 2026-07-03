@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Interpreter</title>
+  <style>
+    :root { --bg: #0f1419; --panel: #1a2332; --text: #e7ecf3; --muted: #8b9cb3; --accent: #3b82f6; --border: #2d3a4d; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
+    header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    h1 { font-size: 1.1rem; margin: 0; font-weight: 600; }
+    .badge { font-size: 0.75rem; background: #1e3a5f; color: #93c5fd; padding: 0.2rem 0.5rem; border-radius: 4px; }
+    main { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: calc(100vh - 56px); }
+    @media (max-width: 800px) { main { grid-template-columns: 1fr; } aside { max-height: 200px; overflow: auto; } }
+    aside { border-right: 1px solid var(--border); padding: 1rem; background: var(--panel); }
+    section { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 0.25rem; }
+    input, textarea, select, button { font: inherit; }
+    input, textarea, select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px; padding: 0.5rem 0.65rem;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    button {
+      background: var(--accent); color: #fff; border: none; border-radius: 6px;
+      padding: 0.55rem 1rem; cursor: pointer; font-weight: 500;
+    }
+    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .session-item {
+      padding: 0.5rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+      margin-bottom: 0.25rem; border: 1px solid transparent;
+    }
+    .session-item:hover, .session-item.active { background: var(--bg); border-color: var(--border); }
+    #log {
+      flex: 1; overflow: auto; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem; min-height: 280px; font-size: 0.9rem; line-height: 1.5;
+    }
+    .msg { margin-bottom: 1rem; }
+    .msg .role { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: end; }
+    .row > * { flex: 1; min-width: 120px; }
+    .status { font-size: 0.8rem; color: var(--muted); }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AI Interpreter</h1>
+    <span class="badge">One thread · many backends</span>
+    <span class="status" id="status">Connecting…</span>
+  </header>
+  <main>
+    <aside>
+      <label>Sessions</label>
+      <div id="sessions"></div>
+      <button type="button" class="secondary" id="btnNew" style="width:100%;margin-top:0.5rem">+ New session</button>
+      <hr style="border-color:var(--border);margin:1rem 0" />
+      <label for="systemPrompt">System context (saved once)</label>
+      <textarea id="systemPrompt" placeholder="Project rules, stack, goals…"></textarea>
+      <button type="button" class="secondary" id="btnSaveSystem" style="width:100%;margin-top:0.35rem">Save context to session</button>
+    </aside>
+    <section>
+      <div class="row">
+        <div>
+          <label for="backend">Backend</label>
+          <select id="backend"></select>
+        </div>
+        <div style="flex:0">
+          <label>&nbsp;</label>
+          <label style="display:flex;align-items:center;gap:0.35rem;color:var(--text);font-size:0.85rem">
+            <input type="checkbox" id="broadcast" /> Broadcast all
+          </label>
+        </div>
+      </div>
+      <div id="log"></div>
+      <label for="input">Your message (stored automatically)</label>
+      <textarea id="input" placeholder="Type once — interpreter keeps history for every backend…"></textarea>
+      <div class="row">
+        <button type="button" id="btnSend">Send</button>
+        <button type="button" class="secondary" id="btnExport">Copy export (Markdown)</button>
+      </div>
+    </section>
+  </main>
+  <script>
+    const API = '';
+    const apiKey = localStorage.getItem('interpreter_api_key') || '';
+    let currentSession = localStorage.getItem('interpreter_session') || '';
+    let backends = [];
+
+    function headers() {
+      const h = { 'Content-Type': 'application/json' };
+      if (apiKey) h['Authorization'] = 'Bearer ' + apiKey;
+      return h;
+    }
+
+    async function api(method, path, body) {
+      const r = await fetch(API + path, { method, headers: headers(), body: body ? JSON.stringify(body) : undefined });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+
+    function renderMessages(messages) {
+      const log = document.getElementById('log');
+      if (!messages.length) { log.innerHTML = '<p class="status">No messages yet. System context and chat are saved per session.</p>'; return; }
+      log.innerHTML = messages.map(m => `
+        <div class="msg">
+          <div class="role">${m.role}${m.backend ? ' · ' + m.backend : ''}</div>
+          <pre>${escapeHtml(m.content)}</pre>
+        </div>`).join('');
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function loadHealth() {
+      const h = await api('GET', '/v1/health');
+      backends = h.backends || [];
+      const sel = document.getElementById('backend');
+      sel.innerHTML = backends.map(b =>
+        `<option value="${b.id}" ${b.default ? 'selected' : ''}>${b.label} (${b.model})</option>`
+      ).join('');
+      document.getElementById('status').textContent = backends.length
+        ? `${backends.length} backend(s) · default: ${h.default_backend}`
+        : 'No backends — set OPENAI_API_KEY in .env';
+    }
+
+    async function loadSessions() {
+      const { sessions } = await api('GET', '/v1/sessions');
+      const el = document.getElementById('sessions');
+      el.innerHTML = sessions.map(s => `
+        <div class="session-item ${s.id === currentSession ? 'active' : ''}" data-id="${s.id}">
+          ${escapeHtml(s.title)} <span class="status">(${s.message_count})</span>
+        </div>`).join('');
+      el.querySelectorAll('.session-item').forEach(node => {
+        node.onclick = () => selectSession(node.dataset.id);
+      });
+    }
+
+    async function selectSession(id) {
+      currentSession = id;
+      localStorage.setItem('interpreter_session', id);
+      const data = await api('GET', '/v1/sessions/' + id);
+      document.getElementById('systemPrompt').value = data.session.system_prompt || '';
+      renderMessages(data.messages);
+      await loadSessions();
+    }
+
+    async function createSession() {
+      const title = prompt('Session title', 'My project') || 'default';
+      const s = await api('POST', '/v1/sessions', {
+        title,
+        system_prompt: document.getElementById('systemPrompt').value
+      });
+      await selectSession(s.id);
+    }
+
+    async function send() {
+      const text = document.getElementById('input').value.trim();
+      if (!text) return;
+      if (!currentSession) await createSession();
+      document.getElementById('btnSend').disabled = true;
+      try {
+        if (document.getElementById('broadcast').checked) {
+          const out = await api('POST', '/v1/broadcast', { session_id: currentSession, message: text });
+          let combined = '';
+          for (const r of out.results) {
+            combined += `\n--- ${r.backend} ---\n` + (r.ok ? r.reply : 'ERROR: ' + r.error);
+          }
+          document.getElementById('input').value = '';
+          await selectSession(currentSession);
+        } else {
+          await api('POST', '/v1/query', {
+            session_id: currentSession,
+            message: text,
+            backend: document.getElementById('backend').value,
+          });
+          document.getElementById('input').value = '';
+          await selectSession(currentSession);
+        }
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        document.getElementById('btnSend').disabled = false;
+      }
+    }
+
+    document.getElementById('btnSend').onclick = send;
+    document.getElementById('btnNew').onclick = createSession;
+    document.getElementById('btnSaveSystem').onclick = async () => {
+      if (!currentSession) { alert('Create or select a session first'); return; }
+      await api('PATCH', '/v1/sessions/' + currentSession, {
+        system_prompt: document.getElementById('systemPrompt').value
+      });
+      alert('System context saved for this session.');
+    };
+    document.getElementById('btnExport').onclick = async () => {
+      if (!currentSession) return;
+      const { markdown } = await api('GET', '/v1/sessions/' + currentSession + '/export');
+      await navigator.clipboard.writeText(markdown);
+      alert('Markdown copied to clipboard');
+    };
+
+    (async () => {
+      try {
+        await loadHealth();
+        await loadSessions();
+        if (currentSession) await selectSession(currentSession);
+      } catch (e) {
+        document.getElementById('status').textContent = 'Server offline — run START-INTERPRETER.cmd';
+      }
+    })();
+  </script>
+</body>
+</html>

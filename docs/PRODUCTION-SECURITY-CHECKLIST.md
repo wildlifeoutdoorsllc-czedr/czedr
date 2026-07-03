@@ -87,8 +87,11 @@ All routes are registered in `App::registerRoutes()` unless noted as legacy.
 | POST | `/v1/transfers` | **PIN** | L344–357 |
 | POST | `/v1/invoices` | **PIN** | L363–376 |
 | GET | `/v1/invoices/received`, `/sent` | scoped to `$uid` | L378–390 |
-| GET | `/v1/users/validate` | recipient lookup | L339–342 |
-| POST | `/v1/funding/bank-link/*` | vault + micro-deposit | `registerFundingRoutes()` L534–557 |
+| GET | `/v1/users/validate` | recipient lookup | L352–355 |
+| GET | `/v1/me` | profile + payment QR payload | L357–365 |
+| GET | `/v1/funding/status` | bank optional; micro-deposit | `registerFundingRoutes()` L561–563 |
+| POST | `/v1/funding/bank-link/start`, `/confirm` | vault + micro-deposit | L565–582 |
+| GET | `/v1/funding/banks` | linked accounts list | L584–589 |
 | POST | `/v1/profile/avatar` | — | L446–459 |
 | GET | `/v1/media/profile/{file}` | Bearer or `auth_code` query | L461–491 |
 
@@ -324,6 +327,14 @@ php scripts/test-signup-secure.php
 
 # 5. Register reserved ID rejected
 # POST /v1/auth/register {"email":"x@y.com","password":"LongPassword1!","czedr_id":"REVENUE"} → error
+
+# 6. Routes exist on production (no token — must NOT be 404)
+# Windows: powershell -File scripts/smoke-production-routes.ps1
+curl -sS -o /dev/null -w "%{http_code}\n" https://api.yourdomain.com/v1/me              # 401
+curl -sS -o /dev/null -w "%{http_code}\n" https://api.yourdomain.com/v1/funding/status  # 401
+
+# 7. With token (staging): funding + profile
+# php scripts/test-api.php   # local; or CZEDR_TEST_BASE=https://api.yourdomain.com on server
 ```
 
 **iOS / TestFlight**
