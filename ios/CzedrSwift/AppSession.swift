@@ -553,6 +553,33 @@ final class AppSession: ObservableObject {
         }
     }
 
+    func payInvoice(
+        invoiceId: String,
+        pin: String,
+        onSuccess: @escaping (CzedrAPIClient.InvoicePayResult) -> Void
+    ) {
+        if pin.count != 4 {
+            errorMessage = "PIN must be 4 digits"
+            return
+        }
+        isLoading = true
+        errorMessage = nil
+        api.payInvoice(apiBase: apiBase, token: token, invoiceId: invoiceId, pin: pin) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self.errorMessage = msg
+                case .ok(let payResult):
+                    self.errorMessage = nil
+                    self.refreshBalance()
+                    onSuccess(payResult)
+                }
+            }
+        }
+    }
+
     private func persistSession(
         token: String,
         email: String,

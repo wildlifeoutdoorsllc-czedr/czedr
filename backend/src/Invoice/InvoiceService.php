@@ -5,13 +5,16 @@ namespace Czedr\Invoice;
 
 use Czedr\Audit\AuditService;
 use Czedr\Database\ConnectionFactory;
+use Czedr\Ledger\LedgerService;
 use Czedr\Support\Uuid;
 use PDO;
 
 final class InvoiceService
 {
-    public function __construct(private readonly AuditService $audit)
-    {
+    public function __construct(
+        private readonly AuditService $audit,
+        private readonly LedgerService $ledger,
+    ) {
     }
 
     /** @return array{msg: list<string>, objid: list<string>, type: list<string>} */
@@ -65,6 +68,73 @@ final class InvoiceService
     public function listSent(string $userId, int $offset, int $limit): array
     {
         return $this->listForUser($userId, 'from_user_id', $offset, $limit, false);
+    }
+
+    /**
+     * Pay a pending invoice: the payer (to_user) transfers the amount to the
+     * invoice creator (from_user) via the ledger, then the invoice is marked paid.
+     *
+     * @return array{msg: list<string>, transaction_id: string}
+     */
+    public function pay(
+        string $payerUserId,
+        string $invoiceId,
+        ?string $ip,
+        ?string $userAgent,
+    ): array {
+        $pdo = ConnectionFactory::saturn();
+        $stmt = $pdo->prepare(
+            "SELECT id, from_user_id, to_user_id, amount_cents, description, status
+             FROM invoices WHERE id = :id LIMIT 1"
+        );
+        $stmt->execute(['id' => $invoiceId]);
+        $invoice = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$invoice) {
+            throw new \InvalidArgumentException('Invoice not found');
+        }
+        if ($invoice['status'] !== 'pending') {
+            throw new \InvalidArgumentException('Invoice is already ' . $invoice['status']);
+        }
+        if ($invoice['to_user_id'] !== $payerUserId) {
+            throw new \InvalidArgumentException('You are not the payer for this invoice');
+        }
+
+        $recipientCzedrId = $this->czedrIdByUserId($pdo, $invoice['from_user_id']);
+
+        $txn = $this->ledger->transfer(
+            $payerUserId,
+            $recipientCzedrId,
+            (int) $invoice['amount_cents'],
+            'invoice-pay:' . $invoiceId,
+            $invoice['description'] ?: 'Invoice payment',
+            $ip,
+            $userAgent,
+        );
+
+        $pdo->prepare("UPDATE invoices SET status = 'paid' WHERE id = :id")
+            ->execute(['id' => $invoiceId]);
+
+        $this->audit->log($payerUserId, 'invoice.pay', 'invoice', $invoiceId, $ip, $userAgent, [
+            'amount_cents' => (int) $invoice['amount_cents'],
+            'to_user_id' => $invoice['from_user_id'],
+            'transaction_id' => $txn['id'] ?? '',
+        ]);
+
+        return [
+            'msg' => ['Invoice paid'],
+            'transaction_id' => $txn['id'] ?? '',
+        ];
+    }
+
+    private function czedrIdByUserId(PDO $pdo, string $userId): string
+    {
+        $stmt = $pdo->prepare('SELECT czedr_id FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $userId]);
+        $cid = $stmt->fetchColumn();
+        if (!$cid) {
+            throw new \InvalidArgumentException('Invoice recipient account not found');
+        }
+        return (string) $cid;
     }
 
     /** @return array{rows: list<array<string, mixed>>, total: int} */

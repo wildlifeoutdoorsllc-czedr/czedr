@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **136** — sign-in autofill hint; trim passwords on login ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27102053935)) |
-| **Next ship build number** | **137** |
-| **In progress** | — |
+| **Next ship build number** | **138** |
+| **In progress** | **137** -- Pay Now on received invoices (P2B ledger transfer) |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,8 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 137 | Pay Now on received invoices: PIN sheet, ledger transfer, success screen |
+| 136 | Sign-in autofill hint; trim passwords on login |
 | 135 | Forgot password: check-email screen → reset link in Mail/Safari (Option B); manual code fallback |
 | 134 | support@czedr.com on forgot-password; backend reset email Reply-To |
 | 132 | Sign up: referrer ID (not a question); QR scan + paste on optional referrer field |

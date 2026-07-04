@@ -224,6 +224,12 @@ struct PendingInvoicesScreen: View {
     @State private var screenError: String?
     @State private var isLoading = false
 
+    @State private var payingInvoice: InvoiceRow?
+    @State private var payPin = ""
+    @State private var payError: String?
+    @State private var showPaySuccess = false
+    @State private var paidDetails: InvoicePaySuccessDetails?
+
     private var activeRows: [InvoiceRow] {
         tab == .waitingOnThem ? sentRows : receivedRows
     }
@@ -242,7 +248,7 @@ struct PendingInvoicesScreen: View {
 
                 if isLoading && activeRows.isEmpty {
                     Spacer()
-                    Text("Loading…")
+                    Text("Loading...")
                         .foregroundColor(CzedrPalette.caption)
                     Spacer()
                 } else if let err = screenError, activeRows.isEmpty {
@@ -271,6 +277,35 @@ struct PendingInvoicesScreen: View {
         }
         .onAppear(perform: loadAll)
         .onChange(of: tab) { _ in screenError = nil }
+        .sheet(item: $payingInvoice) { invoice in
+            InvoicePaySheet(
+                invoice: invoice,
+                pin: $payPin,
+                error: $payError,
+                isLoading: session.isLoading,
+                hasPinSet: session.hasPinSet,
+                onPay: { confirmPay(invoice) },
+                onCancel: { cancelPay() }
+            )
+        }
+        .background(
+            NavigationLink(
+                destination: paySuccessDestination,
+                isActive: $showPaySuccess
+            ) { EmptyView() }.hidden()
+        )
+    }
+
+    @ViewBuilder
+    private var paySuccessDestination: some View {
+        if let details = paidDetails {
+            InvoicePaySuccessScreen(details: details, isPresented: $showPaySuccess) {
+                paidDetails = nil
+                loadAll()
+            }
+        } else {
+            EmptyView()
+        }
     }
 
     private var emptyMessage: String {
@@ -284,11 +319,28 @@ struct PendingInvoicesScreen: View {
 
     private func invoiceRow(_ row: InvoiceRow) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(CzedrMoney.format(cents: row.amountCents))
-                .font(.headline)
-                .foregroundColor(CzedrPalette.balanceGreen)
-            Text(row.description.isEmpty ? "Invoice" : row.description)
-                .foregroundColor(CzedrPalette.lightText)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(CzedrMoney.format(cents: row.amountCents))
+                        .font(.headline)
+                        .foregroundColor(CzedrPalette.balanceGreen)
+                    Text(row.description.isEmpty ? "Invoice" : row.description)
+                        .foregroundColor(CzedrPalette.lightText)
+                }
+                Spacer()
+                if tab == .youOwe {
+                    Button(action: { startPay(row) }) {
+                        Text("Pay Now")
+                            .font(.subheadline.bold())
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(CzedrPalette.balanceGreen)
+                            .foregroundColor(.black)
+                            .cornerRadius(6)
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
+                }
+            }
             Text(counterpartyLine(row))
                 .font(.caption)
                 .foregroundColor(CzedrPalette.caption)
@@ -308,6 +360,39 @@ struct PendingInvoicesScreen: View {
             return tab == .waitingOnThem ? "To \(id)" : "From \(id)"
         }
         return tab == .waitingOnThem ? "To \(label) (\(id))" : "From \(label) (\(id))"
+    }
+
+    private func startPay(_ row: InvoiceRow) {
+        payPin = ""
+        payError = nil
+        session.clearError()
+        payingInvoice = row
+    }
+
+    private func cancelPay() {
+        payingInvoice = nil
+        payPin = ""
+        payError = nil
+        session.clearError()
+    }
+
+    private func confirmPay(_ invoice: InvoiceRow) {
+        payError = nil
+        session.payInvoice(invoiceId: invoice.id, pin: payPin) { result in
+            payingInvoice = nil
+            payPin = ""
+            paidDetails = InvoicePaySuccessDetails(
+                transactionId: result.transactionId,
+                senderCzedrId: invoice.counterpartyCzedrId,
+                senderLabel: invoice.counterpartyLabel,
+                amountCents: invoice.amountCents,
+                description: invoice.description
+            )
+            showPaySuccess = true
+        }
+        if let errMsg = session.errorMessage, !errMsg.isEmpty {
+            payError = errMsg
+        }
     }
 
     private func loadAll() {
@@ -340,5 +425,188 @@ struct PendingInvoicesScreen: View {
             isLoading = false
             screenError = loadError
         }
+    }
+}
+
+// MARK: - Pay Invoice Sheet
+
+private struct InvoicePaySheet: View {
+    let invoice: InvoiceRow
+    @Binding var pin: String
+    @Binding var error: String?
+    let isLoading: Bool
+    let hasPinSet: Bool
+    let onPay: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                CzedrPalette.background.ignoresSafeArea()
+                ScrollView {
+                    VStack(spacing: 16) {
+                        Text("Pay Invoice")
+                            .font(.title2.bold())
+                            .foregroundColor(CzedrPalette.lightText)
+                            .padding(.top, 8)
+
+                        Text(CzedrMoney.format(cents: invoice.amountCents))
+                            .font(.system(size: 36, weight: .semibold))
+                            .foregroundColor(CzedrPalette.balanceGreen)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            detailRow("To", invoice.counterpartyLabel.isEmpty
+                                ? invoice.counterpartyCzedrId.uppercased()
+                                : "\(invoice.counterpartyLabel) (\(invoice.counterpartyCzedrId.uppercased()))")
+                            if !invoice.description.isEmpty {
+                                detailRow("Description", invoice.description)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(16)
+                        .background(CzedrPalette.surface)
+                        .cornerRadius(8)
+
+                        if !hasPinSet {
+                            Text("Set a 4-digit PIN in Profile before you can pay.")
+                                .font(.footnote)
+                                .foregroundColor(CzedrPalette.redPrimary)
+                        } else {
+                            Text("Enter your 4-digit PIN to confirm")
+                                .font(.caption)
+                                .foregroundColor(CzedrPalette.caption)
+                            CzedrPinEntryView(pin: $pin)
+                        }
+
+                        if let err = error {
+                            Text(err)
+                                .font(.footnote)
+                                .foregroundColor(CzedrPalette.redPrimary)
+                        }
+
+                        Button(action: onPay) {
+                            Text(isLoading ? "..." : "PAY NOW")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(CzedrPalette.balanceGreen)
+                                .foregroundColor(.black)
+                                .cornerRadius(6)
+                        }
+                        .disabled(isLoading || !hasPinSet || pin.count != 4)
+
+                        Button("Cancel", action: onCancel)
+                            .foregroundColor(CzedrPalette.caption)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
+                }
+            }
+            .navigationBarHidden(true)
+        }
+    }
+
+    private func detailRow(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(CzedrPalette.caption)
+            Text(value)
+                .font(.subheadline)
+                .foregroundColor(CzedrPalette.lightText)
+        }
+    }
+}
+
+// MARK: - Pay Invoice Success
+
+struct InvoicePaySuccessDetails: Equatable {
+    let transactionId: String
+    let senderCzedrId: String
+    let senderLabel: String
+    let amountCents: Int64
+    let description: String
+}
+
+struct InvoicePaySuccessScreen: View {
+    @EnvironmentObject var session: AppSession
+    @Environment(\.czedrTextSize) private var textSize
+    let details: InvoicePaySuccessDetails
+    @Binding var isPresented: Bool
+    var onDone: () -> Void
+
+    var body: some View {
+        LoggedInPageLayout(title: "Success", showBack: false, onMenu: { session.presentMenu() }) {
+            VStack(spacing: 20) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: CzedrTypography.scaled(72, size: textSize)))
+                    .foregroundColor(CzedrPalette.balanceGreen)
+                    .padding(.top, 24)
+
+                Text("Invoice paid")
+                    .font(.title2.bold())
+                    .foregroundColor(CzedrPalette.lightText)
+                    .multilineTextAlignment(.center)
+
+                Text(CzedrMoney.format(cents: details.amountCents))
+                    .font(.system(size: CzedrTypography.scaled(36, size: textSize), weight: .semibold))
+                    .foregroundColor(CzedrPalette.balanceGreen)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    successRow("Paid to", recipientLine)
+                    if !details.description.isEmpty {
+                        successRow("Description", details.description)
+                    }
+                    if !details.transactionId.isEmpty {
+                        successRow("Transaction ID", details.transactionId)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(CzedrPalette.surface)
+                .cornerRadius(8)
+
+                Spacer(minLength: 12)
+
+                Button(action: finish) {
+                    Text("OK")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(CzedrPalette.charcoalButton)
+                        .foregroundColor(CzedrPalette.lightText)
+                        .cornerRadius(6)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+
+    private var recipientLine: String {
+        let id = details.senderCzedrId.uppercased()
+        let label = details.senderLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        if label.isEmpty || label.uppercased() == id {
+            return id
+        }
+        return "\(label) (\(id))"
+    }
+
+    private func successRow(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(CzedrPalette.caption)
+            Text(value)
+                .font(.subheadline)
+                .foregroundColor(CzedrPalette.lightText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func finish() {
+        isPresented = false
+        onDone()
     }
 }

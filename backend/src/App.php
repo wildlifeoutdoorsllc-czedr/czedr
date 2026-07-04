@@ -52,7 +52,7 @@ final class App
         $this->rateLimiter = new RateLimiter();
         $this->audit = new AuditService();
         $this->ledger = new LedgerService($this->audit);
-        $this->invoices = new InvoiceService($this->audit);
+        $this->invoices = new InvoiceService($this->audit, $this->ledger);
         $this->profileMedia = new ProfileMediaService();
         $this->cardLinks = new CardLinkService($this->profileMedia);
         $this->moovAch = new MoovAchService(new MoovHttpClient(), $this->ledger);
@@ -396,6 +396,19 @@ final class App
                 $r->userAgent
             );
             JsonResponse::ok($out);
+        }));
+
+        $this->router->post('/v1/invoices/pay', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $this->auth->requirePinForPayment($uid, (string) ($r->body['user_pin'] ?? $r->body['pin'] ?? ''));
+            $invoiceId = trim((string) ($r->body['invoice_id'] ?? ''));
+            if ($invoiceId === '') {
+                JsonResponse::error('invoice_id is required', 400);
+                return;
+            }
+            $out = $this->invoices->pay($uid, $invoiceId, $r->ip, $r->userAgent);
+            $this->ledger->ensureAccount($uid);
+            $bal = $this->ledger->getBalanceCents($uid);
+            JsonResponse::ok(array_merge($out, ['balance_cents' => $bal]));
         }));
 
         $this->router->get('/v1/invoices/received', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {

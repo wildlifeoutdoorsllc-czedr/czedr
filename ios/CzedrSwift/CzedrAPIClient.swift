@@ -421,6 +421,38 @@ final class CzedrAPIClient {
         }
     }
 
+    struct InvoicePayResult {
+        let transactionId: String
+        let balanceCents: Int64
+    }
+
+    func payInvoice(
+        apiBase: String,
+        token: String,
+        invoiceId: String,
+        pin: String,
+        completion: @escaping (APIResult<InvoicePayResult>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        let body: [String: Any] = [
+            "invoice_id": invoiceId,
+            "user_pin": pin,
+        ]
+        postJSON(base: base, path: "/v1/invoices/pay", body: body, token: token) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok(let data):
+                let txnId = data["transaction_id"] as? String ?? ""
+                let bal = Self.int64(data["balance_cents"])
+                completion(.ok(InvoicePayResult(transactionId: txnId, balanceCents: bal)))
+            }
+        }
+    }
+
     func fetchFundingStatus(
         apiBase: String,
         token: String,
