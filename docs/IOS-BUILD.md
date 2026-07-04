@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **136** — sign-in autofill hint; trim passwords on login ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27102053935)) |
+| **Last shipped (TestFlight)** | **137** -- Pay Now on received invoices; add-testflight-tester script ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/28694144714)) |
 | **Next ship build number** | **138** |
-| **In progress** | **137** -- Pay Now on received invoices (P2B ledger transfer) |
+| **In progress** | -- |
 
 ## Ship pipeline (user preference)
 
