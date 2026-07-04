@@ -308,6 +308,31 @@ final class CzedrAPIClient {
         }
     }
 
+    func resetPin(
+        apiBase: String,
+        token: String,
+        password: String,
+        newPin: String,
+        completion: @escaping (APIResult<Void>) -> Void
+    ) {
+        guard let base = Self.normalizeBase(apiBase) else {
+            completion(.err("Invalid API base URL"))
+            return
+        }
+        let body: [String: Any] = [
+            "password": password,
+            "new_pin": newPin,
+        ]
+        postJSON(base: base, path: "/v1/auth/pin/reset", body: body, token: token) { result in
+            switch result {
+            case .err(let msg):
+                completion(.err(msg))
+            case .ok:
+                completion(.ok(()))
+            }
+        }
+    }
+
     func logout(apiBase: String, token: String) {
         guard let base = Self.normalizeBase(apiBase), !token.isEmpty else { return }
         var req = URLRequest(url: URL(string: "\(base)/v1/auth/logout")!)

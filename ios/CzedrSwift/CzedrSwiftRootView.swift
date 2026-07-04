@@ -696,6 +696,12 @@ struct MenuSheet: View {
                         Text(session.hasPinSet ? "Change PIN" : "Set PIN")
                             .foregroundColor(session.hasPinSet ? CzedrPalette.lightText : CzedrPalette.redPrimary)
                     }
+                    if session.hasPinSet {
+                        NavigationLink(destination: ForgotPinScreen()) {
+                            Text("Forgot PIN?")
+                                .foregroundColor(CzedrPalette.caption)
+                        }
+                    }
                     NavigationLink(destination: SendInvoiceScreen(openedFromMenu: true)) {
                         Text("Send Invoice")
                     }
@@ -1233,6 +1239,13 @@ struct ProfileScreen: View {
                             .background(CzedrPalette.orangeField)
                             .foregroundColor(CzedrPalette.fieldText)
                             .cornerRadius(6)
+                    }
+                    if session.hasPinSet {
+                        NavigationLink(destination: ForgotPinScreen()) {
+                            Text("Forgot PIN?")
+                                .font(.subheadline)
+                                .foregroundColor(CzedrPalette.cheddarGold)
+                        }
                     }
 
                     CzedrTextSizePicker()

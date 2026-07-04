@@ -292,6 +292,28 @@ final class AuthService
         $this->audit->log($userId, 'auth.pin_change', 'user', $userId, null, null, []);
     }
 
+    /**
+     * Reset PIN by verifying account password (for users who forgot their PIN).
+     * Clears the old PIN hash, lockout state, and sets the new one.
+     */
+    public function resetPinWithPassword(string $userId, string $password, string $newPin): void
+    {
+        $pdo = ConnectionFactory::saturn();
+        $stmt = $pdo->prepare('SELECT password_hash FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $userId]);
+        $hash = $stmt->fetchColumn();
+        $password = trim($password);
+        if (!is_string($hash) || $hash === '' || !password_verify($password, $hash)) {
+            throw new \InvalidArgumentException('Incorrect password');
+        }
+        $newPin = $this->normalizePin($newPin);
+        $pinHash = password_hash($newPin, PASSWORD_ARGON2ID);
+        $pdo->prepare(
+            'UPDATE users SET pin_hash = :hash, pin_failed_attempts = 0, pin_locked_until = NULL WHERE id = :id'
+        )->execute(['hash' => $pinHash, 'id' => $userId]);
+        $this->audit->log($userId, 'auth.pin_reset', 'user', $userId, null, null, []);
+    }
+
     private function normalizePin(string $pin): string
     {
         $pin = preg_replace('/\D/', '', $pin) ?? '';

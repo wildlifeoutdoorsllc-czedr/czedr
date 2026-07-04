@@ -5,8 +5,8 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 | Field | Value |
 |-------|--------|
 | **Last shipped (TestFlight)** | **137** -- Pay Now on received invoices; add-testflight-tester script ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/28694144714)) |
-| **Next ship build number** | **138** |
-| **In progress** | -- |
+| **Next ship build number** | **139** |
+| **In progress** | **138** -- Forgot PIN (reset via password) |
 
 ## Ship pipeline (user preference)
 
@@ -24,6 +24,7 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
+| 138 | Forgot PIN: reset PIN by verifying account password (menu + Profile link) |
 | 137 | Pay Now on received invoices: PIN sheet, ledger transfer, success screen |
 | 136 | Sign-in autofill hint; trim passwords on login |
 | 135 | Forgot password: check-email screen → reset link in Mail/Safari (Option B); manual code fallback |

@@ -27,7 +27,7 @@ struct CzedrSupportHelpCard: View {
             Text("Help")
                 .font(.caption)
                 .foregroundColor(CzedrPalette.caption)
-            Text("Forgot your payment PIN? Sign out, use Forgot password? on the sign-in screen, then open Change PIN from the menu.")
+            Text("Forgot your payment PIN? Tap Forgot PIN in the menu or below Change PIN on this screen.")
                 .font(.caption)
                 .foregroundColor(CzedrPalette.caption)
                 .fixedSize(horizontal: false, vertical: true)

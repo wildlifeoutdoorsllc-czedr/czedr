@@ -267,6 +267,16 @@ final class App
             JsonResponse::ok(['set' => true, 'user_pin' => '1']);
         }));
 
+        $this->router->post('/v1/auth/pin/reset', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
+            $password = trim((string) ($r->body['password'] ?? ''));
+            $newPin = (string) ($r->body['new_pin'] ?? $r->body['user_pin'] ?? '');
+            if ($password === '' || $newPin === '') {
+                throw new \InvalidArgumentException('Password and new PIN are required');
+            }
+            $this->auth->resetPinWithPassword($uid, $password, $newPin);
+            JsonResponse::ok(['reset' => true, 'user_pin' => '1']);
+        }));
+
         $this->router->post('/v1/auth/pin/update', fn (Request $r) => $this->withAuth($r, function (string $uid) use ($r) {
             $oldPin = (string) ($r->body['old_pin'] ?? $r->body['user_pin_old'] ?? '');
             $newPin = (string) ($r->body['new_pin'] ?? $r->body['user_pin'] ?? '');

@@ -291,6 +291,33 @@ final class AppSession: ObservableObject {
         }
     }
 
+    func resetAccountPin(password: String, newPin: String, onSuccess: @escaping () -> Void) {
+        if password.isEmpty {
+            errorMessage = "Enter your account password"
+            return
+        }
+        if newPin.count != 4 {
+            errorMessage = "PIN must be 4 digits"
+            return
+        }
+        isLoading = true
+        errorMessage = nil
+        api.resetPin(apiBase: apiBase, token: token, password: password, newPin: newPin) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isLoading = false
+                switch result {
+                case .err(let msg):
+                    self.errorMessage = msg
+                case .ok:
+                    self.hasPinSet = true
+                    self.errorMessage = nil
+                    onSuccess()
+                }
+            }
+        }
+    }
+
     func logout() {
         let base = apiBase
         let tok = token
