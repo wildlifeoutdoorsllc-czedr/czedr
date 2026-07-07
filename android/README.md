@@ -53,7 +53,7 @@ Uses **`POST /v1/auth/login`** and **`POST /v1/auth/register`** (plain JSON), sa
 See **`docs/ANDROID-EMULATOR-WINDOWS.md`**. Prefer **Czedr_API30** on Intel Celeron-class PCs.
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\start-php-server.ps1
 .\start-android-emulator.ps1
 ```

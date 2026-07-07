@@ -19,7 +19,7 @@ Apply migration **`database/migrations/008_user_role.sql`** (included in **`inst
 ## Start the server (Windows PC only)
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\start-php-server.ps1
 ```
 
@@ -34,7 +34,7 @@ Leave that window open. The script prints **health** and **sandbox** URLs for th
 ## Add $10,000 to Alice and Bob (PC)
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\fund-test-accounts.ps1
 ```
 
@@ -43,7 +43,7 @@ Credits **$10,000** to each test account via the ledger API and prints balances.
 ## Create or refresh test accounts (PC)
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\create-test-accounts.ps1
 ```
 
@@ -109,7 +109,7 @@ Sandbox → **Auth** → **Create account**
 ## Two-user transfer demo (PC terminal)
 
 ```powershell
-php D:\CZEDR\scripts\test-transfer-demo.php
+php C:\Michaels Apps\czedr\scripts\test-transfer-demo.php
 ```
 
 Creates random Alice/Bob emails and prints IDs for API testing.

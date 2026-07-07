@@ -129,7 +129,7 @@ cd /var/www/czedr
 # git clone https://github.com/wildlifeoutdoorsllc-czedr/czedr.git .
 
 # Option B: rsync from your PC (PowerShell on Windows):
-# scp -r D:\CZEDR\* root@91.220.203.91:/var/www/czedr/
+# scp -r C:\Michaels Apps\czedr\* root@91.220.203.91:/var/www/czedr/
 
 chown -R www-data:www-data /var/www/czedr
 ```

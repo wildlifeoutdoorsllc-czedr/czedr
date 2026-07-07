@@ -1,7 +1,7 @@
 CZEDR — GET VPS WORKING (one page for Michael)
 =============================================
 
-EASIEST: double-click  D:\CZEDR\MAKE-VPS-WORK.cmd
+EASIEST: double-click  MAKE-VPS-WORK.cmd  in this repo folder
 
   - First time only: paste your OneVPS root password when asked (port 22122)
   - Then it installs everything and opens https://api.czedr.com/v1/health

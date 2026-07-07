@@ -27,7 +27,7 @@ Related docs: `docs/TEST-ACCOUNTS.md`, `docs/TESTFLIGHT_SETUP.md`, `docs/IOS-SWI
 
 | Item | Value |
 |------|--------|
-| Path | `D:\CZEDR` |
+| Path | `C:\Michaels Apps\czedr` |
 | Branch | `czedrmaster` |
 | Remote | `https://github.com/wildlifeoutdoorsllc-czedr/czedr.git` |
 | iOS workflow | `.github/workflows/ios-testflight.yml` |
@@ -245,7 +245,7 @@ Prioritize: block reserved `czedr_id`, fix legacy PIN routes, stop logging reset
 ## Chat transcript reference
 
 Full agent transcript (tool calls stripped in export):  
-`C:\Users\pc\.cursor\projects\d-CZEDR\agent-transcripts\cc9fcfe4-9941-4a37-9103-ba3f058f4e3a\cc9fcfe4-9941-4a37-9103-ba3f058f4e3a.jsonl`
+`C:\Users\pc\.cursor\projects\c-Michaels-Apps-czedr\agent-transcripts\cc9fcfe4-9941-4a37-9103-ba3f058f4e3a\cc9fcfe4-9941-4a37-9103-ba3f058f4e3a.jsonl`
 
 ---
 

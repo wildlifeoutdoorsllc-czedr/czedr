@@ -5,11 +5,16 @@ param(
     [string]$IssuerId,
     [string]$Repo = "wildlifeoutdoorsllc-czedr/czedr",
     [string]$P8Path = "$env:USERPROFILE\Downloads\AuthKey_579ABG6V64.p8",
-    [string]$P12Path = "D:\CZEDR\secrets\czedr-dist.p12",
-    [string]$P12PasswordPath = "D:\CZEDR\secrets\p12-export-password.txt"
+    [string]$P12Path,
+    [string]$P12PasswordPath
 )
 
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'Czedr-RepoRoot.ps1')
+$repoRoot = Get-CzedrRepoRoot
+if (-not $P12Path) { $P12Path = Join-Path $repoRoot 'secrets\czedr-dist.p12' }
+if (-not $P12PasswordPath) { $P12PasswordPath = Join-Path $repoRoot 'secrets\p12-export-password.txt' }
 
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     Write-Host "Install GitHub CLI: winget install GitHub.cli" -ForegroundColor Red

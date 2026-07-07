@@ -11,7 +11,7 @@ Double-click **`START-ANDROID-DEV.cmd`** at the repo root. It:
 
 ## In Android Studio
 
-1. **File → Open** → `D:\CZEDR\android` (the `android` folder only)
+1. **File → Open** → `C:\Michaels Apps\czedr\android` (the `android` folder only)
 2. **File → Sync Project with Gradle Files** (wait until finished)
 3. **Run target:** prefer a **physical phone** (USB debugging) — see **`docs/ANDROID-PHYSICAL-DEVICE.md`**
 4. **Avoid the emulator** on this PC if it froze or crashed Windows (Celeron + 16 GB RAM is often too tight).
@@ -38,7 +38,7 @@ Set a **4-digit PIN** from the menu before **Make Payment**.
 ## Build from terminal (optional)
 
 ```powershell
-cd D:\CZEDR\android
+cd C:\Michaels Apps\czedr\android
 .\gradlew.bat assembleDebug
 ```
 

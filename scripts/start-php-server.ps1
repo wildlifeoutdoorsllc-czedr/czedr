@@ -1,5 +1,6 @@
 # Czedr API - PHP built-in server for local dev (Android emulator, devices on Wi-Fi, browser).
-$root = Split-Path $PSScriptRoot -Parent
+. (Join-Path $PSScriptRoot 'Czedr-RepoRoot.ps1')
+$root = Get-CzedrRepoRoot
 $docRoot = Join-Path $root "backend\public"
 
 function Get-LanIPv4 {

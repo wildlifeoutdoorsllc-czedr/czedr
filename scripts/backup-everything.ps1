@@ -1,6 +1,6 @@
 # Emergency backup: VPS + local PC + repo metadata.
 # Usage: powershell -File scripts\backup-everything.ps1
-# Output: D:\CZEDR\backups\emergency-YYYYMMDD-HHMMSS\
+# Output: <repo>\backups\emergency-YYYYMMDD-HHMMSS\
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "Czedr-SshDefaults.ps1")

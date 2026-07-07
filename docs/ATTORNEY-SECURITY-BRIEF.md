@@ -1,7 +1,7 @@
 # Czedr — Security & Technical Brief (for counsel review)
 
 **Prepared:** May 2026  
-**Repository:** `D:\CZEDR` / `https://github.com/wildlifeoutdoorsllc-czedr/czedr`  
+**Repository:** `C:\Michaels Apps\czedr` / `https://github.com/wildlifeoutdoorsllc-czedr/czedr`  
 **Branch:** `czedrmaster`  
 **Product:** Czedr mobile wallet (iOS TestFlight; Android in development) with PHP/MySQL API  
 

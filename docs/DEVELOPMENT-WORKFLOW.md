@@ -16,7 +16,7 @@ How we work on this repo to stay fast locally and avoid wasted TestFlight / CI t
 
 1. **API** (keep window open):
    ```powershell
-   cd D:\CZEDR\scripts
+   cd C:\Michaels Apps\czedr\scripts
    .\start-php-server.ps1
    ```
 2. **Test on device** with the **latest TestFlight** build (see `docs/IOS-BUILD.md` for number).
@@ -41,7 +41,7 @@ CI workflow: `.github/workflows/ios-testflight.yml` — **`workflow_dispatch` on
 ### Ship one build
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\ship-testflight.ps1 -BuildNumber 96 -WaitForPrevious
 ```
 

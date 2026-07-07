@@ -4,7 +4,7 @@
 #
 # Usage:
 #   gh auth login
-#   cd D:\CZEDR\scripts
+#   cd C:\Michaels Apps\czedr\scripts
 #   .\setup-github-testflight.ps1
 #
 # Docs: docs\TESTFLIGHT_SETUP.md

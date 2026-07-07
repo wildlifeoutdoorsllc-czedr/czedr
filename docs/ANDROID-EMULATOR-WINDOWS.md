@@ -21,7 +21,7 @@ The default API 34 image + AEHD often hit **QEMU2 CPU thread hanging** on this c
 4. **Start**:
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\start-php-server.ps1          # separate window — keep open
 .\start-android-emulator.ps1    # default: Czedr_API30
 ```

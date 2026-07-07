@@ -14,7 +14,7 @@ Say it **once** — the interpreter stores your conversation and routes it to on
 ## CLI
 
 ```powershell
-cd D:\CZEDR\ai-interpreter
+cd C:\Michaels Apps\czedr\ai-interpreter
 pip install -r requirements.txt
 
 # New session + ask (history kept automatically)

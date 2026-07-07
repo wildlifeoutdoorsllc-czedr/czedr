@@ -54,7 +54,7 @@ Response fields:
 ## Test
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\start-php-server.ps1
 php ..\scripts\test-corporate-ledger.php
 ```

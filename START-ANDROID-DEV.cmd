@@ -5,7 +5,7 @@ title Czedr Android dev
 
 echo.
 echo [1/2] Starting API on port 8080...
-start "Czedr API" cmd /k "%~dp0scripts\start-php-server.ps1"
+start "Czedr API" cmd /k "powershell -NoProfile -ExecutionPolicy Bypass -File \"%~dp0scripts\start-php-server.ps1\""
 
 echo.
 echo [2/2] Android Studio setup...

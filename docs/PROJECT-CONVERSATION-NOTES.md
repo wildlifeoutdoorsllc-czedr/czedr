@@ -94,7 +94,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 ## Where Cursor stores chat history
 
 - Cursor keeps transcripts under your user profile, e.g.  
-  `C:\Users\pc\.cursor\projects\d-CZEDR\agent-transcripts\`  
+  `C:\Users\pc\.cursor\projects\c-Michaels-Apps-czedr\agent-transcripts\`  
 - This markdown file is the **project-facing** summary; it is safe to commit and share (no secrets).
 
 ---

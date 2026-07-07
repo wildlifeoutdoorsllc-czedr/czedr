@@ -19,7 +19,7 @@ The Czedr app works the same; only the API URL differs from the emulator.
 Double-click **`START-ANDROID-DEV.cmd`** or:
 
 ```powershell
-cd D:\CZEDR\scripts
+cd C:\Michaels Apps\czedr\scripts
 .\start-php-server.ps1
 ```
 
@@ -60,7 +60,7 @@ If the list is empty, try another USB port, another cable, or **Developer option
 
 ## 4. Run from Android Studio
 
-1. **File → Open** → `D:\CZEDR\android`
+1. **File → Open** → `C:\Michaels Apps\czedr\android`
 2. **File → Sync Project with Gradle Files** (once)
 3. Top toolbar: device dropdown → select your **phone** (not Pixel_7 / Czedr_API30)
 4. **Run** ▶

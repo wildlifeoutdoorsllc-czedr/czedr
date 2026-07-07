@@ -26,6 +26,6 @@ if ($s) {
 
 Write-Host ""
 Write-Host "Reboot Windows, then:" -ForegroundColor Green
-Write-Host "  cd D:\CZEDR\scripts" -ForegroundColor DarkGray
+Write-Host "  cd C:\Michaels Apps\czedr\scripts" -ForegroundColor DarkGray
 Write-Host "  .\preflight-emulator.ps1" -ForegroundColor DarkGray
 Write-Host "  .\start-android-emulator.ps1" -ForegroundColor DarkGray

@@ -144,7 +144,7 @@ What **Cursor AI** (or any remote assistant) needs versus what **Michael** must 
 | SSH port | **22122** (verified open externally) |
 | API DNS | `api.czedr.com` → `91.220.203.91` |
 | Deploy automation | `MAKE-VPS-WORK.cmd`, `scripts/deploy-onevps.ps1`, `scripts/deploy-on-server.sh` |
-| Application source | `D:\CZEDR` on Michael’s PC |
+| Application source | `C:\Michaels Apps\czedr` on Michael’s PC |
 
 ### What Michael provides so Cursor can help next
 
@@ -228,7 +228,7 @@ Security references in repo:
 |------|--------|
 | Product | Czedr — mobile wallet / payments (iOS TestFlight, Android) |
 | Backend | PHP 8, MySQL (`saturn` database), REST API under `/v1/` |
-| Repo | `D:\CZEDR` locally; GitHub: `wildlifeoutdoorsllc-czedr/czedr` |
+| Repo | `C:\Michaels Apps\czedr` locally; GitHub: `wildlifeoutdoorsllc-czedr/czedr` |
 | Local dev | Windows PC, PHP on port 8080, LAN testing |
 | Production env | `APP_ENV=production`, HTTPS required, no dev routes |
 

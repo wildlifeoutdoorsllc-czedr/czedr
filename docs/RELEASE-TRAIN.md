@@ -54,7 +54,7 @@ MAKE-VPS-WORK.cmd
 Or:
 
 ```powershell
-powershell -File D:\CZEDR\scripts\deploy-onevps.ps1
+powershell -File C:\Michaels Apps\czedr\scripts\deploy-onevps.ps1
 ```
 
 This uploads `backend/`, `database/`, `config/`, runs `scripts/deploy-on-server.sh` (migrations, restart `czedr-api`).
@@ -62,7 +62,7 @@ This uploads `backend/`, `database/`, `config/`, runs `scripts/deploy-on-server.
 **Verify:**
 
 ```powershell
-powershell -File D:\CZEDR\scripts\smoke-production-routes.ps1
+powershell -File C:\Michaels Apps\czedr\scripts\smoke-production-routes.ps1
 ```
 
 All three auth routes must show **401**, not **404**.

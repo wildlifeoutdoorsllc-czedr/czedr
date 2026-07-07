@@ -1,6 +1,6 @@
 # One-shot local dev after reboot: preflight, MySQL (if used), API, Czedr_API30 emulator.
 # Run:  .\start-dev.ps1
-# Or:   powershell -NoProfile -ExecutionPolicy Bypass -File "D:\CZEDR\scripts\start-dev.ps1"
+# Or:   powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Michaels Apps\czedr\scripts\start-dev.ps1"
 param(
     [switch]$SkipEmulator,
     [switch]$SkipApi

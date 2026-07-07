@@ -81,7 +81,7 @@ Any assistant in **this repo** can follow this doc and the Cursor rule **`atlas-
 
 ## How to “get Atlas” in Cursor (practical)
 
-1. **Stay in Czedr** (`D:\CZEDR`) — rule `atlas-for-michael.mdc` applies automatically.
+1. **Stay in Czedr** (`C:\Michaels Apps\czedr`) — rule `atlas-for-michael.mdc` applies automatically.
 2. **New chat** with first message:
    ```
    Read docs/ATLAS-CONTINUITY.md and docs/SUPPORT-HANDOFF-ONEVPS.md.
