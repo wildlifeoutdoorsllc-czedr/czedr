@@ -10,7 +10,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 
 ## Product direction
 
-- **Czedr** replaces legacy 3ds3cur3 / S3cur3e branding.
+- **Czedr** is the current product brand for the app and API.
 - Users pay by **Czedr ID** on an **internal ledger** only: **no** card, **no** ACH, **no** bank account storage in the shipped API.
 - **Single MySQL database (`saturn`)** holds users, sessions, ledger, invoices, and audit. (Planet-split vault code was removed from the runtime product to reduce scope and risk.)
 
@@ -27,7 +27,7 @@ Use it as a handoff if you return later or share the repo with someone else.
 - **Legacy bridge**: old iOS paths (`/login`, `/invoicerecev`, etc.) map to v1
 - Local dev: `APP_ENV=local` gives **$100 welcome balance** on register
 
-### iOS app (`payooxe/`, `classes/`, `CzedrConfig.h`)
+### iOS app (`Czedr/`, `classes/`, `CzedrConfig.h`)
 
 - Wired to `http://127.0.0.1:8080` (or PC LAN IP on device)
 - `SharedServiceController` — v1 client + secure login/signup/PIN

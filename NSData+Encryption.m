@@ -1,6 +1,6 @@
 //
 //  NSData+Encryption.m
-//  payooxe
+//  Czedr
 //
 //  Created by Mind Roots New on 04/06/15.
 //  Copyright (c) 2015 Renu. All rights reserved.

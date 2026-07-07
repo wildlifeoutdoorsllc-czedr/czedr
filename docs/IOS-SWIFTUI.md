@@ -57,6 +57,6 @@ See **`docs/IOS-SUPPORT-COVERAGE.md`** for common member issues vs what the app 
 ## Adding a screen
 
 1. Add view in `CzedrSwiftRootView.swift` or a new file under `ios/CzedrSwift/`
-2. Register file in `payooxe.xcodeproj` (Sources build phase)
+2. Register file in `Czedr.xcodeproj` (Sources build phase)
 3. Wrap with `LoggedInShell` for logo + menu + back
 4. Add API methods to `CzedrAPIClient.swift` if needed

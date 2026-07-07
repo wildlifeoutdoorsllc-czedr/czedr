@@ -81,7 +81,7 @@ Seed accounts: `scripts/seed-test-accounts.php` or `scripts/create-test-accounts
 **Problem:** After swipe-up force-quit, app reopened still “logged in” (`auth_codeSaved` in `NSUserDefaults`).
 
 **Fix:**
-- `payooxe/AppDelegate.m` — on cold launch, if logged in → `[CzedrAppChrome clearLocalSession]` before `mainViewSwitch`.
+- `Czedr/AppDelegate.m` — on cold launch, if logged in → `[CzedrAppChrome clearLocalSession]` before `mainViewSwitch`.
 - `classes/CzedrAppChrome.h` — declared `+isLoggedIn`, `+clearLocalSession` (build 51 CI failed once without header; fixed in `1a104cc`).
 - Android parity: `CzedrApplication.kt` clears session on new process.
 
@@ -117,8 +117,8 @@ Seed accounts: `scripts/seed-test-accounts.php` or `scripts/create-test-accounts
 ### Key files (login flow)
 | File | Role |
 |------|------|
-| `payooxe/ViewController.m` | Sign-in UI, `call_LoginService`, `performLoginRequest`, `completeLoginWithPayload` |
-| `payooxe/AppDelegate.m` | `mainViewSwitch`, `presentHomeAfterLogin`, `presentPinSetupAfterLogin` |
+| `Czedr/ViewController.m` | Sign-in UI, `call_LoginService`, `performLoginRequest`, `completeLoginWithPayload` |
+| `Czedr/AppDelegate.m` | `mainViewSwitch`, `presentHomeAfterLogin`, `presentPinSetupAfterLogin` |
 | `SharedServiceController.m` | `loginSecureWithEmail`, `saveLoginPayload`, `legacyUserPayloadFromV1`, v1 JSON client |
 | `leftSwipeViewController.m` | Home; `call_loadCardsService` (balance); deferred in build 56 |
 | `classes/CzedrAppChrome.m` | Session bar; `suspendSessionBarRefreshForSeconds` (build 56) |
@@ -158,7 +158,7 @@ Please wait 1 day and try again. (90382)
 
 **To upload when limit resets:**
 1. GitHub → **Actions** → **iOS TestFlight** → **Run workflow** (branch `czedrmaster`, build number **56**).
-2. Or push a commit touching `payooxe/**` (workflow auto-triggers).
+2. Or push a commit touching `Czedr/**` (workflow auto-triggers).
 3. User installs from TestFlight; verify build number **56** in app or TestFlight UI.
 
 ### Automation added (local PC)

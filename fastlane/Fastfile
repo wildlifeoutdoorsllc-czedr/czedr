@@ -24,11 +24,11 @@ platform :ios do
 
     profile_uuid = lane_context[SharedValues::SIGH_UUID]
     update_code_signing_settings(
-      path: "payooxe.xcodeproj",
+      path: "Czedr.xcodeproj",
       use_automatic_signing: false,
       team_id: ENV.fetch("APPLE_TEAM_ID"),
       bundle_identifier: "com.czedr.app",
-      targets: ["payooxe"],
+      targets: ["Czedr"],
       build_configurations: ["Release"],
       code_sign_identity: "Apple Distribution",
       profile_uuid: profile_uuid
@@ -37,15 +37,15 @@ platform :ios do
     build_number = ENV["BUILD_NUMBER"].to_s.strip
     build_number = ENV.fetch("GITHUB_RUN_NUMBER", "1") if build_number.empty?
     increment_build_number(
-      xcodeproj: "payooxe.xcodeproj",
+      xcodeproj: "Czedr.xcodeproj",
       build_number: build_number
     )
 
     profile_name = lane_context[SharedValues::SIGH_NAME]
 
     build_app(
-      project: "payooxe.xcodeproj",
-      scheme: "payooxe",
+      project: "Czedr.xcodeproj",
+      scheme: "Czedr",
       configuration: "Release",
       export_method: "app-store",
       export_options: {

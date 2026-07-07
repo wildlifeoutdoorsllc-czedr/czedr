@@ -8,7 +8,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "images" / "Czedr-auth-logo.png"
-OUT = ROOT / "payooxe" / "Images.xcassets" / "AppIcon.appiconset"
+OUT = ROOT / "Czedr" / "Images.xcassets" / "AppIcon.appiconset"
 BG = (42, 42, 44, 255)
 
 
