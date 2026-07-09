@@ -1,12 +1,21 @@
 param(
     [string]$Message,
     [string]$Backend,
+    [string]$Persona,
     [switch]$Broadcast,
     [switch]$NewSession,
     [string]$Title = "Cursor Session"
 )
 
 $ErrorActionPreference = "Stop"
+
+if ($Persona) {
+    $personaArgs = @('-Persona', $Persona)
+    if ($Message) { $personaArgs += @('-Message', $Message) }
+    if ($NewSession) { $personaArgs += '-NewSession' }
+    & (Join-Path $PSScriptRoot 'start-ai-persona.ps1') @personaArgs
+    exit $LASTEXITCODE
+}
 
 $root = Split-Path $PSScriptRoot -Parent
 $aiDir = Join-Path $root "ai-interpreter"

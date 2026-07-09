@@ -75,6 +75,7 @@ Any assistant in **this repo** can follow this doc and the Cursor rule **`atlas-
 | **`docs/PROJECT-CONVERSATION-NOTES.md`** | Session history summary |
 | **`docs/DEVELOPMENT-WORKFLOW.md`** | Git, TestFlight, commits |
 | **This file** | Atlas style + Michael’s context |
+| **`docs/AI-TEAM.md`** | Atlas, Nova, Forge — how to use all three |
 | **OPS timeouts** | `docs/OPS-TIMEOUTS.md` — SSH/deploy max wait (2 min / 30 min / 2 hr) |
 
 ---
@@ -98,7 +99,9 @@ See **Section 10** in `docs/SUPPORT-HANDOFF-ONEVPS.md`.
 
 ---
 
-## For other AIs (Alexa / Nova / contractors)
+## For other AIs (Alexa / Nova / Forge / contractors)
+
+See **`docs/AI-TEAM.md`** and **`integrations/ai_shared_space/`** for Nova (review) and Forge (build).
 
 Michael may bridge assistants via copy-paste or files. Preferred handoff:
 
