@@ -1,6 +1,6 @@
 //
 //  creditNewInvoiceViewController.h
-//  payoox
+//  Czedr
 //
 //  Created by Renu on 12/02/15.
 //  Copyright (c) 2015 mindroots. All rights reserved.
