@@ -1,6 +1,6 @@
 //
 //  CzedrTheme.h
-//  Czedr — visual style from S3cur3 product deck (orange fields, red actions, charcoal secondary).
+//  Czedr — visual style (orange fields, red actions, charcoal secondary).
 //
 
 #import <UIKit/UIKit.h>
