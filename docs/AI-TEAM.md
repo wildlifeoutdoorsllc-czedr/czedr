@@ -12,6 +12,8 @@ Michael uses **three roles**. They are not three separate apps you install — t
 
 ## Atlas (you may already be talking to Atlas)
 
+**Short guide:** `docs/GET-ATLAS-NOVA.md`
+
 **Atlas is this style of help in Cursor** — not a button.
 
 1. Open folder: `C:\Michaels Apps\czedr`

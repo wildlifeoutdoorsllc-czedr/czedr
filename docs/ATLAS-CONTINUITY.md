@@ -76,6 +76,7 @@ Any assistant in **this repo** can follow this doc and the Cursor rule **`atlas-
 | **`docs/DEVELOPMENT-WORKFLOW.md`** | Git, TestFlight, commits |
 | **This file** | Atlas style + Michael’s context |
 | **`docs/AI-TEAM.md`** | Atlas, Nova, Forge — how to use all three |
+| **`docs/GET-ATLAS-NOVA.md`** | **Start here** — Atlas + Nova in two Cursor chats |
 | **OPS timeouts** | `docs/OPS-TIMEOUTS.md` — SSH/deploy max wait (2 min / 30 min / 2 hr) |
 
 ---
