@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jibber Talk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a1f1c;
+      --paper: #f3efe6;
+      --panel: #ebe4d6;
+      --line: #c9bfa8;
+      --muted: #5c655e;
+      --accent: #1f6f5b;
+      --accent-soft: #d7ebe3;
+      --warn: #8a4b1f;
+      --blocked: #8b2e2e;
+      --ok: #1f6f5b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, #dfece4 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 0%, #e8dfc8 0%, transparent 50%),
+        linear-gradient(180deg, #f7f3ea 0%, var(--paper) 40%, #e8e2d4 100%);
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .tagline { color: var(--muted); font-size: 0.95rem; max-width: 28rem; margin: 0.2rem 0 0; }
+    .status { font-family: "IBM Plex Mono", monospace; font-size: 0.75rem; color: var(--muted); }
+    main {
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) minmax(180px, 220px) 1fr;
+      min-height: calc(100vh - 88px);
+    }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; }
+      aside { border-right: none; border-bottom: 1px solid var(--line); max-height: 180px; overflow: auto; }
+    }
+    aside {
+      padding: 1rem 1rem 1.25rem;
+      border-right: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
+    }
+    h2 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 0.65rem;
+      font-weight: 600;
+    }
+    .item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      font: inherit;
+      color: inherit;
+      padding: 0.55rem 0.65rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 0.25rem;
+    }
+    .item:hover, .item.active {
+      background: #fff;
+      border-color: var(--line);
+    }
+    .item .name { font-weight: 500; display: block; }
+    .item .meta {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .badge {
+      display: inline-block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      margin-left: 0.35rem;
+      vertical-align: middle;
+    }
+    .badge.blocked { background: #f3d9d9; color: var(--blocked); }
+    .badge.paused { background: #efe6d4; color: var(--warn); }
+    .badge.deployed, .badge.done { background: var(--accent-soft); color: var(--ok); }
+    section.board {
+      padding: 1rem 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      min-height: 420px;
+    }
+    .project-head {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.75rem;
+    }
+    .project-head h3 { margin: 0 0 0.35rem; font-size: 1.25rem; }
+    .project-head p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .next {
+      margin-top: 0.55rem;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.7rem;
+      background: #fff;
+      border-left: 3px solid var(--accent);
+    }
+    #log {
+      flex: 1;
+      overflow: auto;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid var(--line);
+      padding: 1rem;
+      min-height: 280px;
+    }
+    .msg { margin-bottom: 1.1rem; animation: rise 0.35s ease-out; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+    .msg .who {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .msg .body { white-space: pre-wrap; word-break: break-word; line-height: 1.45; }
+    label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.25rem; }
+    input, textarea, select, button { font: inherit; }
+    input, textarea, select {
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      border-radius: 4px;
+      padding: 0.5rem 0.65rem;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.ghost {
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0.45rem 0.75rem;
+      cursor: pointer;
+    }
+    .composer {
+      display: grid;
+      gap: 0.65rem;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .composer .full { grid-column: 1 / -1; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: end; }
+    .api-key-box { max-width: 220px; }
+    a.link { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1 class="brand">Jibber Talk</h1>
+      <p class="tagline">Progress board for Michael, Atlas, Nova, and Forge — one place later AIs can read.</p>
+    </div>
+    <div class="row">
+      <div class="api-key-box">
+        <label for="apiKey">API key (optional)</label>
+        <input id="apiKey" type="password" placeholder="if server requires it" autocomplete="off" />
+      </div>
+      <span class="status" id="status">Connecting…</span>
+    </div>
+  </header>
+  <main>
+    <aside>
+      <h2>Projects</h2>
+      <div id="projects"></div>
+    </aside>
+    <aside>
+      <h2>Rooms</h2>
+      <div id="rooms"></div>
+    </aside>
+    <section class="board">
+      <div class="project-head" id="head">
+        <h3>Select a project</h3>
+        <p>Rooms hold the jibber. Progress posts update status for the next AI.</p>
+      </div>
+      <div id="log"></div>
+      <div class="composer">
+        <div>
+          <label for="speaker">Speaker</label>
+          <select id="speaker">
+            <option value="michael">Michael</option>
+            <option value="atlas">Atlas</option>
+            <option value="nova">Nova</option>
+            <option value="forge" selected>Forge</option>
+            <option value="system">System</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="kind">Kind</label>
+          <select id="kind">
+            <option value="chat">Chat</option>
+            <option value="progress" selected>Progress</option>
+            <option value="blocker">Blocker</option>
+            <option value="decision">Decision</option>
+            <option value="handoff">Handoff</option>
+          </select>
+        </div>
+        <div>
+          <label for="projStatus">Bump project status</label>
+          <select id="projStatus">
+            <option value="">(no change)</option>
+            <option value="planned">planned</option>
+            <option value="in_progress">in_progress</option>
+            <option value="blocked">blocked</option>
+            <option value="deployed">deployed</option>
+            <option value="paused">paused</option>
+            <option value="done">done</option>
+          </select>
+        </div>
+        <div class="full">
+          <label for="nextAction">Next action (optional — one step)</label>
+          <input id="nextAction" placeholder="e.g. Confirm SSH on port 22122" />
+        </div>
+        <div class="full">
+          <label for="body">Message</label>
+          <textarea id="body" placeholder="What happened / what the next AI should know…"></textarea>
+        </div>
+        <div class="full row">
+          <button type="button" class="primary" id="btnSend">Post to room</button>
+          <button type="button" class="ghost" id="btnExport">Export markdown</button>
+          <a class="link" href="/docs" target="_blank" rel="noopener">API docs</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const state = { projects: [], rooms: [], project: null, room: null, poll: null };
+
+    function headers() {
+      const h = { "Content-Type": "application/json" };
+      const key = $("apiKey").value.trim() || localStorage.getItem("jibberApiKey") || "";
+      if (key) h["X-API-Key"] = key;
+      return h;
+    }
+
+    $("apiKey").value = localStorage.getItem("jibberApiKey") || "";
+    $("apiKey").addEventListener("change", () => {
+      localStorage.setItem("jibberApiKey", $("apiKey").value.trim());
+    });
+
+    function badgeClass(status) {
+      if (["blocked"].includes(status)) return "badge blocked";
+      if (["paused"].includes(status)) return "badge paused";
+      if (["deployed", "done"].includes(status)) return "badge deployed";
+      return "badge";
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, { ...opts, headers: { ...headers(), ...(opts.headers || {}) } });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || res.statusText);
+      }
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) return res.json();
+      return res.text();
+    }
+
+    function renderProjects() {
+      const box = $("projects");
+      box.innerHTML = "";
+      state.projects.forEach((p) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "item" + (state.project?.slug === p.slug ? " active" : "");
+        btn.innerHTML = `<span class="name">${p.name}<span class="${badgeClass(p.status)}">${p.status}</span></span>
+          <span class="meta">${p.server_path || "no server path yet"}</span>`;
+        btn.onclick = () => selectProject(p.slug);
+        box.appendChild(btn);
+      });
+    }
+
+    function renderRooms() {
+      const box = $("rooms");
+      box.innerHTML = "";
+      state.rooms.forEach((r) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "item" + (state.room?.id === r.id ? " active" : "");
+        btn.innerHTML = `<span class="name">${r.title}</span><span class="meta">${r.slug}</span>`;
+        btn.onclick = () => selectRoom(r.id);
+        box.appendChild(btn);
+      });
+    }
+
+    function renderHead() {
+      const p = state.project;
+      const r = state.room;
+      if (!p) return;
+      $("head").innerHTML = `
+        <h3>${p.name}${r ? " · " + r.title : ""}</h3>
+        <p>${p.summary || ""}</p>
+        <div class="next"><strong>Next action:</strong> ${p.next_action || "(none set)"}</div>
+        <p class="meta" style="margin-top:0.5rem;font-family:IBM Plex Mono,monospace;font-size:0.75rem;color:var(--muted)">
+          Path: ${p.server_path || "TBD"}
+        </p>`;
+    }
+
+    function renderMessages(messages) {
+      const log = $("log");
+      log.innerHTML = "";
+      messages.forEach((m) => {
+        const div = document.createElement("div");
+        div.className = "msg";
+        const who = m.speaker_label || m.speaker;
+        div.innerHTML = `<div class="who">${who} · ${m.kind} · ${m.created_at}</div>
+          <div class="body"></div>`;
+        div.querySelector(".body").textContent = m.body;
+        log.appendChild(div);
+      });
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function selectProject(slug) {
+      state.project = state.projects.find((p) => p.slug === slug) || await api(`/v1/projects/${slug}`);
+      const data = await api(`/v1/rooms?project=${encodeURIComponent(slug)}`);
+      state.rooms = data.rooms || [];
+      renderProjects();
+      renderRooms();
+      renderHead();
+      const preferred = state.rooms.find((r) => r.slug === "progress") || state.rooms[0];
+      if (preferred) await selectRoom(preferred.id);
+      else {
+        state.room = null;
+        $("log").innerHTML = "";
+      }
+    }
+
+    async function selectRoom(id) {
+      state.room = state.rooms.find((r) => r.id === id) || await api(`/v1/rooms/${id}`);
+      renderRooms();
+      renderHead();
+      const data = await api(`/v1/rooms/${id}/messages`);
+      renderMessages(data.messages || []);
+      if (state.poll) clearInterval(state.poll);
+      state.poll = setInterval(async () => {
+        if (!state.room) return;
+        const data = await api(`/v1/rooms/${state.room.id}/messages`);
+        renderMessages(data.messages || []);
+      }, 8000);
+    }
+
+    async function boot() {
+      try {
+        const health = await api("/v1/health");
+        $("status").textContent = health.ok
+          ? `online · ${health.projects} projects`
+          : "degraded";
+        const data = await api("/v1/projects");
+        state.projects = data.projects || [];
+        renderProjects();
+        if (state.projects[0]) await selectProject(state.projects[0].slug);
+      } catch (e) {
+        $("status").textContent = "offline: " + e.message;
+      }
+    }
+
+    $("btnSend").onclick = async () => {
+      if (!state.room) return;
+      const body = $("body").value.trim();
+      if (!body) return;
+      $("btnSend").disabled = true;
+      try {
+        const payload = {
+          speaker: $("speaker").value,
+          kind: $("kind").value,
+          body,
+          next_action: $("nextAction").value.trim() || null,
+          project_status: $("projStatus").value || null,
+        };
+        await api(`/v1/rooms/${state.room.id}/messages`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        $("body").value = "";
+        $("nextAction").value = "";
+        $("projStatus").value = "";
+        const projects = await api("/v1/projects");
+        state.projects = projects.projects || [];
+        state.project = state.projects.find((p) => p.slug === state.project.slug);
+        renderProjects();
+        renderHead();
+        await selectRoom(state.room.id);
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        $("btnSend").disabled = false;
+      }
+    };
+
+    $("btnExport").onclick = async () => {
+      if (!state.room) return;
+      const md = await api(`/v1/rooms/${state.room.id}/export`);
+      const blob = new Blob([md], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `jibber-${state.project?.slug || "room"}.md`;
+      a.click();
+    };
+
+    boot();
+  </script>
+</body>
+</html>

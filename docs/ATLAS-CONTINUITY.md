@@ -59,6 +59,8 @@ Any assistant in **this repo** can follow this doc and the Cursor rule **`atlas-
 ### Other threads
 
 - **AI interpreter** (avoid repeating prompts): `ai-interpreter/`, `docs/CURSOR-INTERPRETER.md`
+- **Jibber Talk** (progress board for Michael + AIs): `jibber-talk/`, `docs/JIBBER-TALK.md`, `START-JIBBER.cmd`
+- **Projects on server plan:** `docs/PROJECTS-ON-SERVER.md`
 - **CQ Athletes** developer unknown; files were on `E:\Documents\CQ Athletes` (drive often offline)
 - **Alexa** email about “AI Interpreter Technical Specification” — high-level architecture only; not built as product yet
 
@@ -71,6 +73,9 @@ Any assistant in **this repo** can follow this doc and the Cursor rule **`atlas-
 | **`docs/AGENT-HANDOFF.md`** | Latest Czedr technical handoff |
 | **`docs/SUPPORT-HANDOFF-ONEVPS.md`** | OneVPS support ticket + server/DNS summary |
 | **`docs/DEPLOY-ONEVPS-CZEDR.md`** | After SSH works — deploy API |
+| **`docs/JIBBER-TALK.md`** | Progress board for later AIs |
+| **`docs/PROJECTS-ON-SERVER.md`** | What goes on the VPS and in what order |
+| **`docs/AI-TEAM.md`** | Atlas / Nova / Forge roles |
 | **`docs/ONEVPS-SSH-LOGIN.md`** | SSH troubleshooting |
 | **`docs/PROJECT-CONVERSATION-NOTES.md`** | Session history summary |
 | **`docs/DEVELOPMENT-WORKFLOW.md`** | Git, TestFlight, commits |
@@ -106,7 +111,7 @@ Michael may bridge assistants via copy-paste or files. Preferred handoff:
 - Exact error strings
 - Point to paths in this repo (no secrets in git)
 
-SocialXads used `integrations/ai_shared_space/inbox/` — Czedr equivalent is these **`docs/*HANDOFF*.md`** files.
+SocialXads used `integrations/ai_shared_space/inbox/` — Czedr has that folder plus **Jibber Talk** (`docs/JIBBER-TALK.md`) and **`docs/*HANDOFF*.md`**.
 
 ---
 
