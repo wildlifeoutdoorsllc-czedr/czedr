@@ -37,6 +37,12 @@ ai-interpreter/config.yaml
 ai-interpreter/data/
 .cursor/interpreter-session.txt
 
+# Jibber Talk (local board + secrets)
+jibber-talk/.env
+jibber-talk/data/
+jibber-talk/.venv/
+**/__pycache__/
+
 # Android (Gradle / IDE / local SDK path)
 android/.gradle/
 android/.idea/
