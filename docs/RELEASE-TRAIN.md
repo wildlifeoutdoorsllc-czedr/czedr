@@ -3,6 +3,8 @@
 **Last updated:** June 2026  
 **Audience:** Michael + agents — single checklist for **API (OneVPS)** + **iOS TestFlight** + **Android**.
 
+**New management / full backup cutover:** `docs/MANAGEMENT-TAKEOVER.md`
+
 ---
 
 ## Current stage

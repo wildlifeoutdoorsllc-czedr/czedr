@@ -2,6 +2,8 @@
 
 **Read this first** when continuing work on the Czedr iOS app, TestFlight uploads, or Windows iPhone testing setup.
 
+**Ownership / new management:** start with **`docs/MANAGEMENT-TAKEOVER.md`** (backup checklist + private transfer list). For live build/API numbers prefer **`docs/IOS-BUILD.md`** and **`docs/RELEASE-TRAIN.md`** over the May 2026 snapshot below.
+
 **Workflow (2026):** `docs/DEVELOPMENT-WORKFLOW.md` — manual TestFlight only; `docs/IOS-BUILD.md` — build numbers; agent rule `.cursor/rules/czedr-workflow.mdc`.
 
 Related docs: `docs/TEST-ACCOUNTS.md`, `docs/TESTFLIGHT_SETUP.md`, `docs/IOS-SWIFTUI.md`, `IPHONE-LOGIN-HELP.txt`, `docs/PROJECT-CONVERSATION-NOTES.md`.

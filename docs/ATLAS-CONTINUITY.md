@@ -68,7 +68,8 @@ Any assistant in **this repo** can follow this doc and the Cursor rule **`atlas-
 
 | Doc | Use when |
 |-----|----------|
-| **`docs/AGENT-HANDOFF.md`** | Latest Czedr technical handoff |
+| **`docs/MANAGEMENT-TAKEOVER.md`** | New management / ownership cutover + backup checklist |
+| **`docs/AGENT-HANDOFF.md`** | Older Czedr technical handoff (prefer RELEASE-TRAIN + IOS-BUILD for live numbers) |
 | **`docs/SUPPORT-HANDOFF-ONEVPS.md`** | OneVPS support ticket + server/DNS summary |
 | **`docs/DEPLOY-ONEVPS-CZEDR.md`** | After SSH works — deploy API |
 | **`docs/ONEVPS-SSH-LOGIN.md`** | SSH troubleshooting |
