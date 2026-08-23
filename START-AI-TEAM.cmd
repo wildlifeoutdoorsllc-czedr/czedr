@@ -14,8 +14,10 @@ echo.
 echo  Atlas  - You are IN Cursor now. Say: Read docs/AI-TEAM.md
 echo  Nova   - Double-click scripts\ai-nova.cmd
 echo  Forge  - Cursor Agent mode, or scripts\ai-forge.cmd
+echo  Jibber - Double-click START-JIBBER.cmd  (progress board :8791)
 echo.
 echo  Guide: docs\AI-TEAM.md
+echo  Jibber: docs\JIBBER-TALK.md
 echo  Inbox: integrations\ai_shared_space\inbox\
 echo.
 pause
