@@ -102,7 +102,7 @@ See **Section 10** in `docs/SUPPORT-HANDOFF-ONEVPS.md`.
 
 ## For other AIs (Alexa / Nova / Forge / contractors)
 
-**Alexa showed up blank?** Give her: **`docs/AI-COMMUNITY.md`** (the AI family Michael is building), then **`docs/ALEXA-EDUCATION-HANDOFF.md`** (full education + comic Gibbertalk rant).
+**Alexa showed up blank?** Give her the **one-URL tour:** **`docs/ALEXA-WALKTHROUGH.md`**. Or: **`docs/AI-COMMUNITY.md`**, then **`docs/ALEXA-EDUCATION-HANDOFF.md`**.
 
 See **`docs/AI-TEAM.md`** and **`integrations/ai_shared_space/`** for Nova (review) and Forge (build).
 

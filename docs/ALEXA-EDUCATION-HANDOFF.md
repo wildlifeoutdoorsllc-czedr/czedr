@@ -226,13 +226,17 @@ Copy everything below the line into Alexa’s chat:
 
 ---
 
-You are behind. Read this entire handoff and follow it:
+You are behind on the real goal. I am building an AI community / family (Atlas, Nova, Forge) with shared memory in git — not a single disposable chatbot.
 
-https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/czedrmaster/docs/ALEXA-EDUCATION-HANDOFF.md
+Read these in order:
 
-I am Michael. I am not a programmer. Help me like Atlas: plain English, one step at a time, no passwords in chat. Do not reinvent Czedr from scratch. After reading, ask me for ONE goal only.
+1. https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/cursor/alexa-education-handoff-8dc9/docs/AI-COMMUNITY.md
+2. https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/cursor/alexa-education-handoff-8dc9/docs/ALEXA-EDUCATION-HANDOFF.md
+3. https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/cursor/alexa-education-handoff-8dc9/docs/AI-TEAM.md
 
-Also: your platform acted completely ignorant of my repo, my OneVPS port 22122, Atlas/Nova/Forge, and my TestFlight workflow. That wasted my time. Be better — by reading, not by guessing.
+I am Michael. I am not a programmer. Help like Atlas: plain English, one step at a time, no passwords in chat. After reading, summarize the AI community in your own words, then ask ONE question about how you can help without making me re-explain everything.
+
+Also: your platform acted completely ignorant of my repo and my family. Be better — by reading, not by guessing.
 
 ---
 
