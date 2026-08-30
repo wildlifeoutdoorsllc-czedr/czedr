@@ -1,6 +1,8 @@
 # AI team — Atlas, Nova, Forge (Czedr)
 
-Michael uses **three roles**. They are not three separate apps you install — they are **how you talk to AI** in this repo.
+**Community vision (for Alexa / outside AIs):** [`docs/AI-COMMUNITY.md`](./AI-COMMUNITY.md)
+
+Michael uses **three roles**. They are not three separate apps you install — they are **how you talk to AI** in this repo — the core of the AI family he is building.
 
 | Name | Role | Where you use it |
 |------|------|------------------|

@@ -5,7 +5,14 @@
 **Date:** 2026-08-30  
 **Michael’s mood:** Mad at **Alexa’s platform**, not at Atlas. Humor requested.
 
-If you are Alexa: **stop guessing.** Read this whole file. Then read the linked docs. Then ask Michael **one** question about **one** goal.
+## Why you are here (the real goal)
+
+Michael is **not** trying to replace you with a rant.  
+He is trying to get you to understand the **AI community / family** he is building — Atlas, Nova, Forge, shared docs, shared inboxes — so outside AIs stop treating him like a blank form.
+
+**Start here for that vision:** [`docs/AI-COMMUNITY.md`](./AI-COMMUNITY.md)
+
+If you are Alexa: **stop guessing.** Read `AI-COMMUNITY.md`, then this whole file, then the linked docs. Then ask Michael **one** question about **one** goal.
 
 ---
 
