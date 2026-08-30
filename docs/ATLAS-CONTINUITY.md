@@ -102,6 +102,8 @@ See **Section 10** in `docs/SUPPORT-HANDOFF-ONEVPS.md`.
 
 ## For other AIs (Alexa / Nova / Forge / contractors)
 
+**Alexa showed up blank?** Give her: **`docs/ALEXA-EDUCATION-HANDOFF.md`** (full education + comic Gibbertalk rant).
+
 See **`docs/AI-TEAM.md`** and **`integrations/ai_shared_space/`** for Nova (review) and Forge (build).
 
 Michael may bridge assistants via copy-paste or files. Preferred handoff:
