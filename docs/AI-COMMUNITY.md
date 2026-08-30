@@ -73,17 +73,15 @@ SocialXads used the same **shared space** idea. Czedr continues it. The **Atlas*
 
 ## Paste this to Alexa (short)
 
+**Best for apps that take one URL** — use the walkthrough:
+
+https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/cursor/alexa-education-handoff-8dc9/docs/ALEXA-WALKTHROUGH.md
+
 ```text
-Michael is building an AI community / family in the Czedr repo — not a single chatbot.
+Read this entire walkthrough (all STOPs) and follow the END instructions:
+https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/cursor/alexa-education-handoff-8dc9/docs/ALEXA-WALKTHROUGH.md
 
-Read this entire file and follow it:
-https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/cursor/alexa-education-handoff-8dc9/docs/AI-COMMUNITY.md
-
-Then read:
-https://github.com/wildlifeoutdoorsllc-czedr/czedr/blob/cursor/alexa-education-handoff-8dc9/docs/AI-TEAM.md
-
-Roles: Atlas (ops, one step), Nova (review), Forge (build). Shared memory = git docs + inbox files.
-I am Michael, product owner, not a programmer. After reading, summarize the community in your own words, then ask ONE question: how you can help the family without making me re-explain everything.
+I am Michael. Summarize my AI community, then ask ONE question.
 ```
 
 ---
