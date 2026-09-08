@@ -30,7 +30,7 @@ Any assistant in **this repo** can follow this doc and the Cursor rule **`atlas-
 | Preference | Step-by-step; confirm each step before continuing |
 | Communication | Call out errors by exact text (`Connection refused`, `Permission denied`) |
 | Security | Never ask for passwords in chat; use panel + Notepad paste |
-| Projects | **Czedr** (this repo), **CQ Athletes** (docs on E: drive, often offline), **SocialXads** (separate repo, Atlas nickname originated there) |
+| Projects | **Czedr** (this repo), **CQ Athletes** (`E:\` and also `D:\CQ Athletes`), **SocialXads** (`D:\SocialXads` — not on this GitHub org). D: review: `docs/SOCIALXADS-D-DRIVE-REVIEW.md` |
 
 ---
 

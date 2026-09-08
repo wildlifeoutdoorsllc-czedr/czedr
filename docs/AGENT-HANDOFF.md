@@ -4,7 +4,7 @@
 
 **Workflow (2026):** `docs/DEVELOPMENT-WORKFLOW.md` — manual TestFlight only; `docs/IOS-BUILD.md` — build numbers; agent rule `.cursor/rules/czedr-workflow.mdc`.
 
-Related docs: `docs/TEST-ACCOUNTS.md`, `docs/TESTFLIGHT_SETUP.md`, `docs/IOS-SWIFTUI.md`, `IPHONE-LOGIN-HELP.txt`, `docs/PROJECT-CONVERSATION-NOTES.md`.
+Related docs: `docs/TEST-ACCOUNTS.md`, `docs/TESTFLIGHT_SETUP.md`, `docs/IOS-SWIFTUI.md`, `IPHONE-LOGIN-HELP.txt`, `docs/PROJECT-CONVERSATION-NOTES.md`, `docs/SOCIALXADS-D-DRIVE-REVIEW.md` (SocialXads on D:, not this iOS track).
 
 ---
 
