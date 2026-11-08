@@ -4,9 +4,9 @@ Update this file when a build is **uploaded to TestFlight** or when planning the
 
 | Field | Value |
 |-------|--------|
-| **Last shipped (TestFlight)** | **137** -- Pay Now on received invoices; add-testflight-tester script ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/28694144714)) |
-| **Next ship build number** | **139** |
-| **In progress** | **138** -- Forgot PIN (reset via password) |
+| **Last shipped (TestFlight)** | **136** -- last GitHub Actions upload that succeeded ([CI run](https://github.com/wildlifeoutdoorsllc-czedr/czedr/actions/runs/27102053935), 7 Jun 2026). Builds **137** and **138** were started 4 Jul 2026 and **failed** in Fastlane (~30–58s); logs have expired. |
+| **Next ship build number** | **140** |
+| **In progress** | **139** -- current `czedrmaster` snapshot for device testing (Forgot PIN + Pay Now + later master commits) |
 
 ## Ship pipeline (user preference)
 
@@ -24,8 +24,9 @@ After iOS changes are **committed**, **push and ship the next build** without wa
 
 | Build | Notes |
 |-------|--------|
-| 138 | Forgot PIN: reset PIN by verifying account password (menu + Profile link) |
-| 137 | Pay Now on received invoices: PIN sheet, ledger transfer, success screen |
+| 139 | In progress: ship current czedrmaster for TestFlight testing |
+| 138 | Forgot PIN (CI failed 4 Jul 2026 — not on TestFlight) |
+| 137 | Pay Now on received invoices (CI failed 4 Jul 2026 — not on TestFlight) |
 | 136 | Sign-in autofill hint; trim passwords on login |
 | 135 | Forgot password: check-email screen → reset link in Mail/Safari (Option B); manual code fallback |
 | 134 | support@czedr.com on forgot-password; backend reset email Reply-To |
